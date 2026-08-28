@@ -1,0 +1,285 @@
+                                            ####################################			
+                                                   Apex Toolbox 3.8.0
+                                            ####################################
+
+Original Apex Toolbox by Random Blender Dude / Gl2imm.
+Apex Toolbox 3.8.0 is a maintained and modified release by Apex Legends Renders (ALR).
+This release remains distributed under GPL-3.0.
+
+Complete source code: https://github.com/xFyreGG/Apex-Toolbox-ALR
+Original project: https://github.com/Gl2imm/Apex-Toolbox
+
+This maintained release preserves the original Apex Toolbox project identity,
+licence, upstream attribution, and community credits below.
+
+This tool were created to assist and simplify workflow for Apex Legends models in Blender since they cannot be simply exported from the game. Here i collect and organize useful tools/addons/operations all in one place. The addon itself is very light for those just want simple functions. 
+
+If you want to have additional effects like auto set HDRI, Badges, Loot items - download Assets ZIP file from here: https://drive.google.com/file/d/14z98OfTWH9Uku2MFssg1bs2qjjVVkOWz/view?usp=sharing
+extract the files in your desired location
+Inside addon in the "Readme First" Tab specify Assets folder location.
+Thats it. Once you specify location of the Assets - all additional options will appear
+
+
+                                            ####################################			
+                                                     USAGE INSTRUCTIONS:
+                                            ####################################
+
+1. Most of the tools in the Addon are designed and scaled to Apex models actual size. To size up the model to the correct scale you may do the following:
+	a) Import Model
+	b) Select bones
+	c) Scale down to - 0.0254 (Shortcut for Scale is "S")
+	Without correct scale some of the effects will look small/big, colors or textures might be offset too. 
+2. Mods/effects/addons added inside are free to use/modify or were created by me/community for this Addon
+
+
+
+                                            ####################################			
+                                                      Help and Credits:
+                                            ####################################
+											
+											
+####################################			
+        Auto_tex:
+####################################
+ 
+A little tool that will help you to texture Apex Models automatically. A small improvement being done to this addon. Previously if you select the objects and use the addon - it will Append "Apex Shader" and un-select all objects. Well, not anymore. :) 
+Currently support Original "Apex Shader" that comes with Autotex, S/G Blender and ApexShader+. 
+
+Credits: Addon Created by llenoco. There is no link to the github, as the Addon were posted in Legion+ Discord https://discord.gg/ADek6fxVGe
+ApexShader+ - Modified original ApexShader done by @Emi_v7 from Legion+ and 3D Art Discord	
+							
+											
+####################################			
+       Toon Auto_tex:
+####################################
+
+Apex ToonShader. For Texturing Models Similar to Comics Style. Works Same as AutoTex but with Toon Shader (only default textures in _images folder). Instructions inside Toolbox 
+Credits: This is modified Shader from ToonShader done by LightningBoyStudio. They had allowed to use it in the Toolbox, so you may do your renders with it. Dont forget to check them out, follow, subscibe, likes, this will help them grow https://twitter.com/LightningBoySt1
+
+
+####################################			
+       Auto Shadow (Beta):
+####################################
+
+Turn your legends into shadows (Animated). Just select the meshes and click "Shadow it".
+Credits: Thx @WittyDZN from Legion+ and 3D Art Discord for the idea and for the supporting information and files.
+
+
+####################################			
+        Re-color:
+####################################
+
+Tool to re-color (re-texture) the Legend or the Weapon with the new or updated texture available in the game files. This is modified version of Auto_tex. Nodes plugging procedure taken from there.
+
+Howto:
+		a) Extract/Download new textures
+		b) Specify the path to the texture folder
+		c) Select option if you need Alpha channel to be plugged
+		d) Select which shader you want to use
+		e) Almost all Material do not have textures for eye, teeth, hair, you need to copy them out from the base model and place all that images into folder named "base"
+		   the folder structure should be like this 
+          -"Your_material_folder" -> base                                --> all base images here
+                                  -> wraith_lgnd_v19_liberator_rc01_body --> body images here
+                                  -> wraith_lgnd_v19_liberator_rc01_gear --> gear images here
+								  
+		  If you have Assets folder installed - you may skip this step, base files included. 
+		f) press Re-texture
+		
+		PS: It is also compartible with Titanfall 2 Models (Beta)
+
+
+
+####################################			
+     Append Shaders and HDRI:
+####################################
+
+Shaders: A tool to Append shaders to your scene. Comes with: Apex Shader, S/G-Blender, Apex Cycles (Blue), Apex Mobile Shader (Biast12)
+Credits: Apex Shader - taken from Apex Auto_tex. S/G Blender, Apex Cycles (Blue) - taken from the open sources. Apex Mobile Shader - by Biast12 and Floxay from Legion+ Discord (Discord https://discord.gg/ADek6fxVGe)
+
+(Extended version)
+HDRI: A tool to Append and set HDRI for renders, as well as Sky Boxes.
+Apex Lobby, Party crasher, Encore, Habitat, Kings Canyon (Old), Kings Canyon (New), Kings Canyon (Night), Olympus, Phase Runner, Storm Point, Worlds Edge, Sky (Not sure its from which map), Indoor, Outdoor, Outdoor under the shade, Morning Forest
+Blender Built-in HDRIs: city, courtyard, forest, interior, night, studio, sunrise, sunset
+Sky box sphere (it will spawn when you click button "Set as Sky")
+You can set Apex sky images as a background for Sky Sphere, it does not block the lights
+After you set the Sky image, you can set same image or any other in the list as your HDRI (this will add lights to the scene) - just click "Set as HDRI"
+You may set either Sky box or HDRI, up to your taste, they work independently.
+Credits: Thx to @Space for sharing Apex HDRIs on "3D Art Discord" https://discord.gg/VcZh5rC
+	   Indoor, Outdoor, Outdoor under the shade, Morning Forest - Downloaded from "Poly Haven" https://polyhaven.com/
+	   Blender Built-in HDRIs: All HDRIs are licenses as CC0 (Creative common). These were created by Greg Zaal (HDRI Haven https://hdrihaven.com).
+
+
+
+####################################			
+  Biast12 Apex PC Assets Archive:
+####################################
+
+(Both versions included)
+Quick link button to Biast12 Apex PC Assets Archive
+Original link: https://bit.ly/3ArgvxY
+Credits: Thx to @UIIAoodle my beloved for this Great Archive and also for permission to include link in ApexToolbox "Legion+" Discord https://discord.gg/ADek6fxVGe
+
+
+
+                                            ####################################			
+                                                        Apex Effects:
+                                            ####################################
+
+
+####################################			
+             Wraith:
+####################################
+
+(Both versions included)
+Portal - spawns the portal made procedurally with nodes. Animated
+Credits: Inspired from this video https://www.youtube.com/watch?v=sMFYCJUix-Y, some nodes were taken from there and modified.
+
+
+
+####################################			
+             Gibraltar:
+####################################
+
+(Both versions included)
+Dome Shield - spawns the Bubble (Friendly or Enemy) made procedurally with nodes. Animated
+Credits: Me - seems like the most talented Apex effect creator i ever met.
+
+
+
+####################################			
+             Mirage:
+####################################
+
+(Both versions included)
+Decoy - applying outline to the model. Adding endless animated particle system, Decoy text, Floor with bloom and Icon that pop up when enemy shoot Decoy.
+		Can be parented to Legend.
+Howto: Do not select eyes or other internal meshes, as it will add outline to it too. Adding floor bloom (currently works on flat surfaces). Select Bone object to parent effect to it. Best to parent before adding animation to the model.
+Credits: This mod was inspired by Outline Helper - https://felineentity.gumroad.com/l/ZmTIT. Partial pieces of code were taken from there and modified according to the needs.
+
+
+
+####################################			
+             Valkyrie:
+####################################
+
+(Both versions included)
+Flames - spawns the Flames made procedurally with nodes. Can animate with "Flame Noise Animation 1" or "Flame Noise Animation 2". Can parent to model.
+Credits: @SirFloof. Free Material taken from his Gumroad page https://sirfloof.gumroad.com/l/YlFfa
+
+
+
+####################################			
+             Seer:
+####################################
+
+(Both versions included)
+Ultimate - spawns animated Seer ultimate cage
+
+
+
+####################################			
+             Weapons:
+####################################
+
+(Both versions included)
+Weapon Laser - Adds laser. Can parent to weapon and auto adjust to the laser sight attachment location.
+Flatline normal - Reactive skin flames and bloom from Assimilation skin model. Can parent to model.
+Flatline POV - Reactive skin flames and bloom from Assimilation skin model. Reactive animation (Fixed, because it exports broken from Legion+). Can parent to model.
+Howto: Auto Parenting works only for the correct flatline model "flatline_v20_assim_w" for normal model and "flatline_v20_assim_v" for POV model. Best to parent before adding animation to the model.
+
+
+
+####################################			
+ Heirloom Items: (Extended version)
+####################################
+
+All Heirlooms for quick spawn (already textured). Lifeline, Wattson, Pathfinder comes with animation, this is just to open their heirlooms.
+
+
+
+####################################			
+     Badges: (Extended version)
+####################################
+
+4k Badge - adding in-game 4000 Damage badge made in 3D
+20 Bomb Badge - adding in-game 20 Kills badge made in 3D
+20 Bomb Badge (v2) - adding in-game 20 Kills badge made in 3D with in-game skull models
+Predator S3 - adding Predator Season-3 badge made in 3D
+Credits: 4k and 20 bombs badges - Thx to PeeT for sharing this cool model in Legion+ Discord.
+	   Predator S3 - Thx to り- for sharing this cool model in 3D Art Discord. Twitter: @ZeroAx_
+
+
+
+####################################			
+   Loot Items: (Extended version)
+####################################
+
+Spawns Ground Loot (Animated)
+Body Armor, Helmet, Shield Cell, Shield Battery
+
+Spawns Ground Loot (Normal)
+Phoenix Kit, Med Kit, Syringe, Health Injector, Grenade, Arc Star, Thermite, 
+Backpacks, Light Ammo, Heavy Ammo, Energy Ammo, Shotgun Ammo, Respawn, Beacon, 
+Knockdown Shield, Heat Shield, Death Box
+
+Death Box comes with banner sample, you can change images in shading tab. To change text - just select it and press Tab to enter "Edit Mode", edit it as normal text like in notepad. Press "Tab" again to exit "Edit Mode".
+PS: Sniper ammo textures are broken, so no adding them.
+
+
+
+####################################			
+  Lobby Items: (Extended version)
+####################################
+
+Spawns Lobby items: Heirloom Shards, Epic Shards, Rare Shards, Loot Drone
+
+
+
+####################################			
+  Other Items: (Extended version)
+####################################
+
+(Extended version)
+Spawns Other items: Respawn Beacon Holo Effect (Animated), Loot Ball
+
+
+
+####################################			
+      Skydive (Experimental):
+####################################
+
+(Both versions included)
+Spawns Skydive from S9 (Sparks), animated. Can parent to Legend
+
+
+
+                                            ####################################			
+                                                        Other Effects:
+                                            ####################################
+
+####################################			
+      Skydive (Experimental):
+####################################
+
+Rotational Staging - Adding complete set with Camera, Lights and Backdrop. Animation is cycled.
+Basic Lights Setup - Preset lights for render models in dark environment (Yes, alot of people dont know how to set this up)
+Wireframe Effect - Basic wireframe effect. It applying "Wireframe" modificator to the mesh
+Credits: Thx to @Deepak_Kaku from Legion+ discord for providing Animated Staging mock up
+
+
+
+                                            ####################################			
+                                                Legion Models Translate List:
+                                            ####################################
+Addon is linked to external translation list done by Garlicus from LEGION+ Discord. All data shown in this tab is populated from that list. 
+Original list can be found here https://docs.google.com/spreadsheets/d/123c1OigzmI4UaSZIEcKbIJFjgXVfAmXFrXQmM1dZMOU/edit#gid=0
+
+
+
+                                            ####################################			
+                                                	Updates Tracker:
+                                            ####################################
+Attempt to make everyones life easier and also to reduce the insane amount of issues related to outdated addons or Legion+ software
+For Legion+ settings - select the folder with Legion+ FOLDER, not Folder with LegionPlus.exe (Example: "MyFolder"/"Legion+1.4.1"/"LegionPlus.exe", so select "MyFolder")
+Legion folder with LegionPlus.exe MUST remain same name as you extracted from zip (like Legion+1.4.1), dont change the name.
+For Addons - this should go autopilot

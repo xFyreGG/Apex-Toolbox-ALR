@@ -1,0 +1,324 @@
+                                            ####################################			
+                                                      Version History:
+                                            ####################################
+
+v3.8.0 Changes:
+	Public release maintained by ALR, preserving Random Blender Dude as the original author.
+	- Modern RSX / CAST support and modern RSX texture naming support.
+	- Improved Auto Texture resolution with automatic texture-folder discovery.
+	- Maintained legacy Legion+ compatibility.
+	- Blender 4.x compatibility repairs and repaired legacy Toolbox utilities.
+	- Reorganised and cleaned Toolbox UI.
+	- Update-system and fork-handling improvements.
+	- Release metadata, documentation and visible version labels updated for 3.8.0.
+	No functional behaviour changes were introduced by the 3.8.0 release metadata pass.
+
+v.1.0: 
+	Initial Release
+v.1.1 Changes: 
+	dding effects: Flatline Reactive skin, Mirage Decoy Particle system, 4k Damage Badge, 20 Bomb Badge
+	Other Items: Auto parenting for Mirage Effect and Flatline reactive skin
+	Code: Figured out the way to pass custom variables from buttons to Operators. With this significantly reduced the numbers of custom operators as well as less lines of codes. One Operator handling multiple 	   items now. Yay.
+v1.2 Changes:  
+	Added 
+	HDRI: Encore, Habitat, Kings Canyon, Olympus, Phase Runner, Storm Point, Worlds Edge
+	Effects: Gibraltar Bubble (Friendly and Enemy), Valkyrie Flames
+	Loot Items: Armor and Helmet (White, Blue, Purple, Gold, Red)
+	Code: Redone some parts to further reduce lines of code 
+	Bug Fixes: After applying new HDRI and saving blend file default world will be deleted (no user set). Set Fake user for all HDRI and default World now.
+v1.3 Changes:  
+	Added 
+	S/G Blender option for Autotex
+	Bug Fixes: Recolor option were not appending S/G Blender Shader. Fixed now
+	Warning: You need to install v.1.2 before this fix. This is to reduce filesize. If you already using v1.2 - can just install v1.3 and restart Blender. 
+v2.0 Changes:
+	Major changes:
+	Rewrite almost entire code to implement these changes:
+	1. Now this addon is very light for those just want simple light functions. Swithed off those effects with big size (HDRI, Badges, Loot items)
+		If you want to have additional effects - download Assets ZIP file from here: https://drive.google.com/file/d/14z98OfTWH9Uku2MFssg1bs2qjjVVkOWz/view?usp=sharing
+		extract the files in your desired location
+		Inside addon in the "Readme First" Tab specify Assets folder location.
+		Thats it. Once you specify location of the Assets - all additional options will appear
+	2. Recolor now work with custom folders materials, can be with sub-folders or without it. Also added the option for Alpha channel
+	To differentiate which update affecting your current addon - it will be called now "Lite" and "Extended"
+	Extended Added:
+	Badge - Predator S3
+
+v2.1 Changes:
+	Note: if you updating from v2.0 - pls re-download updated assets: https://drive.google.com/file/d/14z98OfTWH9Uku2MFssg1bs2qjjVVkOWz/view?usp=sharing
+	Or if you have limited data - download only updated files and manually replace in your asset folder: https://drive.google.com/file/d/17r_R_vVTcQ__XxR9TV9joz1GZW_ca3jU/view?usp=sharing
+	   
+	Added to "Lite":
+	Effects: Seer Ultimate (animated)
+	Experimental: Skydive S9 (animated). 
+
+	Added to "Extended":
+	HDRI: Kings Canyon (New), Kings Canyon (Night), Apex Lobby, Sky (Not sure its from which map)
+	Loot items: Basically all of them, heals, nades, backpacks, etc.
+	Effects: Added animated energy to the Shield batteries and cells.
+	Badges: S3 Predator
+	Base files: Added Legends base material files (eye, teeth, hair, etc) so it will auto link when you recolor the models. (Recolor materials not included base files)
+	   
+	fixes:
+	Fixed Gibby bubble center icon not displayed.
+	Fixed mSlot reference before assigning error in Re-color and Autotex.
+	Changes:
+	Rewrite the code for recolor - now it supposed to work completely in autopilot mode, recoloring Legends and also weapons. Just select the folder with images or material folder and it will do the job. The code is straight from the oven, so slight chance errors might pop up. Pls feedback if there are any.. For our Titanfall fans - this will also recolor TTF Legends. 
+	   
+	Restart Blender after update.
+	   
+v2.2 Changes:
+	Added to Both Versions:
+	Addon new updates notification panel, so you wont miss new update
+	Linked addon to Garlicus Legion Models/Skins Translate list (https://docs.google.com/spreadsheets/d/123c1OigzmI4UaSZIEcKbIJFjgXVfAmXFrXQmM1dZMOU/edit#gid=0)
+	Restart Blender after update.
+
+v2.3 Changes:
+	Quality of Life Update for Both Versions:
+	Added button for quick open Biast12 Online Archive
+	Added Update Tracker Panel
+	Restart Blender after update.
+v3.0 Changes:
+	Major changes: 
+	Now addon supports MacOs
+	   
+	"Both Versions"
+	Effects: 
+	Fixed Flatline parenting errors
+	Changed effect to V2 (more accurate with UV Distrotion)
+	Added POV Flatline effect and parenting
+	Added POV Flatline reactive animation (Fixed, because it exports broken from Legion+). One click add
+	"Extended"
+	Effects: 
+	Added Respawn Beacon Holo Effect (Animated), Deathbox top part, Heirloom Shards, Epic Shards, Rare Shards, Loot Drone, Loot Ball
+	Fixes:
+	Updates Tracker Section - Added Error handler for Legion folder selection (when legion folder named without "+" and version number)
+	   
+	Please re-download Apex_Toolbox_Assets folder as i organized the things inside and also added a new items
+	Restart Blender after update.
+	   
+v3.1 Changes:
+	"Lite":
+	Appends Shaders: Added Apex Mobile Shader from Biast12
+	"Extended":  
+	Added All Heirlooms for quick spawn (already textured), Lifeline, Wattson, Pathfinder comes with animation, this is just to open their heirlooms.
+	Loot Items: Added Deathbox banner sample, you can change images in shading tab, added text to it with Apex font (just press Tab to edit text)
+	Badges: Added 20bomb v2 badge with in-game sculls
+	Append HDRI: Added 4 HDRI from Poly Haven, good quality. Indoor, Outdoor, Outdoor under the shade, Morning Forest. 
+	Added Sky box sphere (it will spawn when you click button "Set as Sky").
+	Now you can set Apex sky images as a background for Sky Sphere, it does not block the lights
+	After you set the Sky image, you can set same image or any other in the list as your HDRI (this will add lights to the scene)
+
+	Please re-download Apex_Toolbox_Assets folder
+	Restart Blender after update.
+	   
+v3.2 Changes:
+	"Both versions":
+	Fixed: Legends naming translate for Legion+ Fetch data button (it were calling wrong item). Added button to open Online Google Sheet table.
+	Quality of life changes: Added convenient sliders and color buttons where possible, so do not have to switch to the Shading tab, can control directly from toolbox. Properties will appear after the item been spawned.
+	Effects:
+	Wraith portal - compiled all nodes into one shader group with adjustable settings (transparency, colour, brightness), added drivers for inner circles, so the animation now become cyclic.
+	Added: Weapon Laser sight. Can parent to weapon and adjust to the laser sight location.
+	Restart Blender after update.	   
+
+v3.3 Changes:
+	"Both versions":
+	Fixed: Error while setting Blender default HDRI
+	Added: 
+		Blender Built-in HDRIs - city, courtyard, forest, interior, night, studio, sunrise, sunset. Since i use those already in the Blender, this does not take space at all.
+		All Blender HDRI's are licenses as CC0 (Creative common). These were created by Greg Zaal (HDRI Haven https://hdrihaven.com)
+		Link to Biast12 Apex Mobile assets
+		Link to Toolbox discussion discord (if you have any suggestions, want to share anything, or something doesnt work - you can do it there)
+	Changed:
+		Set Valkyrie flames to be animated by default
+	New "Other Effects Tab"
+		Animated Rotational Staging with Camera Setup. Thx to @Deepak_Kaku from Legion+ discord for providing mock up
+		Basic Lights Setup for render models in dark environment. Saw alot of people have no idea how to do it.
+		Basic wireframe modificator effect
+	Assets file NO need to re-download.
+	Restart Blender after update.
+
+v3.4 Changes:
+	"Both versions":
+	Fixed: Quick fix for the Error when setting non Apex image as Sky in HDRI tab. Missed one stroke of code, my bad :)
+	Restart Blender after update.
+
+v3.5 Changes:
+	"Both versions":
+	Added: Apex ToonShader. Works Same as AutoTex but with Toon Shader (Beta). Instructions inside Toolbox
+	Restart Blender after update.
+	
+v3.6 Changes:
+	"Both versions":
+	Code:
+	Added code to ignore Legion+ nightly builds in updates tab
+	Improved code for Recolor. Now if the root folder name is not same as materials subfolders names - it will ignore it and take name from one of the subfolder. 
+	Subfolders should still have material name in it and contain part name (eg. _body, _gear, etc).
+	Made some changes for Autotex tab, so now if you modified something in Shader tab and want to revert to original - just Autotex it again, no need re import model. 
+	Added new button in Toolbox:
+	Set Correct Model size - use it right after you import model, it will rotate, scale to correct size and focus to the model automatically, so 3 operations in 1 click.
+	Added new effect:
+	AutoShadow - Turn the character into shadow (Animated).
+	Added new Shader:
+	ApexShader+ - It is a modified version of original ApexShader which now supports iridescenceRampTexture, cavityTexture, opacityMultiplyTexture, new controls been added like bumps, normal, 	Alpha transparency controls, etc. Shader modified by Emi_v7 from Legion+ Discord.
+	Restart Blender after update.
+
+v3.7 Changes:
+	"Both versions":
+	Updated the obsolete links
+	removed the Skin Translate list (link still remain there)
+	Added Animation and Bones tab with some quick actions related to Bones and Animation
+	Updated Apex Shader+ to v3.4
+
+v3.7 beta 3 Changes:
+	"Both versions":
+	Auto_tex: full RSX (RSX -> CAST -> Blender) compatibility, without losing Legion+ support.
+	The texture lookup was rebuilt around the semantic information the CAST import leaves in the material,
+	instead of around the old "<material name>_albedoTexture.png" filename assumption.
+	- Reads the roles straight out of the imported node graph (Principled and Eevee Specular), so RSX
+	  "Real", "Text", "Semantic" and even "GUID" texture naming all work. A 0x1234ABCD.png the CAST
+	  importer bound to the normal socket is used as the normal map, no filename guessing involved.
+	- Nodes are found by type, not by the names "Image Texture" or "0". Renamed and .001 nodes work.
+	- Added the RSX/Respawn short texture codes (_col _nml _spc _gls _ao _cav _ilm _thk _opa _asd)
+	  alongside every classic _albedoTexture style name.
+	- Texture-family matching: a material only picks up textures from its own family, so a body material
+	  can no longer grab the head material's textures out of a shared folder.
+	- Mips and array variants (_001, _level1, _1_col) are recognised as variants, never as roles, and the
+	  full resolution image is always preferred.
+	- Gloss vs roughness is tracked properly. A roughness map is inverted into glossiness in the node
+	  graph (gloss = 1 - roughness); a real gloss map is never inverted.
+	- Auto_tex is now non-destructive: it captures, resolves and validates BEFORE it rebuilds. If nothing
+	  can be resolved (for example RSX exported with "Export Material Textures" off) the imported material
+	  is left untouched instead of being cleared.
+	- Ambiguous matches are reported instead of guessed. A wrong texture is worse than a missing one.
+	- Re-running Auto_tex, or switching between the three shaders, now keeps every texture.
+	- New optional "Textures Folder" / "Search Sub-folders" fields in the Auto_tex tab. Only needed when
+	  the imported material references no images at all.
+	- Much clearer console output: one summary block per material saying where every texture came from.
+	Fixes:
+	- Apex Shader+ v3.4 never actually received Scatter Thickness, Opacity or Alpha: Auto_tex asked for
+	  sockets named "SSS Map" and "Alpha", which that group does not have, and the failed links were
+	  swallowed by a bare except. Now connected. Same fix for S/G-Blender ("Alpha input").
+	- Extensions are read with os.path.splitext instead of split(".")[1], so filenames containing more
+	  than one period no longer break.
+	- Formats other than PNG (DDS, TGA, TIFF, JPG, EXR, ...) are accepted.
+	See RSX_COMPATIBILITY.md inside the addon folder for the recommended RSX settings.
+	Restart Blender after update.
+
+v3.7 beta 4 Changes:
+	"Both versions":
+	This is a maintenance and cleanup release. Beta 3's RSX/CAST texture resolver is unchanged in
+	behaviour except where noted; everything around it was tidied up.
+
+	Auto Texture:
+	- No longer needs a texture folder. It works out where the export lives from the collection the
+	  CAST importer created, Blender's own file browser history, and export folders it remembers from
+	  previous successful runs. Import CAST -> select model -> Texture Model.
+	- The Texture Search Folder is now an optional override under "Search Options", not a requirement.
+	- Successful runs remember the export folder, so every later model from the same export resolves
+	  with no interaction, including in a new Blender session. Preferences lists and clears them.
+	- The console says where it searched and how many textures it resolved.
+	- If two copies of a model exist on disk, the one you just imported from wins.
+
+	UI:
+	- The sidebar is rebuilt from real Blender panels instead of nine hand-rolled fold-outs in one
+	  360-line draw(): Model / Materials (Auto Texture, Recolour, Toon) / Shaders & Environment /
+	  Rigging & Animation / Effects (Auto Shadow, Apex Effects, Scene Utilities) / About & Help.
+	- Instructions, credits, links and the update tracker moved out of the main workflow into
+	  "About & Help".
+	- Clearer names: Auto_tex -> Auto Texture, Auto_shadow -> Auto Shadow, Re-color -> Recolour,
+	  "Append Shaders & HDRI" -> "Shaders & Environment", "Add Shader" -> "Add Selected Shader".
+	- Buttons that cannot work yet are greyed out instead of failing.
+	- The ambiguous "Folder:" fields are now "Toolbox Assets Folder" and "Legion+ Parent Folder", and
+	  the add-on Preferences page is no longer blank.
+	- The twelve "-----" separator rows are gone.
+
+	Repairs (all verified against Blender 4.0 and 4.2):
+	- Toon It was broken on Blender 4.2: it set render.engine to "BLENDER_EEVEE", which 4.2 renamed.
+	  It also still used the pre-beta-3 texture lookup, so it failed on every RSX export. Both fixed;
+	  Toon now shares the Auto Texture resolver.
+	- Add IK Bones was broken on every supported Blender: it passed "orient_axis_ortho" to
+	  transform.translate, which no longer accepts it. Fixed, and it no longer crashes with nothing
+	  selected.
+	- Auto Shadow "Adjust and Parent" raised UnboundLocalError on any rig without a nose bone. It now
+	  says what it looked for.
+	- "Check for Updates" aborted partway through: the cast plugin changed its release title format
+	  and the unguarded parser raised IndexError. Fixed, and the io_model_semodel link no longer opens
+	  the wrong project.
+	- Every bpy.context.preferences.addons["Apex_toolbox"] lookup is gone. Those raised KeyError if the
+	  add-on folder was not named exactly "Apex_toolbox", which is what happens when you install a
+	  GitHub "Download ZIP".
+	- Blender no longer stalls at startup: the add-on used to make a GitHub request with no timeout
+	  while it was being imported. The check now runs only when you press the button.
+	- The add-on no longer switches your "Relative Paths" preference off just by loading.
+	- Instructions / Version Log no longer take over whichever editor you clicked in.
+	- Set Correct Model Size, Toon It, Recolour and Add IK Bones report what they need instead of
+	  printing to the console and doing nothing.
+	- Actions that need the Assets pack say so instead of failing on a missing Assets.blend.
+	- Built-in HDRI files are opened by their real lowercase names (matters off Windows).
+
+	Update tracker:
+	- This build is a fork, so it no longer reports the original add-on's release numbers as if they
+	  were its own. Set "Releases Repository" in Preferences to owner/name to track this build; leave
+	  it empty to disable the notice. The original project is still linked under About & Help.
+
+	Removed:
+	- The "LEGION MODELS TRANSLATE" panel: the whole class sat inside a string literal and had never
+	  been registered.
+	- The developer "test mode" branches with hardcoded personal drive paths.
+	- The "Current Mode" row from the top of the panel (it is a compact status line now).
+	No button a user could click was removed.
+
+	Recolour now shares the Auto Texture resolver, so RSX-named recolour folders work too.
+	Restart Blender after update.
+
+v3.7 beta 4.1 Changes (hotfix):
+	"Both versions":
+	Fixes a crash in v3.7 beta 4 when Auto Texture / Texture Model was clicked after installing
+	beta 4 over an already-running older version:
+		TypeError: run() got an unexpected keyword argument 'remembered_roots'
+
+	Cause: Blender re-executes an add-on's top level __init__.py when the add-on is re-enabled, but
+	leaves any submodule that is already in sys.modules untouched. Installing beta 4 over a running
+	beta 3 therefore left beta 4's caller talking to beta 3's apex_tex.autotex. Nothing was wrong with
+	the shipped files; the archive and the installed copy were both correct beta 4.
+
+	- The add-on now reloads its apex_tex submodules, dependencies first, whenever it is re-enabled,
+	  so a hot upgrade can no longer mix revisions.
+	- apex_tex carries an API_VERSION that __init__.py checks. If a stale module ever survives anyway,
+	  Auto Texture, Toon and Recolour stop with "Apex Toolbox was updated while Blender was running.
+	  Restart Blender to finish the update." and the panel shows the same warning, instead of failing
+	  with a Python traceback.
+	- remembered_roots / extra_roots accept None safely; no mutable default arguments anywhere in
+	  apex_tex.
+
+	New tests, so this class of fault cannot ship again:
+	- A static contract test parses every apex_tex call in __init__.py and checks each keyword against
+	  the real function signature, plus the API_VERSION agreement and the reload order.
+	- A fresh-install test installs only the packaged ZIP into an empty add-ons location and runs
+	  Texture Model from that copy (cold zero-config, remembered root, and manual folder).
+	- An upgrade test installs beta 3, then beta 4.1 in the same session, and runs Texture Model.
+
+	No behaviour changes: automatic texture discovery, remembered roots, collection-name RSX
+	discovery, Blender bookmarks discovery, the manual folder fallback, Search Sub-folders, the
+	beta 3 resolver, legacy Legion support and the root priority rules are all unchanged.
+
+	Note: the unsafe world nodes['Mapping'] lookup that spammed tracebacks from the panel draw() was
+	already fixed in beta 4; it only occurs on beta 3 and earlier.
+
+	Downgrading to beta 3 or earlier in a running session still needs a Blender restart, because those
+	versions have no reload handling.
+
+v3.8.0 Changes (2026-08-28):
+	"Both versions":
+	This is a modified and maintained release by Apex Legends Renders (ALR), based on the original
+	Apex Toolbox by Random Blender Dude / Gl2imm. It remains distributed under GPL-3.0.
+	- Modern RSX / CAST support and maintained Legion+ compatibility.
+	- Auto Texture resolver improvements and automatic texture-folder discovery.
+	- Blender 4.x repairs.
+	- Cleaned and reorganised UI.
+	- Repairs to older Toolbox utilities.
+	- Release maintenance by ALR.
+	Complete source: https://github.com/xFyreGG/Apex-Toolbox-ALR
+	Original project: https://github.com/Gl2imm/Apex-Toolbox
+	The optional Extended Assets remain a separate download and are not included in this release.
