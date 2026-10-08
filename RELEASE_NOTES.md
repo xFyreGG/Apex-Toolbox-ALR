@@ -1,4 +1,17 @@
-# Apex Toolbox 3.10.12 — Experimental (in development)
+# Apex Toolbox 3.10.13 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- Model-folder import now opens the bookmarked RSX `mdl` folder list directly.
+  Select several model rows there and click **Import Selected Models**. This
+  avoids Blender's native file-browser **Accept** action, which opens a
+  highlighted directory rather than passing the folder selection to the add-on.
+- Fixed the folder list staying empty when Blender added a trailing slash to
+  the `mdl` path.
+
+---
+
+## Apex Toolbox 3.10.12 — Experimental
 
 Update date: **2026-10-08**
 

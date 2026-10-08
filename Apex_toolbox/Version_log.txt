@@ -2,6 +2,11 @@
                                                       Version History:
                                             ####################################
 
+v3.10.13 Experimental Changes (2026-10-08):
+	- Opens the bookmarked mdl folder list directly for multi-selection.
+	- Fixed folder refresh when Blender adds a trailing directory separator.
+	- Uses an Import Selected Models confirmation instead of the file browser Accept action.
+
 v3.10.12 Experimental Changes (2026-10-08):
 	- Keep the folder list at the RSX mdl root, even when Blender opens a highlighted model folder.
 	- Remember the selected mdl directory for future imports.

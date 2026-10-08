@@ -1,4 +1,4 @@
-# Apex Toolbox 3.10.12 — daily workflows
+# Apex Toolbox 3.10.13 — daily workflows
 
 **Experimental release:** animation tools and automatic names are still being
 validated across exports. Successful sample playback does not guarantee every
@@ -21,17 +21,17 @@ Imported prop rigs can be attached under **Rigging & Animation → Pair Items**.
 Enable the [CAST Blender importer](https://github.com/dtzxporter/cast) first.
 Export the model from RSX as CAST with material textures enabled. Click
 **Model → Import & Texture** and choose **Model folders** or **CAST files**.
-For model folders, browse to the RSX `mdl` directory. The dialog lists its
-model folders; tick the ones you want and click **OK**, without opening each
-folder. If Blender's directory browser enters a model folder, the dialog
-returns to `mdl` automatically. It remembers that directory next time.
+For model folders, the dialog opens the bookmarked RSX `mdl` directory and
+lists its model folders. Select the folders you want there, then click
+**Import Selected Models**. You do not need to open the native file browser or
+enter each model folder. The dialog remembers a changed directory.
 If the chosen folder itself contains one model,
 you can import it without ticking a subfolder. For CAST files, click **OK** to
 open the file browser and select one or several files from the same folder.
 **Prepare Model** applies the standard Apex size/orientation and converts
 eligible unanimated transforms to XYZ Euler. Turn it off to keep export transforms.
 The optional **Texture Folder** overrides the default search beside the CAST file.
-If RSX put each model in its own folder, choose their parent and tick the models
+If RSX put each model in its own folder, select them in the `mdl` list
 you want. The tool picks the LOD0 CAST from
 each folder, skips `anims_` folders, and imports at most 50 models per batch.
 Folders with several CAST files but no clear LOD0 are rejected instead of

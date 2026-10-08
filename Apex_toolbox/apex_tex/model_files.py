@@ -15,6 +15,19 @@ def model_root(folder):
                  if path.name.casefold() == 'mdl'), folder)
 
 
+def bookmarked_mdl(bookmarks_file):
+    """Find an existing RSX mdl bookmark to open the model list immediately."""
+    try:
+        lines = Path(bookmarks_file).read_text(encoding='utf-8').splitlines()
+    except (OSError, UnicodeError, TypeError):
+        return ''
+    for line in lines:
+        folder = Path(line.strip())
+        if folder.name.casefold() == 'mdl' and folder.is_dir():
+            return str(folder)
+    return ''
+
+
 def model_cast(folder):
     """Return a folder's model CAST, preferring LOD0 over lower-detail exports."""
     folder = Path(folder)

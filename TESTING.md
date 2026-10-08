@@ -305,3 +305,9 @@ The **3.10.12** folder-root correction was checked against nested RSX-style
 `mdl/model/model/model_LOD0.cast` fixtures. Passing a highlighted model folder
 normalizes the dialog to `mdl`; selecting another sibling imports only that
 model and remembers the `mdl` directory.
+
+The **3.10.13** change was checked against Blender's trailing-slash `mdl\`
+format and a Blender 5.2 bookmark file, including the user's configured RSX
+bookmark. The folder list now populates from the root without entering a
+model folder; packaged integration and smoke tests pass. The native file
+browser does not handle folder import and is no longer part of this path.

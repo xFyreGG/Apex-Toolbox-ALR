@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 10, 12),
+    "version": (3, 10, 13),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -1094,7 +1094,7 @@ def refresh_import_folders(self, context):
     self.folder_items.clear()
     folder = bpy.path.abspath(self.parent_folder)
     root = str(apex_model_files.model_root(folder))
-    if root != folder:
+    if os.path.normcase(os.path.normpath(root)) != os.path.normcase(os.path.normpath(folder)):
         self.parent_folder = root
         return
     if not os.path.isdir(folder):
@@ -1111,6 +1111,8 @@ def refresh_import_folders(self, context):
         item = self.folder_items.add()
         item.name = name
         item.selected = previous.get(name, False)
+    if context and context.scene:
+        context.scene.my_prefs.model_parent_folder = folder
 
 
 class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
@@ -1134,6 +1136,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                                                options={'HIDDEN', 'SKIP_SAVE'})
     folder_index: bpy.props.IntProperty(options={'HIDDEN', 'SKIP_SAVE'})
     folder_search: bpy.props.StringProperty(name='Find model')
+    change_parent: BoolProperty(name='Change folder', default=False)
     ui_stage: bpy.props.EnumProperty(items=[('DIRECT', 'Direct', ''),
                                             ('CHOOSE', 'Choose', ''),
                                             ('FILES', 'Files', '')],
@@ -1152,22 +1155,33 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
     def invoke(self, context, event):
         self.shader = context.scene.my_prefs.cust_enum2
         self.ui_stage = 'CHOOSE'
-        if context.scene.my_prefs.model_parent_folder:
-            self.parent_folder = context.scene.my_prefs.model_parent_folder
-        return context.window_manager.invoke_props_dialog(self, width=540)
+        folder = context.scene.my_prefs.model_parent_folder
+        if not folder or not os.path.isdir(bpy.path.abspath(folder)):
+            bookmarks = bpy.utils.user_resource('CONFIG', path='bookmarks.txt')
+            folder = apex_model_files.bookmarked_mdl(bookmarks)
+        if folder:
+            self.parent_folder = folder
+        return context.window_manager.invoke_props_dialog(
+            self, width=540, confirm_text='Import Selected Models')
 
     def draw(self, context):
         if self.ui_stage == 'CHOOSE':
             self.layout.prop(self, 'source_mode', expand=True)
             if self.source_mode == 'FOLDERS':
-                self.layout.prop(self, 'parent_folder')
+                if self.folder_items and not self.change_parent:
+                    self.layout.label(text='Model folders in ' + os.path.basename(
+                        os.path.normpath(self.parent_folder)), icon='FILE_FOLDER')
+                    self.layout.prop(self, 'change_parent', text='Change folder')
+                else:
+                    self.layout.prop(self, 'parent_folder')
                 if self.folder_items:
-                    self.layout.label(text='Tick folders here, then import.', icon='INFO')
+                    self.layout.label(text='Select folders here; do not open them.', icon='INFO')
                     self.layout.prop(self, 'folder_search', text='', icon='VIEWZOOM')
                     self.layout.template_list('APEX_UL_import_folders', '', self,
                                               'folder_items', self, 'folder_index', rows=10)
                     count = sum(item.selected for item in self.folder_items)
-                    self.layout.label(text='%d selected (maximum 50)' % count)
+                    self.layout.label(text='%d selected of %d (maximum 50)' % (
+                        count, len(self.folder_items)))
                 else:
                     self.layout.label(text='Choose a model folder or a parent folder.', icon='INFO')
             else:

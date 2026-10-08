@@ -5,6 +5,7 @@ fixtures are generated with CAST's own writer in a temporary directory.
 """
 import importlib
 from pathlib import Path
+from types import SimpleNamespace
 import sys
 import tempfile
 import atexit
@@ -281,6 +282,41 @@ class WorkflowIntegration(unittest.TestCase):
                     if 'apex_source_model' in obj}
         self.assertEqual(imported, {'beta_LOD0.cast'})
         self.assertEqual(bpy.context.scene.my_prefs.model_parent_folder, str(mdl))
+
+    def test_folder_list_populates_when_blender_adds_trailing_separator(self):
+        mdl = self.folder / 'mdl'
+        mdl.mkdir()
+        for name in ('alpha', 'beta'):
+            (mdl / name).mkdir()
+
+        class FolderItems(list):
+            def add(self):
+                item = SimpleNamespace(name='', selected=False)
+                self.append(item)
+                return item
+
+        state = SimpleNamespace(parent_folder=str(mdl) + '\\', folder_items=FolderItems())
+        addon.refresh_import_folders(state, bpy.context)
+        self.assertEqual([item.name for item in state.folder_items], ['alpha', 'beta'])
+
+    def test_mdl_bookmark_opens_parent_model_list(self):
+        mdl = self.folder / 'mdl'
+        mdl.mkdir()
+        for name in ('alpha', 'beta'):
+            (mdl / name).mkdir()
+        bookmarks = self.folder / 'bookmarks.txt'
+        bookmarks.write_text('[Bookmarks]\n' + str(mdl) + '\\\n', encoding='utf-8')
+        self.assertEqual(model_files.bookmarked_mdl(bookmarks), str(mdl))
+
+        class FolderItems(list):
+            def add(self):
+                item = SimpleNamespace(name='', selected=False)
+                self.append(item)
+                return item
+
+        state = SimpleNamespace(parent_folder=str(mdl) + '\\', folder_items=FolderItems())
+        addon.refresh_import_folders(state, bpy.context)
+        self.assertEqual([item.name for item in state.folder_items], ['alpha', 'beta'])
 
     def test_import_model_folders_rejects_ambiguous_and_large_batches(self):
         ambiguous = self.folder / 'ambiguous'
