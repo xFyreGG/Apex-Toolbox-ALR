@@ -1,4 +1,14 @@
-# Apex Toolbox 3.10.10 — Experimental (in development)
+# Apex Toolbox 3.10.11 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- The single **Import & Texture** button now asks for CAST files or model
+  folders. For folders, choose a parent and tick the models to import; Blender's
+  file browser no longer opens the first highlighted folder instead of importing.
+
+---
+
+## Apex Toolbox 3.10.10 — Experimental
 
 Update date: **2026-10-08**
 

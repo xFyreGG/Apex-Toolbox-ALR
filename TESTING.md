@@ -295,3 +295,8 @@ The **3.10.10** picker combines the file and folder paths under the existing
 Import & Texture operator. Blender 5.2.2 integration tests cover single CAST,
 multiple CAST files, one model folder, a parent of model folders, and selected
 siblings. The packaged ZIP is checked separately with the same workflow suite.
+
+The **3.10.11** folder selection dialog was checked in Blender 5.2.2 with
+three sibling model folders. Two checked folders imported while the unchecked
+folder remained out of the scene. Source and extracted-ZIP workflow tests and
+package smoke pass. The modal UI still needs a real Blender click-through.

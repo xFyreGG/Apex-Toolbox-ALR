@@ -2,6 +2,10 @@
                                                       Version History:
                                             ####################################
 
+v3.10.11 Experimental Changes (2026-10-08):
+	- Added a folder selection dialog to choose individual models from an RSX parent folder.
+	- File importing remains available from the same Import & Texture button.
+
 v3.10.10 Experimental Changes (2026-10-08):
 	- Combined file and folder selection under one Import & Texture button.
 
