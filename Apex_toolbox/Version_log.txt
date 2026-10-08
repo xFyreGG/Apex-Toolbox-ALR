@@ -2,6 +2,11 @@
                                                       Version History:
                                             ####################################
 
+v3.10.8 Experimental Changes (2026-10-08):
+	- Import & Texture accepts multiple model CAST files from one folder.
+	- Places the imported models side by side using their mesh bounds.
+	- Keeps successful imports when another file fails and records per-file results.
+
 v3.10.7 Experimental Changes (2026-09-28):
 	- Added Pair Items for left hand, right hand and weapon attachment bones.
 	- Added a searchable custom bone choice and selected-rig shortcut.

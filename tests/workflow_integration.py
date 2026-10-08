@@ -49,7 +49,7 @@ def skeleton(model):
     return skel
 
 
-def model_file(cast, path, mesh=True):
+def model_file(cast, path, mesh=True, width=1.0):
     doc = cast.Cast()
     model = doc.CreateRoot().CreateModel()
     model.SetName('test_legend')
@@ -63,7 +63,7 @@ def model_file(cast, path, mesh=True):
         material.SetSlot('albedo', texture.Hash())
         part = model.CreateMesh()
         part.SetName('test_body')
-        part.SetVertexPositionBuffer([(0, 0, 0), (1, 0, 0), (0, 0, 1)])
+        part.SetVertexPositionBuffer([(0, 0, 0), (width, 0, 0), (0, 0, 1)])
         part.SetFaceBuffer([0, 1, 2])
         part.SetUVLayerCount(1)
         part.SetVertexUVLayerBuffer(0, [(0, 0), (1, 0), (0, 1)])
@@ -187,6 +187,60 @@ class WorkflowIntegration(unittest.TestCase):
         self.assertEqual(bpy.context.active_object.scale[:], (1, 1, 1))
         self.assertIn('0 textured', bpy.context.scene.my_prefs.texture_summary)
         self.assertTrue(any(o.type == 'MESH' for o in bpy.context.selected_objects))
+
+    def test_batch_import_places_models_side_by_side_without_moving_existing_objects(self):
+        self.image()
+        existing = make_mesh('existing')
+        original_matrix = existing.matrix_world.copy()
+        second = self.folder / 'second.cast'
+        third = self.folder / 'third.cast'
+        model_file(self.cast, second, width=3.0)
+        model_file(self.cast, third, width=0.5)
+        files = [{'name': name} for name in ('third.cast', 'legend.cast', 'second.cast')]
+        self.assertEqual(bpy.ops.object.apex_import_texture(
+            directory=str(self.folder), files=files), {'FINISHED'})
+        self.assertEqual(existing.matrix_world, original_matrix)
+        groups = {}
+        for obj in bpy.context.selected_objects:
+            groups.setdefault(Path(obj['apex_source_model']).name, []).append(obj)
+        self.assertEqual(set(groups), {'legend.cast', 'second.cast', 'third.cast'})
+        bounds = [workflows.model_bounds(groups[name]) for name in
+                  ('legend.cast', 'second.cast', 'third.cast')]
+        for (_, right), (left, _) in zip(bounds, bounds[1:]):
+            self.assertGreater(left.x, right.x)
+        centers = [(low.y + high.y) / 2 for low, high in bounds]
+        for center in centers[1:]:
+            self.assertAlmostEqual(center, centers[0], places=5)
+        for low, _ in bounds[1:]:
+            self.assertAlmostEqual(low.z, bounds[0][0].z, places=5)
+        self.assertIn('Imported 3 models', bpy.context.scene.my_prefs.import_summary)
+        report = bpy.context.scene.my_prefs.texture_report.as_string()
+        for name in groups:
+            self.assertIn(name, report)
+
+    def test_batch_import_keeps_successful_models_when_one_file_fails(self):
+        second = self.folder / 'second.cast'
+        model_file(self.cast, second)
+        self.assertEqual(bpy.ops.object.apex_import_texture(
+            directory=str(self.folder), files=[{'name': 'legend_rig.cast'},
+                                               {'name': 'legend.cast'},
+                                               {'name': 'second.cast'}]), {'FINISHED'})
+        self.assertIn('1 file skipped', bpy.context.scene.my_prefs.import_summary)
+        self.assertIn('legend_rig.cast', bpy.context.scene.my_prefs.texture_report.as_string())
+        self.assertEqual(len([obj for obj in bpy.context.selected_objects
+                              if obj.type == 'ARMATURE']), 2)
+
+    def test_batch_import_with_no_models_keeps_existing_selection(self):
+        select(self.rig)
+        before = set(bpy.data.objects)
+        with self.assertRaisesRegex(RuntimeError, 'No models imported'):
+            bpy.ops.object.apex_import_texture(
+                directory=str(self.folder), files=[{'name': 'legend_rig.cast'},
+                                                   {'name': 'missing.cast'}])
+        self.assertEqual(set(bpy.data.objects), before)
+        self.assertEqual(bpy.context.active_object, self.rig)
+        self.assertEqual(list(bpy.context.selected_objects), [self.rig])
+        self.assertIn('No models imported', bpy.context.scene.my_prefs.import_summary)
 
     def test_link_indexes_all_clips_and_ignores_model_files(self):
         model_file(self.cast, self.anim_folder / 'rig_only.cast', mesh=False)
