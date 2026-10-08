@@ -33,7 +33,7 @@ if '--release' in sys.argv:
 import Apex_toolbox as addon
 if '--release' in sys.argv:
     assert Path(addon.__file__).is_relative_to(release_directory.name)
-from Apex_toolbox.apex_tex import animations, animation_names, cast_index, workflows
+from Apex_toolbox.apex_tex import animations, animation_names, cast_index, workflows, model_files
 from blender_integration import make_rig, make_mesh, select, snapshot, assert_matrix_close
 
 
@@ -217,6 +217,54 @@ class WorkflowIntegration(unittest.TestCase):
         report = bpy.context.scene.my_prefs.texture_report.as_string()
         for name in groups:
             self.assertIn(name, report)
+
+    def test_import_model_folders_uses_one_lod0_per_folder(self):
+        parent = self.folder / 'exports'
+        parent.mkdir()
+        for name in ('alpha', 'beta'):
+            folder = parent / name
+            folder.mkdir()
+            model_file(self.cast, folder / (name + '_LOD0.cast'))
+            model_file(self.cast, folder / (name + '_LOD1.cast'))
+        (parent / 'anims_alpha').mkdir()
+        model_file(self.cast, parent / 'anims_alpha' / 'idle.cast', mesh=False)
+        paths = model_files.batch_model_casts([parent])
+        self.assertEqual([Path(path).name for path in paths],
+                         ['alpha_LOD0.cast', 'beta_LOD0.cast'])
+        self.assertEqual(bpy.ops.object.apex_import_model_folders(directory=str(parent)),
+                         {'FINISHED'})
+        imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
+                    if 'apex_source_model' in obj}
+        self.assertEqual(imported, {'alpha_LOD0.cast', 'beta_LOD0.cast'})
+        self.assertIn('Imported 2 models', bpy.context.scene.my_prefs.import_summary)
+
+    def test_import_model_folders_accepts_selected_siblings(self):
+        for name in ('alpha', 'beta', 'gamma'):
+            folder = self.folder / name
+            folder.mkdir()
+            model_file(self.cast, folder / (name + '_LOD0.cast'))
+        self.assertEqual(bpy.ops.object.apex_import_model_folders(
+            directory=str(self.folder), files=[{'name': 'alpha'}, {'name': 'gamma'}]),
+            {'FINISHED'})
+        imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
+                    if 'apex_source_model' in obj}
+        self.assertEqual(imported, {'alpha_LOD0.cast', 'gamma_LOD0.cast'})
+
+    def test_import_model_folders_rejects_ambiguous_and_large_batches(self):
+        ambiguous = self.folder / 'ambiguous'
+        ambiguous.mkdir()
+        (ambiguous / 'first.cast').touch()
+        (ambiguous / 'second.cast').touch()
+        with self.assertRaisesRegex(ValueError, 'no unique LOD0'):
+            model_files.batch_model_casts([ambiguous])
+        parent = self.folder / 'many'
+        parent.mkdir()
+        for index in range(3):
+            folder = parent / str(index)
+            folder.mkdir()
+            (folder / 'model_LOD0.cast').touch()
+        with self.assertRaisesRegex(ValueError, 'More than 2 models'):
+            model_files.batch_model_casts([parent], limit=2)
 
     def test_batch_import_keeps_successful_models_when_one_file_fails(self):
         second = self.folder / 'second.cast'

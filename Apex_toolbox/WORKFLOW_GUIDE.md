@@ -1,4 +1,4 @@
-# Apex Toolbox 3.10.8 — daily workflows
+# Apex Toolbox 3.10.9 — daily workflows
 
 **Experimental release:** animation tools and automatic names are still being
 validated across exports. Successful sample playback does not guarantee every
@@ -25,6 +25,12 @@ same folder, and select a shader.
 **Prepare Model** applies the standard Apex size/orientation and converts
 eligible unanimated transforms to XYZ Euler. Turn it off to keep export transforms.
 The optional **Texture Folder** overrides the default search beside the CAST file.
+If RSX put each model in its own folder, use **Model → Import Model Folders**.
+Browse into the parent folder containing those model folders and confirm. You
+can also select individual sibling folders. The tool picks the LOD0 CAST from
+each folder, skips `anims_` folders, and imports at most 50 models per batch.
+Folders with several CAST files but no clear LOD0 are rejected instead of
+guessing which model to use.
 The separate size and rotation tools are in **Model → Manual Adjustments**,
 collapsed below Import & Texture for models that need manual preparation.
 

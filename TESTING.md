@@ -281,3 +281,12 @@ successful imports, while an all-invalid selection restores the previous
 selection. The full source and extracted-ZIP CAST workflow suites, package
 smoke, pure Python tests, Blender integration tests and add-on reload checks
 passed. Real game exports still need a user workflow check.
+
+The **3.10.9** folder-import path was checked in Blender 5.2.2 against source
+and the installable ZIP. Tests cover choosing a parent folder or selected
+sibling model folders, picking LOD0 over other LODs, skipping animation folders,
+rejecting ambiguous folders and oversized batches, and placing the resulting
+models side by side. The extracted-ZIP workflow suite (42 tests) and package
+smoke passed. The live Blender file browser was checked for CAST file
+multi-selection; folder selection in the new picker and the user's real RSX
+exports still need a final workflow check.

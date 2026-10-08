@@ -1,4 +1,15 @@
-# Apex Toolbox 3.10.8 — Experimental (in development)
+# Apex Toolbox 3.10.9 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- **Import Model Folders** handles RSX exports where each model is in a separate
+  folder. Choose their parent folder (or selected sibling folders); it takes one
+  LOD0 CAST per model, skips animation folders, and uses the same side-by-side
+  import. The batch is limited to 50 models to avoid importing an entire library.
+
+---
+
+## Apex Toolbox 3.10.8 — Experimental
 
 Update date: **2026-10-08**
 

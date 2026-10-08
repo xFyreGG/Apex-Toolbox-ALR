@@ -2,6 +2,10 @@
                                                       Version History:
                                             ####################################
 
+v3.10.9 Experimental Changes (2026-10-08):
+	- Added Import Model Folders for batches whose CASTs are in separate RSX folders.
+	- Chooses each folder's LOD0 model and skips animation folders.
+
 v3.10.8 Experimental Changes (2026-10-08):
 	- Import & Texture accepts multiple model CAST files from one folder.
 	- Places the imported models side by side using their mesh bounds.
