@@ -1,3 +1,13 @@
+# Apex Toolbox 3.10.14 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- Fixed Import & Texture failing after installing a new ZIP while Blender is
+  still open. The model-folder helper now reloads with the rest of the add-on,
+  so the folder list and import button use the same version.
+
+---
+
 # Apex Toolbox 3.10.13 — Experimental (in development)
 
 Update date: **2026-10-08**

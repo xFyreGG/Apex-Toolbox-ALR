@@ -23,11 +23,16 @@ for attempt in range(3):
     if attempt:
         # Emulate replacing the ZIP while this Blender session is still open.
         sys.modules['Apex_toolbox'].__time__ = -1
+        model_files = sys.modules['Apex_toolbox.apex_tex.model_files']
+        for name in ('model_root', 'bookmarked_mdl'):
+            delattr(model_files, name)
     started = time.perf_counter()
     module = addon_utils.enable('Apex_toolbox', default_set=True, handle_error=raise_error)
     assert module is not None and module.__addon_enabled__
     assert bpy.context.preferences.addons.get('Apex_toolbox')
     assert hasattr(bpy.types.Scene, 'my_prefs')
+    assert callable(module.apex_model_files.model_root)
+    assert callable(module.apex_model_files.bookmarked_mdl)
     print('ENABLE %d PASSED in %.3f seconds' % (attempt + 1, time.perf_counter() - started), flush=True)
     if attempt != 2 or '--ui' not in sys.argv:
         addon_utils.disable('Apex_toolbox', default_set=True, handle_error=raise_error)

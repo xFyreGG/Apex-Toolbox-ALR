@@ -4,7 +4,7 @@ Apex Toolbox is a Blender add-on for working with Apex Legends models exported t
 
 **Public release: 3.9.1.** [Download the installable ZIP](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.9.1). This version supports Blender 4.0 or newer and was checked with Blender 4.2. It includes automatic RSX/CAST texturing, Apex shaders, recolour and toon tools, rig helpers, lighting and effects. Version 3.9.1 adds scene health checks, missing-texture repair, texturing reports and XYZ Euler rotation conversion.
 
-**Experimental build in development: 3.10.13.** **Import & Texture** accepts CAST files or selected model folders inside an RSX `mdl` directory and places multiple models in a row. The folder list opens directly from a Blender bookmark. The currently published experimental download and access details are on [Creator Tools](https://apexlegendsrenders.com/creator-tools). Experimental builds also include animation browsing with built-in English in-game names and item-to-bone pairing. These features are **not in the public 3.9.1 ZIP**. Use the tagged 3.9.1 release if you need the public version's source.
+**Experimental build in development: 3.10.14.** **Import & Texture** accepts CAST files or selected model folders inside an RSX `mdl` directory and places multiple models in a row. The folder list opens directly from a Blender bookmark. The currently published experimental download and access details are on [Creator Tools](https://apexlegendsrenders.com/creator-tools). Experimental builds also include animation browsing with built-in English in-game names and item-to-bone pairing. These features are **not in the public 3.9.1 ZIP**. Use the tagged 3.9.1 release if you need the public version's source.
 
 ## Install the public release
 
@@ -14,7 +14,7 @@ Apex Toolbox is a Blender add-on for working with Apex Legends models exported t
 
 For RSX exports, install the [CAST Blender importer](https://github.com/dtzxporter/cast). Export the model as CAST with material textures, then import it into Blender. In Apex Tools, use **Model → Set Correct Model Size** and **Materials → Auto Texture → Texture Model**. Texture discovery usually finds the RSX export automatically; if it does not, set **Texture Folder** under Search Options.
 
-See the [RSX compatibility notes](Apex_toolbox/RSX_COMPATIBILITY.md) for export settings. The [workflow guide](Apex_toolbox/WORKFLOW_GUIDE.md) and [release notes](RELEASE_NOTES.md) cover the experimental features; the direct `mdl` folder list applies to 3.10.13.
+See the [RSX compatibility notes](Apex_toolbox/RSX_COMPATIBILITY.md) for export settings. The [workflow guide](Apex_toolbox/WORKFLOW_GUIDE.md) and [release notes](RELEASE_NOTES.md) cover the experimental features; the direct `mdl` folder list applies to 3.10.14.
 
 ## Credits and licence
 
