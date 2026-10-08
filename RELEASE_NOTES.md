@@ -1,4 +1,14 @@
-# Apex Toolbox 3.10.9 — Experimental (in development)
+# Apex Toolbox 3.10.10 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- Combined CAST file and model-folder importing into one **Import & Texture**
+  button. It handles one model, several CAST files from one folder, or model
+  folders under a common parent.
+
+---
+
+## Apex Toolbox 3.10.9 — Experimental
 
 Update date: **2026-10-08**
 

@@ -290,3 +290,8 @@ models side by side. The extracted-ZIP workflow suite (42 tests) and package
 smoke passed. The live Blender file browser was checked for CAST file
 multi-selection; folder selection in the new picker and the user's real RSX
 exports still need a final workflow check.
+
+The **3.10.10** picker combines the file and folder paths under the existing
+Import & Texture operator. Blender 5.2.2 integration tests cover single CAST,
+multiple CAST files, one model folder, a parent of model folders, and selected
+siblings. The packaged ZIP is checked separately with the same workflow suite.

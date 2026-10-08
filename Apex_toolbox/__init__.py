@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 10, 9),
+    "version": (3, 10, 10),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -1074,12 +1074,13 @@ class BUTTON_CUSTOM(bpy.types.Operator):
 
 
 class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
-    """Import one or more CAST models, prepare their rigs and connect textures"""
+    """Import CAST files or model folders, prepare models and connect textures"""
     bl_idname = 'object.apex_import_texture'
     bl_label = 'Import & Texture'
     bl_options = {'REGISTER', 'UNDO'}
-    filename_ext = '.cast'
+    filename_ext = ''
     filter_glob: bpy.props.StringProperty(default='*.cast', options={'HIDDEN'})
+    filter_folder: bpy.props.BoolProperty(default=True, options={'HIDDEN'})
     files: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement,
                                         options={'HIDDEN', 'SKIP_SAVE'})
     directory: bpy.props.StringProperty(subtype='DIR_PATH', options={'HIDDEN', 'SKIP_SAVE'})
@@ -1103,15 +1104,25 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         self.layout.prop(self, 'shader')
         self.layout.prop(self, 'prepare')
         self.layout.prop(self, 'texture_folder')
-        self.layout.label(text='Select several CAST files to arrange them in a row.', icon='INFO')
+        self.layout.label(text='Choose CAST files or model folders.', icon='INFO')
+        self.layout.label(text='For separate folders, choose their parent folder.', icon='INFO')
         self.layout.label(text='RSX: export material textures too.', icon='INFO')
 
     def execute(self, context):
         if not require_fresh_modules(self):
             return {'CANCELLED'}
-        directory = self.directory or os.path.dirname(self.filepath)
-        paths = ([os.path.join(directory, item.name) for item in self.files]
-                 if self.files else [self.filepath])
+        directory = bpy.path.abspath(self.directory or os.path.dirname(self.filepath))
+        selected = ([os.path.join(directory, item.name) for item in self.files]
+                    if self.files else [bpy.path.abspath(self.filepath or directory)])
+        folders = [path for path in selected if os.path.isdir(path)]
+        paths = [path for path in selected if not os.path.isdir(path)]
+        if folders:
+            try:
+                paths.extend(apex_model_files.batch_model_casts(folders))
+            except (OSError, ValueError) as error:
+                self.report({'ERROR'}, str(error))
+                return {'CANCELLED'}
+        paths = list(dict.fromkeys(paths))
         paths = sorted(paths, key=lambda path: os.path.basename(path).casefold())
         if not paths or not all(path.lower().endswith('.cast') for path in paths):
             self.report({'ERROR'}, 'Choose one or more CAST model files.')
@@ -1215,56 +1226,6 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         self.report({'WARNING'} if failures or texture_warnings else {'INFO'},
                     prefs.import_summary)
         return {'FINISHED'}
-
-
-class APEX_OT_import_model_folders(bpy.types.Operator, ImportHelper):
-    """Import one CAST model per selected RSX folder, arranged side by side"""
-    bl_idname = 'object.apex_import_model_folders'
-    bl_label = 'Import Model Folders'
-    bl_options = {'REGISTER', 'UNDO'}
-    filename_ext = ''
-    filter_glob: bpy.props.StringProperty(default='', options={'HIDDEN'})
-    filter_folder: bpy.props.BoolProperty(default=True, options={'HIDDEN'})
-    files: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement,
-                                        options={'HIDDEN', 'SKIP_SAVE'})
-    directory: bpy.props.StringProperty(subtype='DIR_PATH', options={'HIDDEN', 'SKIP_SAVE'})
-    prepare: BoolProperty(name='Prepare Model', default=True)
-    shader: bpy.props.EnumProperty(name='Shader', default='OP1', items=[
-        ('OP1', 'Apex Shader', ''), ('OP2', 'Apex Shader+_v3.4', ''), ('OP3', 'S/G-Blender', '')])
-    texture_folder: bpy.props.StringProperty(name='Texture Folder', subtype='DIR_PATH',
-                                             description='Optional texture search override')
-
-    @classmethod
-    def poll(cls, context):
-        return context.mode == 'OBJECT'
-
-    def invoke(self, context, event):
-        self.shader = context.scene.my_prefs.cust_enum2
-        context.window_manager.fileselect_add(self)
-        return {'RUNNING_MODAL'}
-
-    def draw(self, context):
-        self.layout.prop(self, 'shader')
-        self.layout.prop(self, 'prepare')
-        self.layout.prop(self, 'texture_folder')
-        self.layout.label(text='Choose model folders or their parent folder.', icon='INFO')
-        self.layout.label(text='Imports LOD0 from each folder (up to 50 models).', icon='INFO')
-
-    def execute(self, context):
-        if not require_fresh_modules(self):
-            return {'CANCELLED'}
-        base = bpy.path.abspath(self.directory or os.path.dirname(self.filepath))
-        selected = [os.path.join(base, item.name) for item in self.files
-                    if os.path.isdir(os.path.join(base, item.name))]
-        if not selected:
-            selected = [bpy.path.abspath(self.filepath) if os.path.isdir(bpy.path.abspath(self.filepath))
-                        else base]
-        try:
-            paths = apex_model_files.batch_model_casts(selected)
-        except (OSError, ValueError) as error:
-            self.report({'ERROR'}, str(error))
-            return {'CANCELLED'}
-        return APEX_OT_import_texture.import_batch(self, context, paths)
 
 
 _active_animation_scan = None
@@ -3964,7 +3925,6 @@ class APEX_PT_model(ApexPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.operator('object.apex_import_texture', icon='IMPORT')
-        layout.operator('object.apex_import_model_folders', icon='FILE_FOLDER')
         if context.scene.my_prefs.import_summary:
             draw_wrapped(layout, context.scene.my_prefs.import_summary, context)
 
@@ -5210,7 +5170,6 @@ classes = (
         LGNDTRANSLATE_URL,
         BUTTON_CUSTOM,
         APEX_OT_import_texture,
-        APEX_OT_import_model_folders,
         APEX_OT_link_animation_rig,
         APEX_OT_import_animation_names,
         APEX_OT_builtin_animation_names,

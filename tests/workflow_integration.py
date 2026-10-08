@@ -231,7 +231,7 @@ class WorkflowIntegration(unittest.TestCase):
         paths = model_files.batch_model_casts([parent])
         self.assertEqual([Path(path).name for path in paths],
                          ['alpha_LOD0.cast', 'beta_LOD0.cast'])
-        self.assertEqual(bpy.ops.object.apex_import_model_folders(directory=str(parent)),
+        self.assertEqual(bpy.ops.object.apex_import_texture(directory=str(parent)),
                          {'FINISHED'})
         imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
                     if 'apex_source_model' in obj}
@@ -243,7 +243,7 @@ class WorkflowIntegration(unittest.TestCase):
             folder = self.folder / name
             folder.mkdir()
             model_file(self.cast, folder / (name + '_LOD0.cast'))
-        self.assertEqual(bpy.ops.object.apex_import_model_folders(
+        self.assertEqual(bpy.ops.object.apex_import_texture(
             directory=str(self.folder), files=[{'name': 'alpha'}, {'name': 'gamma'}]),
             {'FINISHED'})
         imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
