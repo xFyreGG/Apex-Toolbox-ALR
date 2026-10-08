@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import bpy
+from mathutils import Matrix, Vector
 
 from . import cast_index, health
 
@@ -61,6 +62,44 @@ def selected_rig(context):
         if rig and rig.name in context.view_layer.objects:
             return rig
     return None
+
+
+def model_bounds(objects):
+    """World-space mesh bounds for one imported model."""
+    points = [obj.matrix_world @ Vector(corner)
+              for obj in objects if obj.type == 'MESH'
+              for corner in obj.bound_box]
+    if not points:
+        raise ValueError('The imported model has no mesh bounds for placement.')
+    return (Vector(tuple(min(point[axis] for point in points) for axis in range(3))),
+            Vector(tuple(max(point[axis] for point in points) for axis in range(3))))
+
+
+def arrange_models_in_row(context, groups):
+    """Keep the first import in place; put later models beside it along X."""
+    if len(groups) < 2:
+        return
+    context.view_layer.update()
+    first_min, first_max = model_bounds(groups[0])
+    row_y = (first_min.y + first_max.y) / 2
+    row_floor = first_min.z
+    previous_right = first_max.x
+    previous_width = first_max.x - first_min.x
+    for objects in groups[1:]:
+        minimum, maximum = model_bounds(objects)
+        width = maximum.x - minimum.x
+        depth = maximum.y - minimum.y
+        gap = max(0.2 * max(previous_width, width), 0.1 * depth, 0.01)
+        shift = Vector((previous_right + gap - minimum.x,
+                        row_y - (minimum.y + maximum.y) / 2,
+                        row_floor - minimum.z))
+        members = set(objects)
+        for obj in objects:
+            if obj.parent not in members:
+                obj.matrix_world = Matrix.Translation(shift) @ obj.matrix_world
+        context.view_layer.update()
+        previous_right = maximum.x + shift.x
+        previous_width = width
 
 
 def import_model(context, filepath, prepare=True, operator=None):

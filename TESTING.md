@@ -272,3 +272,12 @@ against both source and the extracted ZIP, package smoke, three enable/reload
 cycles, and a three-shader Cycles render in Blender 4.2.2. The release ZIP was
 built again from the final source and its contents and CRCs were checked. The
 user also confirmed the new item-pairing controls in their Blender workflow.
+
+The **3.10.8** batch-import work was checked in Blender 4.2.2 with three
+synthetic CAST models of different widths. The integration tests verify that
+their world-space mesh bounds do not overlap, their centres and bottoms align,
+and an existing scene object is not moved. Mixed valid/invalid files keep the
+successful imports, while an all-invalid selection restores the previous
+selection. The full source and extracted-ZIP CAST workflow suites, package
+smoke, pure Python tests, Blender integration tests and add-on reload checks
+passed. Real game exports still need a user workflow check.

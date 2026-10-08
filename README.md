@@ -4,7 +4,7 @@ Apex Toolbox is a Blender add-on for working with Apex Legends models exported t
 
 **Public release: 3.9.1.** [Download the installable ZIP](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.9.1). This version supports Blender 4.0 or newer and was checked with Blender 4.2. It includes automatic RSX/CAST texturing, Apex shaders, recolour and toon tools, rig helpers, lighting and effects. Version 3.9.1 adds scene health checks, missing-texture repair, texturing reports and XYZ Euler rotation conversion.
 
-**Experimental build: 3.10.7.** [See the experimental build and access details](https://apexlegendsrenders.com/creator-tools) under Apex Toolbox. It adds one-click Import & Texture, animation browsing with built-in English in-game names, and item-to-bone pairing. These features are **not in the public 3.9.1 ZIP**. The default branch contains work on this newer build; use the tagged 3.9.1 release if you need the public version's source.
+**Experimental build in development: 3.10.8.** It adds multi-file CAST import and places the models in a row. The currently published experimental download and access details are on [Creator Tools](https://apexlegendsrenders.com/creator-tools). Experimental builds also include animation browsing with built-in English in-game names and item-to-bone pairing. These features are **not in the public 3.9.1 ZIP**. Use the tagged 3.9.1 release if you need the public version's source.
 
 ## Install the public release
 
@@ -14,7 +14,7 @@ Apex Toolbox is a Blender add-on for working with Apex Legends models exported t
 
 For RSX exports, install the [CAST Blender importer](https://github.com/dtzxporter/cast). Export the model as CAST with material textures, then import it into Blender. In Apex Tools, use **Model → Set Correct Model Size** and **Materials → Auto Texture → Texture Model**. Texture discovery usually finds the RSX export automatically; if it does not, set **Texture Folder** under Search Options.
 
-See the [RSX compatibility notes](Apex_toolbox/RSX_COMPATIBILITY.md) for export settings. The [workflow guide](Apex_toolbox/WORKFLOW_GUIDE.md) and [release notes](RELEASE_NOTES.md) cover the experimental features; those instructions apply to 3.10.7 unless stated otherwise.
+See the [RSX compatibility notes](Apex_toolbox/RSX_COMPATIBILITY.md) for export settings. The [workflow guide](Apex_toolbox/WORKFLOW_GUIDE.md) and [release notes](RELEASE_NOTES.md) cover the experimental features; the multi-file steps apply to 3.10.8.
 
 ## Credits and licence
 

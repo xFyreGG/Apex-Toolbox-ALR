@@ -1,4 +1,4 @@
-# Apex Toolbox 3.10.7 — daily workflows
+# Apex Toolbox 3.10.8 — daily workflows
 
 **Experimental release:** animation tools and automatic names are still being
 validated across exports. Successful sample playback does not guarantee every
@@ -20,19 +20,23 @@ Imported prop rigs can be attached under **Rigging & Animation → Pair Items**.
 
 Enable the [CAST Blender importer](https://github.com/dtzxporter/cast) first.
 Export the model from RSX as CAST with material textures enabled. Click
-**Model → Import & Texture**, choose the model, and select a shader.
+**Model → Import & Texture**, choose one or several model CAST files from the
+same folder, and select a shader.
 **Prepare Model** applies the standard Apex size/orientation and converts
 eligible unanimated transforms to XYZ Euler. Turn it off to keep export transforms.
 The optional **Texture Folder** overrides the default search beside the CAST file.
 The separate size and rotation tools are in **Model → Manual Adjustments**,
 collapsed below Import & Texture for models that need manual preparation.
 
-Only the newly imported model is textured and selected. Existing models and their
-materials stay intact, including when names overlap. An import error removes the
-partial import and restores selection. Missing textures leave the imported model
-available; the texture report explains what is missing. Use Undo to remove the
-whole import. This tool accepts one model CAST at a time; other formats keep their
-usual import workflow.
+Each file is imported, prepared and textured separately. With multiple files,
+models are placed side by side along the X axis in filename order. The first
+model stays where CAST imported it; later models are spaced by their mesh bounds,
+centred along Y and aligned at the bottom. Existing scene objects are not moved.
+Files that fail to import are skipped without discarding successful models. The
+combined texture report names each file and any import or texture problems.
+Missing textures leave that model available. One Undo step removes the batch.
+Select model CAST exports only; rig and animation CAST exports are reported as
+failed imports. Other formats keep their usual import workflow.
 
 ## Link a legend's animation rig
 

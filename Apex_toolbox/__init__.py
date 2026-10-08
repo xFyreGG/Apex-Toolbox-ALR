@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 10, 7),
+    "version": (3, 10, 8),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -81,7 +81,7 @@ from .apex_tex.versions import newer_version
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 12
+APEX_TEX_API_VERSION = 13
 
 
 def modules_are_stale():
@@ -1073,12 +1073,15 @@ class BUTTON_CUSTOM(bpy.types.Operator):
 
 
 class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
-    """Import a CAST model, prepare its rig and connect its textures"""
+    """Import one or more CAST models, prepare their rigs and connect textures"""
     bl_idname = 'object.apex_import_texture'
     bl_label = 'Import & Texture'
     bl_options = {'REGISTER', 'UNDO'}
     filename_ext = '.cast'
     filter_glob: bpy.props.StringProperty(default='*.cast', options={'HIDDEN'})
+    files: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement,
+                                        options={'HIDDEN', 'SKIP_SAVE'})
+    directory: bpy.props.StringProperty(subtype='DIR_PATH', options={'HIDDEN', 'SKIP_SAVE'})
     prepare: BoolProperty(name='Prepare Model', default=True,
                           description='Apply Apex model size/orientation and XYZ Euler to unanimated transforms')
     shader: bpy.props.EnumProperty(name='Shader', default='OP1', items=[
@@ -1099,13 +1102,24 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         self.layout.prop(self, 'shader')
         self.layout.prop(self, 'prepare')
         self.layout.prop(self, 'texture_folder')
+        self.layout.label(text='Select several CAST files to arrange them in a row.', icon='INFO')
         self.layout.label(text='RSX: export material textures too.', icon='INFO')
 
     def execute(self, context):
         if not require_fresh_modules(self):
             return {'CANCELLED'}
+        directory = self.directory or os.path.dirname(self.filepath)
+        paths = ([os.path.join(directory, item.name) for item in self.files]
+                 if self.files else [self.filepath])
+        paths = sorted(paths, key=lambda path: os.path.basename(path).casefold())
+        if not paths or not all(path.lower().endswith('.cast') for path in paths):
+            self.report({'ERROR'}, 'Choose one or more CAST model files.')
+            return {'CANCELLED'}
+        if len(paths) > 1:
+            return self.import_batch(context, paths)
+        filepath = paths[0]
         try:
-            created = apex_workflows.import_model(context, self.filepath, self.prepare, self)
+            created = apex_workflows.import_model(context, filepath, self.prepare, self)
         except Exception as error:
             self.report({'ERROR'}, str(error))
             return {'CANCELLED'}
@@ -1118,7 +1132,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         try:
             result = apex_autotex.run(
                 context, shader_key=self.shader, append_node_group=append_apex_node_group,
-                texture_folder=self.texture_folder or os.path.dirname(bpy.path.abspath(self.filepath)),
+                texture_folder=self.texture_folder or os.path.dirname(bpy.path.abspath(filepath)),
                 search_subfolders=True, objects=meshes,
                 remembered_roots=remembered_texture_roots(), remember_callback=store_texture_roots,
                 report_callback=lambda *args: capture_texture_report(context, *args))
@@ -1130,6 +1144,75 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             prefs.import_summary += 'Model kept; texturing needs attention: %s' % error
             self.report({'WARNING'}, prefs.import_summary)
         # Keep a usable imported model and its Undo step even if textures are missing.
+        return {'FINISHED'}
+
+    def import_batch(self, context, paths):
+        prefs = context.scene.my_prefs
+        prefs.cust_enum2 = self.shader
+        original_selection = list(context.selected_objects)
+        original_active = context.active_object
+        groups = []
+        failures = texture_warnings = mesh_count = 0
+        report_lines = ['Batch Import & Texture', '']
+        for filepath in paths:
+            filename = os.path.basename(filepath)
+            report_lines.append('=== %s ===' % filename)
+            try:
+                created = apex_workflows.import_model(context, filepath, self.prepare, self)
+            except Exception as error:
+                failures += 1
+                report_lines.extend(('Import failed: %s' % error, ''))
+                continue
+            groups.append(created)
+            meshes = [obj for obj in created if obj.type == 'MESH']
+            mesh_count += len(meshes)
+            file_report = []
+
+            def capture(batch, definition, outcomes):
+                summary, body = apex_diagnostics.texture_report(batch, definition, outcomes)
+                file_report[:] = [summary, body]
+
+            try:
+                result = apex_autotex.run(
+                    context, shader_key=self.shader, append_node_group=append_apex_node_group,
+                    texture_folder=self.texture_folder or os.path.dirname(bpy.path.abspath(filepath)),
+                    search_subfolders=True, objects=meshes,
+                    remembered_roots=remembered_texture_roots(),
+                    remember_callback=store_texture_roots, report_callback=capture)
+                if result == {'CANCELLED'}:
+                    raise RuntimeError('Texturing could not finish.')
+                if file_report:
+                    report_lines.extend((file_report[1], ''))
+                else:
+                    report_lines.extend(('Imported %d meshes; no texture report.' % len(meshes), ''))
+            except Exception as error:
+                texture_warnings += 1
+                report_lines.extend(('Model kept; texturing needs attention: %s' % error, ''))
+                if file_report:
+                    report_lines.extend((file_report[1], ''))
+
+        if not groups:
+            apex_workflows.select_objects(context, original_selection, original_active)
+            prefs.import_summary = 'No models imported. See Materials > Auto Texture report.'
+            save_tool_report(prefs, 'texture', '%d files failed to import.' % failures,
+                             '\n'.join(report_lines))
+            self.report({'ERROR'}, prefs.import_summary)
+            return {'CANCELLED'}
+
+        apex_workflows.arrange_models_in_row(context, groups)
+        selected = [obj for group in groups for obj in group]
+        first_rig = next((obj for obj in groups[0] if obj.type == 'ARMATURE'), groups[0][0])
+        apex_workflows.select_objects(context, selected, first_rig)
+        summary = 'Imported %d models in a row (%d meshes).' % (len(groups), mesh_count)
+        if failures:
+            summary += ' %d file%s skipped.' % (failures, '' if failures == 1 else 's')
+        if texture_warnings:
+            summary += ' %d model%s need texturing attention.' % (
+                texture_warnings, '' if texture_warnings == 1 else 's')
+        prefs.import_summary = summary + ' See Materials > Auto Texture report.'
+        save_tool_report(prefs, 'texture', prefs.import_summary, '\n'.join(report_lines))
+        self.report({'WARNING'} if failures or texture_warnings else {'INFO'},
+                    prefs.import_summary)
         return {'FINISHED'}
 
 

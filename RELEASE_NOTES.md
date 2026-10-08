@@ -1,4 +1,17 @@
-# Apex Toolbox 3.10.7 — Experimental
+# Apex Toolbox 3.10.8 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- Import & Texture now accepts several model CAST files from one folder. Each
+  model is prepared and textured independently, then placed in a row with spacing
+  based on its mesh bounds. The first model keeps its imported position.
+- A bad or rig-only CAST is skipped without losing the other imports. A combined
+  report identifies each file and any texture warnings. Existing scene objects
+  are not moved; Undo removes the batch.
+
+---
+
+## Apex Toolbox 3.10.7 — Experimental
 
 Update date: **2026-09-28**
 
