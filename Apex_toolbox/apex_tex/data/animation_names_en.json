@@ -1,0 +1,5020 @@
+{
+  "schema": 1,
+  "metadata": {
+    "language": "English",
+    "generated": "2026-09-28",
+    "game_build": "25358568",
+    "item_settings": 1003,
+    "description": "Cosmetic animation menu labels matched by RSX sequence identifiers"
+  },
+  "full": {
+    "0041cc4f523da9d9": [
+      "Wrench In Your Plan",
+      "Still"
+    ],
+    "008e3add59a5da0d": [
+      "Heads or Tails",
+      "Still"
+    ],
+    "00c87b095d43018b": [
+      "Legendary Transformation",
+      "Animated"
+    ],
+    "00f4e469a64d115c": [
+      "Tail End",
+      ""
+    ],
+    "0126f4a84b770f21": [
+      "Claws Out",
+      ""
+    ],
+    "0137aa291143b23e": [
+      "Hot Potato",
+      ""
+    ],
+    "0156e7b8721a1db0": [
+      "The Last Word",
+      ""
+    ],
+    "01aacf71d0a5a821": [
+      "A Cracking Display",
+      "Animated"
+    ],
+    "02ba4ef7557f3ad4": [
+      "Strapped",
+      "Still"
+    ],
+    "03ab1f87263aae36": [
+      "Dark Matter",
+      ""
+    ],
+    "04837e88bae203cd": [
+      "Fearless",
+      "Animated"
+    ],
+    "04a6d65b2f9d279f": [
+      "Uplifting Experience",
+      "Still"
+    ],
+    "0556b6647cb44c21": [
+      "Reckless Abandon",
+      "Still"
+    ],
+    "0580d10924ba8f13": [
+      "Morning Warmup",
+      ""
+    ],
+    "058306746b0b44c9": [
+      "On Patrol",
+      "Still"
+    ],
+    "0587a0141d5c43f8": [
+      "Stingin' in the Rain",
+      "Still"
+    ],
+    "05e51fab6f676a5e": [
+      "Dropping In",
+      "Still"
+    ],
+    "060adbabbab45096": [
+      "Salute",
+      ""
+    ],
+    "062969017772422c": [
+      "Beat Down",
+      "Still"
+    ],
+    "06337abfc77b7395": [
+      "Muscle Up",
+      "Still"
+    ],
+    "066da6bb07db98e4": [
+      "Load Imbalance",
+      "Animated"
+    ],
+    "07355a1f9e42b837": [
+      "Next In Line",
+      "Animated"
+    ],
+    "07bac1e7896f3d9a": [
+      "Window to the Soul",
+      "Animated"
+    ],
+    "07f36d7ff9eb7b87": [
+      "Off The Beaten Path",
+      "Animated"
+    ],
+    "08410cdc51290523": [
+      "Eye for Detail",
+      "Animated"
+    ],
+    "089871afff9c121a": [
+      "Asset Procurement",
+      ""
+    ],
+    "097f465cfe457381": [
+      "Rocket Boosted",
+      ""
+    ],
+    "09ab134336c41d1b": [
+      "Hack and Slash",
+      ""
+    ],
+    "0a4c9b9ff54b2dd0": [
+      "Carefree",
+      "Still"
+    ],
+    "0a84d84162b09b31": [
+      "Full Throttled",
+      "Preview"
+    ],
+    "0acc8caea1ff8b8d": [
+      "Apex Assemble",
+      "Animated"
+    ],
+    "0b2f5fb4c78471e4": [
+      "Falling For You",
+      ""
+    ],
+    "0b51d5487667fc98": [
+      "Eye of the Beholder",
+      "Still"
+    ],
+    "0c3188b33e7370d5": [
+      "The Equalizer",
+      "Still"
+    ],
+    "0cf21e5865138783": [
+      "Triple Threat",
+      "Still"
+    ],
+    "0d3c5438fdd21a12": [
+      "Before the Rift",
+      "Still"
+    ],
+    "0daddffcab8263b9": [
+      "Lighting The Fuse",
+      ""
+    ],
+    "0e11e9771a3b0a8f": [
+      "Perfect View",
+      "Still"
+    ],
+    "0e7495cb1b3dabfe": [
+      "Escape Artist",
+      "Still"
+    ],
+    "0eaa62a556fc44f9": [
+      "Funslinger",
+      "Animated"
+    ],
+    "0eb7042c4c296212": [
+      "Pep Talk",
+      "Still"
+    ],
+    "0f02cf6057cf9493": [
+      "Apex Assemble",
+      "Still"
+    ],
+    "0f1794b5d74414a1": [
+      "Existential Crisis",
+      "Preview"
+    ],
+    "0f3c609d67beeda9": [
+      "Bad Apple",
+      "Animated"
+    ],
+    "0f41cd54ea139d9e": [
+      "Comms Check",
+      "Still"
+    ],
+    "0fea203fba547efd": [
+      "Profile Style",
+      "Still"
+    ],
+    "1041e61ab0a91ed3": [
+      "Looking Fierce",
+      "Animated"
+    ],
+    "107ee555bec3a753": [
+      "Start Your Engines",
+      "Still"
+    ],
+    "10bcdb8ce6e25452": [
+      "Lights Out",
+      "Animated"
+    ],
+    "1105424849da4a8b": [
+      "Smooth Moves",
+      ""
+    ],
+    "113e232ed3e3a610": [
+      "Face the World",
+      "Still"
+    ],
+    "1146097ce067b12e": [
+      "Clear the Air",
+      ""
+    ],
+    "114a6b75c1033434": [
+      "Falling for Me",
+      ""
+    ],
+    "118c5f5371218902": [
+      "Target Practice",
+      "Still"
+    ],
+    "12a0f43d5e500e8b": [
+      "Catwalk",
+      "Animated"
+    ],
+    "12e6209edbf1a2da": [
+      "Regal",
+      "Still"
+    ],
+    "1302c1fa80f4bb96": [
+      "Get Pumped",
+      "Still"
+    ],
+    "1316e1f4ac536541": [
+      "Spread the Wealth",
+      ""
+    ],
+    "13c75c199267b39f": [
+      "Strike Three",
+      ""
+    ],
+    "140dba61da947a9c": [
+      "Platformer",
+      ""
+    ],
+    "14121e0d48e1bf0d": [
+      "Re-Galvanized",
+      "Animated"
+    ],
+    "144f5c8f1b879b6b": [
+      "Think Tank",
+      "Animated"
+    ],
+    "145b1b3af150aa04": null,
+    "147fee3708548c76": [
+      "Ambidextrous",
+      "Animated"
+    ],
+    "1581ba2858f9dac0": [
+      "Victorious",
+      "Still"
+    ],
+    "1582817741dd1a0a": [
+      "Eureka!",
+      "Still"
+    ],
+    "158d304c800d9d44": [
+      "Stoic Stance",
+      ""
+    ],
+    "15a5ebbf17c4e196": [
+      "For the Birds",
+      "Still"
+    ],
+    "15a6279c8fd68ef7": [
+      "Bubbly",
+      "Still"
+    ],
+    "162da75ca968e77d": [
+      "Own the Sky",
+      "Still"
+    ],
+    "170b9c3ef30cd995": [
+      "Inside Voice",
+      "Still"
+    ],
+    "1740b169fd5ab7db": [
+      "Burst Your Bubble",
+      ""
+    ],
+    "1786b928ba32954e": [
+      "At Ease",
+      "Still"
+    ],
+    "17dc2afa745a1536": [
+      "Morning Brew",
+      "Animated"
+    ],
+    "17f1077247ede754": [
+      "Head Over Heels",
+      ""
+    ],
+    "185869fdaf5a9372": [
+      "Singing in the Storm",
+      "Animated"
+    ],
+    "18d9254bd5c49789": [
+      "Tall Tales",
+      "Still"
+    ],
+    "1902a31c13885ade": [
+      "Dual Wield",
+      "Still"
+    ],
+    "1920474b77094f82": [
+      "No Surprises",
+      "Still"
+    ],
+    "19260066be20a687": [
+      "For the Birds",
+      "Animated"
+    ],
+    "193302f8b016eefa": [
+      "The Last Word",
+      "Preview"
+    ],
+    "1975807be2acbf31": [
+      "Incoming",
+      "Still"
+    ],
+    "19ff03e18bf8558e": [
+      "Aerial Guard",
+      ""
+    ],
+    "1a02810f2f9e0233": [
+      "Take a Peek",
+      "Still"
+    ],
+    "1a759660863ab6b7": [
+      "Solid Wingman",
+      "Animated"
+    ],
+    "1b06831b7040afe6": [
+      "Dead to Rights",
+      "Still"
+    ],
+    "1b348193cc786d5f": [
+      "Winning Combination",
+      "Animated"
+    ],
+    "1bbe9e969b342735": [
+      "Explosive Personality",
+      "Still"
+    ],
+    "1bc46c6e63adb767": [
+      "Soul Eater",
+      "Preview"
+    ],
+    "1c2339af29ff64ab": [
+      "Malfunction",
+      "Still"
+    ],
+    "1c36eea3bee99997": [
+      "Barrel Roll",
+      "Still"
+    ],
+    "1c48892390ea2667": [
+      "Pound It, Bro",
+      ""
+    ],
+    "1c6f1c3365fc808a": [
+      "Ground Breaking",
+      "Preview"
+    ],
+    "1c6fa132044e447a": [
+      "Lean on Me",
+      "Animated"
+    ],
+    "1c723f6fa72027f2": [
+      "Wing It",
+      ""
+    ],
+    "1cc363c1c4e01990": [
+      "Idle",
+      "Still"
+    ],
+    "1cdb065770a89538": [
+      "Turn and Burn",
+      ""
+    ],
+    "1d80d69f3daa6e93": [
+      "Leg Work",
+      "Still"
+    ],
+    "1dd5bb5adae317ba": [
+      "Friendly Introduction",
+      ""
+    ],
+    "1e19baf7bf778a1c": [
+      "Death Standing",
+      ""
+    ],
+    "1e2cf602ae70bf80": [
+      "Sliced and Diced",
+      "Still"
+    ],
+    "1e2e5215cc72d865": [
+      "Cool Under Pressure",
+      "Animated"
+    ],
+    "1e4f3b9eadc8292d": null,
+    "1e55377af0886311": [
+      "Personal Touch",
+      "Animated"
+    ],
+    "1e85082c8ce444d3": [
+      "Rise and Shine",
+      "Animated"
+    ],
+    "1e909177ccb6eebe": [
+      "Not So Fast",
+      "Still"
+    ],
+    "1f789c0e2c70a9ec": [
+      "Guarded",
+      "Still"
+    ],
+    "2009cdfbaecc85e5": [
+      "Nailed It",
+      "Animated"
+    ],
+    "204319a57a239793": [
+      "Showdown",
+      "Still"
+    ],
+    "20a9aaf6a0dceb6f": [
+      "Clever Girl",
+      "Still"
+    ],
+    "20e45e902fdde325": [
+      "Think Tank",
+      "Still"
+    ],
+    "20e6e021916d3034": [
+      "Last Rites",
+      "Still"
+    ],
+    "215b5d2b4ebc27fd": [
+      "Projectile Accelerator",
+      "Still"
+    ],
+    "21675cf19be9ffb6": [
+      "Preventative Measures",
+      "Animated"
+    ],
+    "2213d30ac4ef8722": [
+      "Heavy Toll",
+      "Still"
+    ],
+    "227411438b1a1c11": [
+      "Clean Kill",
+      ""
+    ],
+    "22d784081a00d7bc": [
+      "Grand Slam",
+      ""
+    ],
+    "233faffd184a41f3": [
+      "Flying Flex",
+      ""
+    ],
+    "234e37c679c323b4": [
+      "Bring Your Best",
+      "Still"
+    ],
+    "23647de7ef4d0d24": [
+      "Fan Favorite",
+      ""
+    ],
+    "23ba153c0ac34886": [
+      "Drumroll Please",
+      "Still"
+    ],
+    "2408e74e3c9c25eb": [
+      "Flourish",
+      ""
+    ],
+    "2422725c42e4b043": [
+      "Let's Fly",
+      "Still"
+    ],
+    "2444fb8b935f2768": [
+      "Shot Caller",
+      "Still"
+    ],
+    "24565dc464dcc913": [
+      "Warrior Spirit",
+      ""
+    ],
+    "24c6755a5c4d2dcc": [
+      "Settle The Score",
+      "Still"
+    ],
+    "2520a324f67caff5": [
+      "Little Newtie",
+      "Still"
+    ],
+    "25b17dce2c08ad89": [
+      "Silencio",
+      "Still"
+    ],
+    "25c6bfcce2acac46": [
+      "Smooth Maneuver",
+      ""
+    ],
+    "25e9b33180b7eefb": [
+      "One with Nature",
+      "Still"
+    ],
+    "26997211e8e2fda0": [
+      "Side Saddle",
+      ""
+    ],
+    "26e8f57a34355315": [
+      "Let's Play",
+      "Animated"
+    ],
+    "2724ef7015fcf56d": [
+      "Shocking Outcome",
+      ""
+    ],
+    "27475dc04820e437": [
+      "Head on a Swivel",
+      "Still"
+    ],
+    "2756ebb1fbf16e2f": [
+      "Window to the Soul",
+      "Still"
+    ],
+    "278136381c190d3c": [
+      "Onward and Upward",
+      "Still"
+    ],
+    "2781870fedaad5ea": [
+      "Armed And Dangerous",
+      "Animated"
+    ],
+    "27a83f2f07d37265": [
+      "Leap of Wraith",
+      "Still"
+    ],
+    "283c4e58159b1f90": [
+      "Strong Force",
+      "Still"
+    ],
+    "283d7b84d52f5210": [
+      "Full Circle",
+      ""
+    ],
+    "28791dddacc1f189": [
+      "Franchise Player",
+      "Preview"
+    ],
+    "290d59b6bd1c5393": [
+      "Ready to Strike",
+      "Still"
+    ],
+    "2932f270846987c8": [
+      "The Assist",
+      "Still"
+    ],
+    "29ceb8ef4fe9b44a": [
+      "A Blast from Path",
+      ""
+    ],
+    "2ab1b23f4e8feaf3": [
+      "Bringin' the Beat Down",
+      ""
+    ],
+    "2abc82d48427804d": [
+      "Fight Mode",
+      "Animated"
+    ],
+    "2b1d60b59d98efb0": [
+      "Sight Unseen",
+      ""
+    ],
+    "2b24813a2316fe2a": [
+      "Wardrobe Change",
+      "Animated"
+    ],
+    "2b63eb478401f899": [
+      "Wardrobe Change",
+      "Still"
+    ],
+    "2b77e67a53b57521": [
+      "Influencer",
+      ""
+    ],
+    "2be8965bf2e877b5": [
+      "Drill Team",
+      ""
+    ],
+    "2bf551bf49478251": [
+      "Next In Line",
+      "Still"
+    ],
+    "2bf988e70ec23c60": [
+      "Overcharged",
+      ""
+    ],
+    "2cb46b19575880e1": [
+      "Spin and Flick",
+      "Still"
+    ],
+    "2cc104375954650b": [
+      "Cluster Bombs",
+      ""
+    ],
+    "2d01f10c3abfa404": [
+      "My Little Friend",
+      "Animated"
+    ],
+    "2d38b090bbd726e4": [
+      "Pep Talk",
+      "Animated"
+    ],
+    "2d7659f662123b31": [
+      "Last Request",
+      ""
+    ],
+    "2dc2e66254fad179": [
+      "Air Walker",
+      ""
+    ],
+    "2df1343e147c2a2b": [
+      "Fashion Forward",
+      "Still"
+    ],
+    "2df34c194f19bb69": [
+      "To Your Health",
+      "Still"
+    ],
+    "2e4910814b769132": [
+      "Smash Like",
+      "Still"
+    ],
+    "2ed7cd0c98e9126e": [
+      "Highlight Reel",
+      "Animated"
+    ],
+    "2ef8c3a1e151a7a8": [
+      "Clean Kill",
+      "Preview"
+    ],
+    "2f1002b3d129534b": [
+      "Crushing It",
+      ""
+    ],
+    "2f5d6e62cf9b6017": [
+      "After Hours",
+      "Still"
+    ],
+    "2f6dead70295c8e9": [
+      "All Charged Up",
+      ""
+    ],
+    "2fc18b8818111851": [
+      "Force of Gravity",
+      ""
+    ],
+    "2fe26cae76aaedf5": [
+      "Meet and Greet",
+      ""
+    ],
+    "3025a9a7faabc2d8": [
+      "Gimme Some",
+      "Animated"
+    ],
+    "304c40e728c5bf75": [
+      "Stalker",
+      "Animated"
+    ],
+    "3076335719af0af0": [
+      "Five Finger Fillet",
+      "Still"
+    ],
+    "309849dfb551197b": [
+      "Witch's Wrath",
+      ""
+    ],
+    "31815edaed0c4597": [
+      "Final Flight",
+      ""
+    ],
+    "3230a730b958e425": [
+      "Think Fast",
+      ""
+    ],
+    "32b6c3b7f94da008": [
+      "Warcry",
+      "Preview"
+    ],
+    "32b8b9e2c6c35159": [
+      "Thumbs Up",
+      "Still"
+    ],
+    "32b975976d746251": [
+      "Mad Scientist",
+      "Still"
+    ],
+    "3366a1db8d19a9f8": [
+      "Spray and Sway",
+      ""
+    ],
+    "336a22547d2e37a9": [
+      "Drop Kick",
+      "Animated"
+    ],
+    "3376391d2e38803f": [
+      "Enraged Claws",
+      ""
+    ],
+    "342348f1e93f5b7c": [
+      "Teamwork",
+      "Still"
+    ],
+    "3593d6fcd94520bc": [
+      "Headrush",
+      "Animated"
+    ],
+    "3596334485ca16db": [
+      "On Target",
+      "Still"
+    ],
+    "35c62a998e460c8e": [
+      "Incognito",
+      "Still"
+    ],
+    "35fdc55b072477eb": null,
+    "362278cc7631110f": [
+      "Endless Sight",
+      ""
+    ],
+    "36a02b6efba2f380": [
+      "This is a Knife",
+      "Animated"
+    ],
+    "36fc955de18a0c26": [
+      "Quickdraw",
+      "Still"
+    ],
+    "370de6e300074dbe": [
+      "Peacekiller",
+      "Still"
+    ],
+    "372b6bb0a873b67b": [
+      "Combat Ready",
+      "Animated"
+    ],
+    "377779a3f2075bd8": [
+      "Elegance",
+      "Still"
+    ],
+    "379c83140cb5cb38": [
+      "Drone Rodeo",
+      ""
+    ],
+    "387b68bcd6dcabea": [
+      "Off Switch",
+      "Animated"
+    ],
+    "387dfc6d900f6013": [
+      "Not Today",
+      "Animated"
+    ],
+    "38d1065e8686b2be": [
+      "Bon Voyage",
+      "Still"
+    ],
+    "38eb3b21b0887b2f": [
+      "Hell Akimbo",
+      "Still"
+    ],
+    "395c1118c2532306": [
+      "A Day's Work",
+      "Still"
+    ],
+    "3969049539949a78": [
+      "Power Of Love",
+      ""
+    ],
+    "39826e0612d4ffae": [
+      "Not to Be",
+      "Still"
+    ],
+    "3a30c8436d09c5f4": [
+      "Nevermore",
+      "Still"
+    ],
+    "3a5295b967a1acfd": [
+      "Perfect Partnership",
+      "Still"
+    ],
+    "3a6f927dd2cdbddc": [
+      "All Business",
+      "Still"
+    ],
+    "3a79f7019e4d2adf": [
+      "Grace Fall",
+      ""
+    ],
+    "3af1e37d70c38695": [
+      "Queen of Flyers",
+      "Animated"
+    ],
+    "3b0a3e23092ec28d": [
+      "Hotwired",
+      "Animated"
+    ],
+    "3bc874fe6cb258d7": [
+      "Taste My Steel",
+      "Still"
+    ],
+    "3bcce316cca5ea2c": [
+      "Just Kidding",
+      "Still"
+    ],
+    "3c09a96aab343eb8": [
+      "BFF",
+      "Still"
+    ],
+    "3c483f4a291037b6": [
+      "Hammer Time",
+      "Animated"
+    ],
+    "3c9d1b9a202ff59a": [
+      "Channeled Energy",
+      "Animated"
+    ],
+    "3ce3eff8f6e1ac4b": [
+      "Path Defender",
+      ""
+    ],
+    "3d0c9a3cecf26e48": [
+      "Quickdraw",
+      "Preview"
+    ],
+    "3d997b5c56a2bb5e": [
+      "Bring It",
+      "Still"
+    ],
+    "3db0983289df049e": [
+      "Speed Bumps",
+      "Animated"
+    ],
+    "3dda9a72d9b05137": [
+      "Air Defense",
+      ""
+    ],
+    "3dee83fb2d5729d0": [
+      "Misfortune Awaits",
+      "Still"
+    ],
+    "3e40cd6f2054a0fb": [
+      "Private Dancer",
+      ""
+    ],
+    "3eaadd2e47a16f1c": [
+      "Ultimate Throwdown",
+      "Animated"
+    ],
+    "3f1706c19f8f39e6": [
+      "Heavy Crown",
+      "Still"
+    ],
+    "3f9dd6bb134cc175": [
+      "Misdirection",
+      "Still"
+    ],
+    "3fa7f2468bbb1b8f": [
+      "Accessorize",
+      "Still"
+    ],
+    "400e71f7aa3f8862": [
+      "Shadow Boxing",
+      "Still"
+    ],
+    "404b5ae115c769d0": [
+      "The Cool Mom",
+      ""
+    ],
+    "40869179fd6a7f06": [
+      "Voided License",
+      "Still"
+    ],
+    "40a3145e50247f2d": [
+      "How Dare You",
+      ""
+    ],
+    "4139852b1d802075": [
+      "Evasive Maneuvers",
+      "Still"
+    ],
+    "429cd86bf1e285e9": [
+      "Try Me",
+      "Still"
+    ],
+    "42d0e853413dd8c0": [
+      "Mission Accomplished",
+      "Animated"
+    ],
+    "4312284a07547f31": [
+      "Gun Show",
+      "Still"
+    ],
+    "43291c0eb8ac684f": [
+      "Surf's Up",
+      ""
+    ],
+    "436d08cb75495750": [
+      "Cutthroat",
+      ""
+    ],
+    "4426939ed990d48d": [
+      "Speed Bumps",
+      "Still"
+    ],
+    "45e2b6a2ef5c7926": [
+      "Agent NV5A",
+      "Animated"
+    ],
+    "4603e78938c73cc8": [
+      "Ripping The Cord",
+      "Still"
+    ],
+    "464b6d8e99f632d9": [
+      "Sharp Sight",
+      "Still"
+    ],
+    "46d5a97050cdcc03": [
+      "Ambidextrous",
+      "Still"
+    ],
+    "46dd1237784c1b15": [
+      "Snap Decision",
+      ""
+    ],
+    "472b60db04d3b5af": [
+      "Double Down",
+      "Still"
+    ],
+    "47746d9a50402a4f": [
+      "Wound Up",
+      ""
+    ],
+    "47d4d09b64e3bcb8": [
+      "Epic Fail",
+      "Still"
+    ],
+    "47d6ef7b3842bd59": [
+      "Jumping to Judgement",
+      "Animated"
+    ],
+    "48064b96e79859dd": [
+      "I See You!",
+      "Still"
+    ],
+    "484cc7ca19881e93": [
+      "Surprising Read",
+      "Still"
+    ],
+    "48800fcab27b04fc": [
+      "Just Kidding",
+      "Animated"
+    ],
+    "488e0448a244632e": [
+      "Ravenous",
+      "Animated"
+    ],
+    "48be2c309d417139": [
+      "Off Switch",
+      "Still"
+    ],
+    "48d9eb2fa96b4b22": [
+      "Multidimensional",
+      "Animated"
+    ],
+    "48eafa6b5281df37": [
+      "Good Vibes",
+      "Still"
+    ],
+    "48f05624e04a4584": [
+      "Fight Mode",
+      "Still"
+    ],
+    "492c0a37772fdfc8": [
+      "The Nexus Flip",
+      ""
+    ],
+    "496cbbcbe9441477": [
+      "Best Buds",
+      ""
+    ],
+    "49cef205fedc8663": [
+      "Trazer de Volta",
+      "Still"
+    ],
+    "49d61b430087578c": [
+      "Target Practice",
+      ""
+    ],
+    "49fdbf27d7a54fd5": [
+      "Creature of the Night",
+      "Animated"
+    ],
+    "4a042f2fe188dacc": [
+      "Number One",
+      "Still"
+    ],
+    "4a61ee896e7304ff": [
+      "Crowd Killer",
+      ""
+    ],
+    "4a7dd00415ac54af": [
+      "Last Rites",
+      "Still"
+    ],
+    "4a8141810796e4e9": [
+      "Silent Strike",
+      "Still"
+    ],
+    "4a9111577526f6ca": [
+      "Run the World",
+      ""
+    ],
+    "4ac7883ea2267b3b": [
+      "Epiphany",
+      "Still"
+    ],
+    "4b898f9152d5e38f": [
+      "Resistance",
+      "Still"
+    ],
+    "4c27e47efda8f302": [
+      "Bad Apple",
+      "Still"
+    ],
+    "4cf39265a25b043a": [
+      "Above The Fray",
+      "Still"
+    ],
+    "4d4de53a2e50a432": [
+      "Divine Form",
+      ""
+    ],
+    "4e1e10a40f314745": [
+      "Leap of Wraith",
+      "Animated"
+    ],
+    "4f5092e705a19213": [
+      "Cool Cats",
+      "Still"
+    ],
+    "4f9a7d1ef55d57e0": [
+      "Good Company",
+      "Animated"
+    ],
+    "4f9d6494e04e8100": [
+      "Pull!",
+      "Still"
+    ],
+    "4fdaa1abe8e43ac4": [
+      "Hard Reset",
+      "Animated"
+    ],
+    "501948cda7d5d74f": [
+      "Wild Call",
+      "Still"
+    ],
+    "505647ab30950308": [
+      "Monarch's Blessing",
+      "Still"
+    ],
+    "507f905b36062341": [
+      "Abracadabra!",
+      "Still"
+    ],
+    "50c8505b4df3d008": [
+      "Now You See Me",
+      "Still"
+    ],
+    "513babfc86ec4d2c": [
+      "A Steep Price",
+      "Still"
+    ],
+    "51788f8ba029b903": [
+      "Bomb's Away",
+      "Still"
+    ],
+    "51e29332188d7f74": [
+      "Showing Off",
+      ""
+    ],
+    "5201a3736289de47": [
+      "Dancing Queen",
+      "Still"
+    ],
+    "520ae2d42979ce0f": [
+      "Voided License",
+      "Animated"
+    ],
+    "525895bb8f232841": [
+      "GOL!!!",
+      ""
+    ],
+    "527726020c29f5b3": [
+      "The Kneeslapper",
+      ""
+    ],
+    "527a8602316e6bcb": [
+      "Alright Mate",
+      "Still"
+    ],
+    "5284e12d485f2c7c": [
+      "Glory Hound",
+      "Still"
+    ],
+    "5289279caab74ebe": [
+      "Let's Play",
+      "Still"
+    ],
+    "52b0e5ee99482e3a": [
+      "Power From Within",
+      "Still"
+    ],
+    "5306658a674f6c61": [
+      "Lens Flair",
+      "Still"
+    ],
+    "54ce64690bd87c38": [
+      "Channeled Energy",
+      "Still"
+    ],
+    "558ea98289811651": [
+      "Zero Strike",
+      ""
+    ],
+    "55cbc117027f25ca": [
+      "Shock Sticks",
+      "Still"
+    ],
+    "56b16d23d3757527": [
+      "Free Runner",
+      "Still"
+    ],
+    "573282102e62925c": [
+      "Head on a Swivel",
+      "Animated"
+    ],
+    "57855c9635aa37dd": [
+      "Recycle",
+      ""
+    ],
+    "57b11e78f6fd4b74": [
+      "Face First",
+      "Preview"
+    ],
+    "57e69ea81718fca3": [
+      "Superiority",
+      "Still"
+    ],
+    "58c74faebac862b4": [
+      "Fearless Leader",
+      "Animated"
+    ],
+    "58c86fe2c25fe3fb": [
+      "Star Gazing",
+      "Still"
+    ],
+    "58e1058526af90e6": [
+      "Pointed Walk",
+      "Still"
+    ],
+    "590824ffadf2391b": [
+      "Sweet Fragrance",
+      "Still"
+    ],
+    "591d2f4b75170ea7": [
+      "Watch the Ball",
+      ""
+    ],
+    "5922f1ed35fb1c2a": [
+      "Down to Business",
+      "Still"
+    ],
+    "59469a97c6295604": [
+      "How Dare You",
+      "Preview"
+    ],
+    "5969a88f714b9491": [
+      "Picture Perfect",
+      "Still"
+    ],
+    "59aa4cc85795c8da": [
+      "Spin and Flick",
+      "Animated"
+    ],
+    "59b69d33cc46f7bc": [
+      "A Father Found",
+      "Still"
+    ],
+    "59c8fbb94581e566": [
+      "Catwalk",
+      "Still"
+    ],
+    "59e5b4918a2ecde1": [
+      "Killer Skill",
+      "Animated"
+    ],
+    "5aab94e06a297ad4": [
+      "Runway",
+      "Still"
+    ],
+    "5b17ec9c454a207b": [
+      "A Cracking Display",
+      "Still"
+    ],
+    "5b1b7569c5868de4": [
+      "Snack & Grab",
+      ""
+    ],
+    "5b93478f6d80faab": [
+      "Paraglider",
+      ""
+    ],
+    "5ba7b6fba0371df7": [
+      "Now You See Me",
+      ""
+    ],
+    "5be03ab59ba36b55": [
+      "Like a Rock",
+      "Still"
+    ],
+    "5c00d9ef438e85f8": [
+      "Proud Machine",
+      "Still"
+    ],
+    "5c2831709422bbd3": [
+      "Off The Beaten Path",
+      "Still"
+    ],
+    "5c57a3168a2b85a0": [
+      "Flying Flicker",
+      ""
+    ],
+    "5c6d46d36d01dc0a": [
+      "Fatal Error",
+      "Preview"
+    ],
+    "5d3beb0155731437": [
+      "Ball Buster",
+      ""
+    ],
+    "5d56f7415cc7e1cf": [
+      "Come at Me",
+      "Still"
+    ],
+    "5d656586fa736cf2": [
+      "Now You See Me",
+      "Preview"
+    ],
+    "5d8c8776ca35806d": [
+      "Perpetual Motion",
+      ""
+    ],
+    "5dc2ae9bd2dca3b9": [
+      "Blademaster",
+      "Still"
+    ],
+    "5dd7f039e01be5a1": [
+      "Fury of the Gods",
+      ""
+    ],
+    "5ded7b5c9d93f8b2": [
+      "Hard Landing",
+      ""
+    ],
+    "5eb43e2f1500d858": [
+      "Into The Fray",
+      "Still"
+    ],
+    "5f6f6a9c20fbdd57": [
+      "Rise and Shine",
+      "Still"
+    ],
+    "5f72bf67d6a1495f": [
+      "I'm Outta Here",
+      "Still"
+    ],
+    "5febe03fd10529c4": [
+      "Whiplashed",
+      "Still"
+    ],
+    "600ad94e7b2642de": [
+      "To The Stars",
+      "Still"
+    ],
+    "6036fe9782392aab": [
+      "Resolute Leader",
+      "Still"
+    ],
+    "60b6d2ee1c3b3016": [
+      "To Your Health",
+      "Animated"
+    ],
+    "6122e8e63a2b4cd9": [
+      "No Mercy",
+      "Preview"
+    ],
+    "61805557c04b55cc": [
+      "Power Pack",
+      ""
+    ],
+    "61c1853a17408d23": [
+      "System Error",
+      "Still"
+    ],
+    "61ccc3042f70d9e6": [
+      "Tea Time",
+      "Still"
+    ],
+    "61e124bf4685a66b": [
+      "Ultimate Throwdown",
+      "Still"
+    ],
+    "61ee3e36ab29f66c": [
+      "Bullseye",
+      ""
+    ],
+    "625731b97a878c4b": [
+      "Let Me Ride",
+      "Still"
+    ],
+    "62bb91fc5d912e12": [
+      "Preventative Measures",
+      "Still"
+    ],
+    "62c3f2ac617a8207": [
+      "Hard Landing",
+      "Preview"
+    ],
+    "62ebea9bc669f4eb": [
+      "Drill Sergeant",
+      "Animated"
+    ],
+    "633482f3ba0d34f7": [
+      "Drone Scan",
+      ""
+    ],
+    "63c4a6c4594500c2": [
+      "Dead Weight",
+      ""
+    ],
+    "641ae8441675b2b4": [
+      "Good As Gold",
+      "Animated"
+    ],
+    "643c9f64529560ce": [
+      "Lights Out",
+      "Still"
+    ],
+    "64b5e6f38117ecc7": [
+      "Unstable Footing",
+      ""
+    ],
+    "64bf3550af3240d1": [
+      "Whiplash",
+      ""
+    ],
+    "6546a2b80f2e43ff": [
+      "Power From Within",
+      "Animated"
+    ],
+    "65536fe89a1ba7a5": [
+      "Hi-5",
+      "Preview"
+    ],
+    "65ac8273497319aa": [
+      "No Gun, No Problem",
+      "Animated"
+    ],
+    "65d30b9993712156": [
+      "Commanding Presence",
+      "Still"
+    ],
+    "65e24da599bef4dc": [
+      "Knox Powered",
+      ""
+    ],
+    "6614cc6d281defde": [
+      "Dodging Death",
+      ""
+    ],
+    "663dafcbb6f56e54": [
+      "Inspiration Strikes",
+      "Still"
+    ],
+    "664393458968fa7a": [
+      "For Salvo",
+      "Animated"
+    ],
+    "665643c2d932d935": [
+      "Self Defense",
+      "Still"
+    ],
+    "668e4b6f7d374d53": [
+      "Dream Catcher",
+      "Still"
+    ],
+    "66df5bb16a1e4502": null,
+    "66e33f80db3faa4c": [
+      "Reveille",
+      "Preview"
+    ],
+    "675ea9e40c74b5e9": [
+      "Cool Cats",
+      "Animated"
+    ],
+    "679cbf99bc40e61d": [
+      "Barrel Roll",
+      "Animated"
+    ],
+    "67e8ec2273bc9d60": [
+      "Aerial Agility",
+      ""
+    ],
+    "682e4aa52d5c2fcf": [
+      "Helping Hand",
+      "Still"
+    ],
+    "68e91d0fc5b1725d": [
+      "Fight Mode",
+      "Still"
+    ],
+    "690e1657494afbc1": [
+      "Our Powers Combined",
+      "Still"
+    ],
+    "6911e7804aa5161d": [
+      "Born to Dance",
+      "Still"
+    ],
+    "6a041fe709f27d25": [
+      "Hammer Time",
+      "Still"
+    ],
+    "6a1cd6886a83f5b9": [
+      "ABC",
+      "Animated"
+    ],
+    "6a573947d7c1eb9a": [
+      "Hightailing It",
+      ""
+    ],
+    "6ab17a9e25bc6bc4": [
+      "Event Horizon",
+      "Preview"
+    ],
+    "6ab391873ee2481b": [
+      "Slings and Arrows",
+      "Animated"
+    ],
+    "6b0b7b879c0b7ed5": [
+      "Agent NV5A",
+      "Still"
+    ],
+    "6b57aeca0ef5a63c": [
+      "Now You See Me",
+      "Animated"
+    ],
+    "6b6fc6f61b7fa544": [
+      "ReRun",
+      "Animated"
+    ],
+    "6c0fc2a07cb8bd50": [
+      "Jumping Into Action",
+      "Still"
+    ],
+    "6c1564a0f6a5f4e4": [
+      "Outcast",
+      "Still"
+    ],
+    "6c2ba5a66580b9ce": [
+      "On Target",
+      "Animated"
+    ],
+    "6c8664dd655e6281": [
+      "Dropping In",
+      "Animated"
+    ],
+    "6cc5578219d2d77e": [
+      "Joy Ride",
+      "Animated"
+    ],
+    "6d40250afe3174ba": [
+      "Imminent Shutdown",
+      "Preview"
+    ],
+    "6d63c55204a514f9": [
+      "Superiority",
+      "Animated"
+    ],
+    "6d9ac07882857c52": [
+      "Child's Play",
+      "Still"
+    ],
+    "6e7a9dfab0e4c0bb": [
+      "Toss Up",
+      "Still"
+    ],
+    "6ed3f4ab8750f3c2": [
+      "Blademaster",
+      "Animated"
+    ],
+    "6eed2956dcf2c94c": [
+      "Keeper of the Peace",
+      "Still"
+    ],
+    "6f09785dbb22fe84": [
+      "ReRun",
+      "Still"
+    ],
+    "6f40aec0a3346307": [
+      "Monarch's Blessing",
+      "Animated"
+    ],
+    "6f5a9a48b43b5515": [
+      "Signature Look",
+      "Animated"
+    ],
+    "6f767436051db2df": [
+      "Crystal Corruption",
+      ""
+    ],
+    "6f9e6f7f8758c103": [
+      "True Blue",
+      "Animated"
+    ],
+    "6fc4470c07240d95": [
+      "Handled With Care",
+      "Animated"
+    ],
+    "6fc4aa6717ab4bb3": [
+      "Inquisitive Impulse",
+      "Animated"
+    ],
+    "6fd47905d3e6243f": [
+      "Bravissimo",
+      "Animated"
+    ],
+    "705c7520ac2974ac": [
+      "Crowd Work",
+      ""
+    ],
+    "705e99857d8e3f10": [
+      "Mission Accomplished",
+      "Still"
+    ],
+    "717bedc74bcb5d9d": [
+      "Ready To Pounce",
+      "Still"
+    ],
+    "71af285799439808": [
+      "On Break",
+      "Still"
+    ],
+    "71c66da60bebb83f": [
+      "Palm Pilot",
+      "Animated"
+    ],
+    "71f6ca1452526c95": [
+      "Flourished Steel",
+      ""
+    ],
+    "71fe4e959b962d78": [
+      "Settle The Score",
+      "Animated"
+    ],
+    "723e812ab7a21ddf": [
+      "Eye for Detail",
+      "Still"
+    ],
+    "727e820e4cc97b35": [
+      "I can Fly!",
+      ""
+    ],
+    "72dcd0534b648bea": [
+      "Exhumed",
+      ""
+    ],
+    "73047fe82cdc05b2": [
+      "Almost Too Easy",
+      "Animated"
+    ],
+    "7334c38466e2f4da": [
+      "Combat Ready",
+      "Still"
+    ],
+    "733c6485e074251e": [
+      "Advanced Tactics",
+      "Still"
+    ],
+    "74432b2019a7e3a1": [
+      "Angel's Arrival",
+      "Animated"
+    ],
+    "7459d8291cc9df59": [
+      "Fearless Leader",
+      "Still"
+    ],
+    "748760a0a953b1f6": [
+      "Hot Mess",
+      "Still"
+    ],
+    "75586829874263aa": [
+      "Last Rites",
+      "Animated"
+    ],
+    "7601063dded066a5": [
+      "Target Practice",
+      "Animated"
+    ],
+    "7606e23e057a6154": [
+      "First Law",
+      "Preview"
+    ],
+    "7638cd6d37336acc": [
+      "The Unlikely Pair",
+      "Still"
+    ],
+    "7645195b30721a89": [
+      "I'm Outta Here",
+      "Animated"
+    ],
+    "764f740ad2b53cb9": [
+      "Snuggle Buddy",
+      "Animated"
+    ],
+    "7675ed87d37fa54e": [
+      "Power Chord",
+      "Still"
+    ],
+    "7689476064904640": [
+      "Nevermore",
+      ""
+    ],
+    "76d58789cca4748d": [
+      "No Mercy",
+      ""
+    ],
+    "76e677df183f6c6c": [
+      "Queen of Flyers",
+      "Still"
+    ],
+    "7710dd4a6f9d4fe2": [
+      "Ready To Go",
+      "Still"
+    ],
+    "775dfa88d557c34a": [
+      "Monster Mount",
+      ""
+    ],
+    "777019c3302576a3": [
+      "Warm Up",
+      ""
+    ],
+    "785b5d3d93d632fa": [
+      "Bad Listener",
+      "Still"
+    ],
+    "794d7805e035a1db": [
+      "Crescent Chamomile",
+      ""
+    ],
+    "7953f7902f49ebe2": [
+      "Jailbroken",
+      "Still"
+    ],
+    "7973f45d2980eb3f": [
+      "Crossed Swords",
+      ""
+    ],
+    "79a7d6541e3d20d7": [
+      "Meet Sheila",
+      "Still"
+    ],
+    "79c9de9c5d1132d0": [
+      "Gimme Some",
+      "Still"
+    ],
+    "7a41e7033af952fb": [
+      "Death Dive",
+      ""
+    ],
+    "7ad0e8d9ec601abc": [
+      "Quantum Mechanic",
+      "Still"
+    ],
+    "7aed7742a030bf65": [
+      "Like a Rock",
+      "Animated"
+    ],
+    "7afe6a1e95ca6017": [
+      "Mecha Cupid",
+      ""
+    ],
+    "7b0bdd7e1235a5c2": [
+      "Divination",
+      "Still"
+    ],
+    "7b49857e6149558e": [
+      "Bon Voyage",
+      "Animated"
+    ],
+    "7bb5298192cfaf30": [
+      "Lounging",
+      "Still"
+    ],
+    "7bd19bb9b893213a": [
+      "Down to Business",
+      "Animated"
+    ],
+    "7c05103c6b694682": [
+      "The Equalizer",
+      "Animated"
+    ],
+    "7c2b75217dd32adb": [
+      "Eavesdrop",
+      "Still"
+    ],
+    "7c444430268c0b77": [
+      "Transfixed",
+      "Animated"
+    ],
+    "7cc9966f32dd35ed": [
+      "Victory",
+      "Still"
+    ],
+    "7d3c983cc6c29f38": [
+      "Muscle Up",
+      "Animated"
+    ],
+    "7d7a0d64defe1575": [
+      "Armed And Dangerous",
+      "Still"
+    ],
+    "7d95be2f52af3575": [
+      "Without a Paddle",
+      ""
+    ],
+    "7ebd440a3a31796c": [
+      "Morning Brew",
+      "Still"
+    ],
+    "8048a64d59568b28": [
+      "Drumroll Please",
+      "Animated"
+    ],
+    "80df2bcb8d89650d": [
+      "Stylish Arrival",
+      "Animated"
+    ],
+    "817d027b1318d87f": [
+      "Peace Out",
+      ""
+    ],
+    "826a5aad3667925b": [
+      "Armed",
+      "Still"
+    ],
+    "82e54fa89a517a21": [
+      "Hard to Get",
+      "Animated"
+    ],
+    "8306c06d1c03e601": [
+      "Fowl Play",
+      "Still"
+    ],
+    "831f1e99969645b4": [
+      "Power Chord",
+      "Animated"
+    ],
+    "833393d05395d8a9": [
+      "Franchise Player",
+      ""
+    ],
+    "83d739a632b1c551": [
+      "Anti Gravity",
+      ""
+    ],
+    "83e92620b1336a6c": [
+      "Into the Light",
+      ""
+    ],
+    "83ed3c4967e56d61": [
+      "Smoke Out!",
+      "Still"
+    ],
+    "842017103d78b2f2": [
+      "Drone Scan",
+      "Preview"
+    ],
+    "84357213c0bb205b": [
+      "Working Together",
+      "Animated"
+    ],
+    "8437e41d1decc362": [
+      "Skate Or Fly",
+      ""
+    ],
+    "84716baeade3f716": [
+      "Idle Threat",
+      "Animated"
+    ],
+    "848c24063e5c5213": [
+      "Quick Scan",
+      ""
+    ],
+    "84aec36bf8ef4d69": [
+      "Fully Assimilated",
+      "Still"
+    ],
+    "8501c437ded2ec7d": [
+      "Usual Suspect",
+      "Still"
+    ],
+    "855ee68ac3fb4465": [
+      "Style And Grace",
+      ""
+    ],
+    "85c20776112c97ba": [
+      "Warm Up Routine",
+      ""
+    ],
+    "85dae50781a9d935": [
+      "Personal Touch",
+      "Still"
+    ],
+    "85e9f031ca95546f": [
+      "With Pride",
+      "Still"
+    ],
+    "86155d3671601c5c": [
+      "Jumping Into Action",
+      "Animated"
+    ],
+    "86385c5e0809a6e4": [
+      "Trazer de Volta",
+      "Animated"
+    ],
+    "870c9fa4e7c0a168": [
+      "Legendary Transformation",
+      "Still"
+    ],
+    "87710793082c7c95": [
+      "Let's Boogie",
+      ""
+    ],
+    "87d67a366ccbae52": [
+      "Electric Rush",
+      ""
+    ],
+    "87ed35101cab412d": [
+      "Trick Shooter",
+      "Still"
+    ],
+    "8800d5d0ffdb5786": [
+      "True Blue",
+      "Still"
+    ],
+    "88125d2204d5599b": [
+      "This is a Knife",
+      "Still"
+    ],
+    "88203ce7a247f1f5": [
+      "Carried Away",
+      ""
+    ],
+    "882e351fef63c682": [
+      "Small Victory",
+      "Still"
+    ],
+    "886c4bc0d385bc54": [
+      "Quick Change Artist",
+      "Animated"
+    ],
+    "88e35cefc724d93b": [
+      "Ferrocious Cycle",
+      ""
+    ],
+    "89093de3a664f2fe": [
+      "With Honor",
+      ""
+    ],
+    "89664c6d05a4f0d4": [
+      "Boomstick!",
+      "Still"
+    ],
+    "8a52b2643842e5da": [
+      "For Salvo",
+      "Still"
+    ],
+    "8a645a88efb43c6a": [
+      "Top Drop Bop",
+      ""
+    ],
+    "8b00c2d261e1dcb2": [
+      "Rebirth",
+      "Still"
+    ],
+    "8b077ab7298ad482": [
+      "Unbreakable Bond",
+      "Animated"
+    ],
+    "8b4e58d7c7901fdb": [
+      "NomNom",
+      "Still"
+    ],
+    "8bf5978cf3f000df": [
+      "Existential Crisis",
+      ""
+    ],
+    "8c6680c7f7daa0b6": [
+      "Fatal Error",
+      ""
+    ],
+    "8ca723658551551a": [
+      "Electrical Contact",
+      "Preview"
+    ],
+    "8cf3512781d7c676": [
+      "Blade Barrage",
+      ""
+    ],
+    "8d200f32da35623c": [
+      "Spiralling Void",
+      ""
+    ],
+    "8e14ebbf4150af49": [
+      "Inflight Entertainment",
+      ""
+    ],
+    "8e426b1177f895ee": [
+      "Working Together",
+      "Still"
+    ],
+    "8e738fba82a1bef7": [
+      "Third Wheel",
+      "Animated"
+    ],
+    "8e94a25ab118b791": [
+      "Highlight Reel",
+      "Still"
+    ],
+    "8e9ac70f7d8d84b0": [
+      "Emergency Maneuvers",
+      ""
+    ],
+    "8ef138514e7565ac": [
+      "Grand Finale",
+      "Animated"
+    ],
+    "8ef3096019704819": [
+      "Drill Sergeant",
+      "Still"
+    ],
+    "8f1cebb1fefa8808": [
+      "Whistler",
+      "Still"
+    ],
+    "8f1cef0eec3ca3b7": [
+      "Soul Invictus",
+      ""
+    ],
+    "90494a27ba50678d": [
+      "Event Horizon",
+      ""
+    ],
+    "90c8af5f8f66cd3f": [
+      "Warm Hug",
+      "Still"
+    ],
+    "9110895044a0de97": [
+      "Five Finger Fillet",
+      "Animated"
+    ],
+    "91a84ae8ae3e1975": [
+      "Stalker",
+      "Still"
+    ],
+    "91c6655f9f7418ce": [
+      "Renewed Hostility",
+      ""
+    ],
+    "9202635f3529ec4d": [
+      "Cool Under Pressure",
+      "Still"
+    ],
+    "92267c55bbd90db3": [
+      "Let's Fly",
+      "Animated"
+    ],
+    "928c0e543b4a802d": [
+      "Fury of the Gods",
+      "Preview"
+    ],
+    "929bddbe4146cd75": [
+      "Head In The Clouds",
+      "Still"
+    ],
+    "92a1f632b64903d2": [
+      "Pumping Iron",
+      "Still"
+    ],
+    "92ab0e12585194ad": [
+      "One Small Step",
+      "Still"
+    ],
+    "92bee1d6b49cd6a9": [
+      "Hat Tip",
+      ""
+    ],
+    "92d9ef39ddca2f7f": [
+      "Ballet-Boozle",
+      "Animated"
+    ],
+    "9311951f5cde05af": [
+      "Loyalty",
+      "Still"
+    ],
+    "93206625c1c95f43": [
+      "Play It Cool",
+      "Animated"
+    ],
+    "93479d72b9bbbe47": [
+      "Precious Gift",
+      "Still"
+    ],
+    "9354a4b1607f83bb": [
+      "Transfixed",
+      "Still"
+    ],
+    "936e4647f5f03783": [
+      "Spin Cycle",
+      ""
+    ],
+    "937249f89f545db2": [
+      "Defragged",
+      "Animated"
+    ],
+    "93805ef1ae21076a": [
+      "Stylish Arrival",
+      "Still"
+    ],
+    "9391d40094e7929c": [
+      "RidDOCulous",
+      ""
+    ],
+    "93a604c8d309de3a": [
+      "Three, Two, One",
+      ""
+    ],
+    "93a62d503950786e": [
+      "Strike a Pose",
+      "Preview"
+    ],
+    "940cf3fc89f4e6eb": [
+      "Healer",
+      "Still"
+    ],
+    "9452de030067fc61": [
+      "Existential",
+      "Still"
+    ],
+    "94773b9c7d111126": [
+      "Shot Caller",
+      "Still"
+    ],
+    "947f88ce8419b7e6": [
+      "Work Hard, Play Hard",
+      "Still"
+    ],
+    "94a01446a47dc793": [
+      "Scrap Nap",
+      "Still"
+    ],
+    "94cfe699a31ed98a": [
+      "Ground Breaking",
+      ""
+    ],
+    "94ed039d11e6cee3": [
+      "Suit Up",
+      "Still"
+    ],
+    "94edd5a7d6b547df": [
+      "Quick Change Artist",
+      "Still"
+    ],
+    "95ee65154836f76c": [
+      "Won't Hurt A Bit",
+      "Animated"
+    ],
+    "960f36c74be26412": [
+      "Watcher",
+      "Still"
+    ],
+    "96adf58bf472f03f": [
+      "Evasive Autograph",
+      "Animated"
+    ],
+    "96e75fa5c9536b2c": [
+      "Close Up",
+      "Still"
+    ],
+    "9714bc7b62c10216": [
+      "Smooth Operator",
+      "Still"
+    ],
+    "9772016809d523f7": [
+      "Chemtrails",
+      ""
+    ],
+    "97dc21e026768356": [
+      "Third Time's A Charm",
+      ""
+    ],
+    "97ff783cb72eea13": [
+      "Epic Fail",
+      "Animated"
+    ],
+    "98829a72b99e4f73": [
+      "Keeping Time",
+      "Still"
+    ],
+    "98a5490c8724db90": [
+      "Walking a Fine Line",
+      ""
+    ],
+    "9950c7288c3bf306": [
+      "Good Vibes",
+      ""
+    ],
+    "99db54e6414b67f3": [
+      "Advanced Tactics",
+      "Animated"
+    ],
+    "99db6ffb8c7c809c": [
+      "Against the Ropes",
+      ""
+    ],
+    "9a40a04ca2affda6": [
+      "Composed",
+      "Still"
+    ],
+    "9a5b0abf6632b376": [
+      "Slumber Disturbed",
+      "Still"
+    ],
+    "9a5d64a2e59b528e": [
+      "Blade from Above",
+      ""
+    ],
+    "9b066099ecb00339": null,
+    "9b223bf582ffb487": [
+      "First Law",
+      ""
+    ],
+    "9b90e2f7b1348490": [
+      "Over the Moon",
+      ""
+    ],
+    "9bf252f06c770259": [
+      "Snuggle Buddy",
+      "Still"
+    ],
+    "9c41c9291173bc4d": [
+      "Mystic Spiral",
+      ""
+    ],
+    "9cf1b6e463f9d7cc": [
+      "Inside Voice",
+      "Animated"
+    ],
+    "9cf577447761f768": [
+      "No Escape",
+      "Still"
+    ],
+    "9d050c048767d372": [
+      "It Takes Two",
+      ""
+    ],
+    "9d97290e4d33505a": [
+      "Bicycle Kick",
+      "Animated"
+    ],
+    "9df11b53843ac032": [
+      "Roll Out",
+      "Animated"
+    ],
+    "9e0b7f3d8fd0e6ad": [
+      "Iron Haymaker",
+      "Preview"
+    ],
+    "9e0f36eddf971562": [
+      "Headrush",
+      "Still"
+    ],
+    "9e1e4724b832979f": [
+      "Burst Your Bubble",
+      ""
+    ],
+    "9e711a907900a617": [
+      "Self Defense",
+      "Animated"
+    ],
+    "9e76cb4b941c1545": [
+      "The Struggle",
+      "Still"
+    ],
+    "9ec05946d47dc33c": [
+      "Dashing Through the Snow",
+      "Still"
+    ],
+    "9f0a213a005b0088": [
+      "Signature Look",
+      "Still"
+    ],
+    "9faac6266965ed9a": [
+      "Joy Ride",
+      "Still"
+    ],
+    "9fb1750320b9f4bf": [
+      "Hi, Friends",
+      ""
+    ],
+    "a00b48f265b41275": [
+      "Aim True",
+      "Still"
+    ],
+    "a01cc362aee59830": [
+      "Ajay's Lullaby",
+      "Preview"
+    ],
+    "a0ab8d5f88d94d78": [
+      "Blocked",
+      "Animated"
+    ],
+    "a0b53fc0810d78b4": [
+      "Stage Dive",
+      ""
+    ],
+    "a0f0903b3315e663": [
+      "Tesla-copter",
+      ""
+    ],
+    "a13355f7ac79ddb7": [
+      "Scientific Method",
+      "Animated"
+    ],
+    "a134e468d9dd05db": [
+      "Enemy Spotted",
+      "Still"
+    ],
+    "a172a6695ea9a898": [
+      "Glory Hound",
+      "Animated"
+    ],
+    "a1b3099aeecf0075": [
+      "No Sweat",
+      "Still"
+    ],
+    "a1f03e37770ef58c": [
+      "Calm Before",
+      "Still"
+    ],
+    "a1fa73fd3318e61b": [
+      "On Guard",
+      "Still"
+    ],
+    "a2284d2aaad1fc48": [
+      "Recoil Control",
+      ""
+    ],
+    "a23990bdc70250d7": [
+      "Killer Skill",
+      "Still"
+    ],
+    "a269c68df9e1c5dd": [
+      "All Charged Up",
+      "Preview"
+    ],
+    "a287bf356804755e": [
+      "Wallflower",
+      "Still"
+    ],
+    "a356ddad564bf6af": [
+      "XOXO",
+      "Still"
+    ],
+    "a392a8520eb4534b": [
+      "Untouchable",
+      ""
+    ],
+    "a399f0611f81a43a": [
+      "Decrypted",
+      "Animated"
+    ],
+    "a5270f8521d33a0d": [
+      "Pre-Game Warmup",
+      ""
+    ],
+    "a55f2d6200863c04": [
+      "Slumber Disturbed",
+      "Animated"
+    ],
+    "a569f45c7560771a": [
+      "Hail to the King",
+      "Still"
+    ],
+    "a5987667bf86c035": [
+      "Drop Kick",
+      "Still"
+    ],
+    "a67fd2254a386e86": [
+      "Hyperfixated",
+      "Still"
+    ],
+    "a6e5cc81d703bbd5": [
+      "Marathon",
+      "Still"
+    ],
+    "a75ffda3ecdd12b3": [
+      "Divine Mercy",
+      ""
+    ],
+    "a7cbca8b98ff1b24": [
+      "Keeper of the Peace",
+      "Animated"
+    ],
+    "a7fc0a0980f47e7b": [
+      "No Gun, No Problem",
+      "Still"
+    ],
+    "a85fe48b94347903": [
+      "Sugar Glider",
+      ""
+    ],
+    "a8b1ba14bd3fd1db": [
+      "Empath",
+      "Still"
+    ],
+    "a92227f2555e69a1": [
+      "Winning Hand",
+      "Still"
+    ],
+    "a93a85fe4aaa225f": [
+      "Perpetual Motion",
+      ""
+    ],
+    "a9a0380d81669a1f": [
+      "Relaxed",
+      "Still"
+    ],
+    "a9a0e40bb849c361": [
+      "Leap of Faith",
+      "Still"
+    ],
+    "a9dd3df967fc0960": [
+      "Sliced and Diced",
+      "Animated"
+    ],
+    "aa5d040952e5210b": [
+      "Live Lasso",
+      ""
+    ],
+    "aabc942fd8c1cee4": [
+      "Runway",
+      "Animated"
+    ],
+    "ab17167773623a80": [
+      "On a Mission",
+      "Still"
+    ],
+    "ab7f70bd6525f1d5": [
+      "Pour One Out",
+      ""
+    ],
+    "ac389f0f9503a7f3": [
+      "Tired Dive",
+      ""
+    ],
+    "ac89cb5512665516": [
+      "Get Dunked",
+      "Still"
+    ],
+    "acca4ed925c79049": [
+      "Blink of an Eye",
+      "Still"
+    ],
+    "accb44c5454e4377": [
+      "Showtime!",
+      "Still"
+    ],
+    "ad437f403f44422b": [
+      "At the Ready",
+      "Still"
+    ],
+    "ad6b1dad0058cb4f": [
+      "Perfect Balance",
+      "Still"
+    ],
+    "adf3235e2d12eb64": [
+      "A Father Found",
+      "Animated"
+    ],
+    "ae201156889ed479": [
+      "Study Session",
+      "Still"
+    ],
+    "ae368bf0a5509869": [
+      "Let Me Ride",
+      "Animated"
+    ],
+    "ae5ff86be21d87e7": [
+      "Face First",
+      ""
+    ],
+    "aeae1d81ba9fe784": [
+      "Downtime",
+      "Still"
+    ],
+    "aef0b04939c2a746": [
+      "Third Wheel",
+      "Still"
+    ],
+    "af2ea3f9a8436ae3": [
+      "Multidimensional",
+      "Still"
+    ],
+    "af8bb2a96d178fb4": [
+      "And Beyond",
+      "Still"
+    ],
+    "af9f8f900dc10ec5": [
+      "Force of Gravity",
+      "Preview"
+    ],
+    "afbb90a68b2908ff": [
+      "Musta",
+      "Still"
+    ],
+    "afcff83da12d854f": [
+      "Hi-5",
+      ""
+    ],
+    "afd8a691de2fd0cf": [
+      "Slalom",
+      ""
+    ],
+    "afddfe6ed20fd0f8": [
+      "Creature of the Night",
+      "Still"
+    ],
+    "b005bdad79b751c2": [
+      "Aggressive Negotiation",
+      "Still"
+    ],
+    "b029f2b217bc2b30": [
+      "Beat Down",
+      "Animated"
+    ],
+    "b0adbbeae91f9b5f": [
+      "Lean on Me",
+      "Still"
+    ],
+    "b0c04eeae65100f5": [
+      "Ta-da!",
+      "Still"
+    ],
+    "b0e0be8fe927753b": [
+      "Quickdraw",
+      "Animated"
+    ],
+    "b15d13c37721089c": [
+      "Boomtown Smash",
+      "Still"
+    ],
+    "b17b6e5784cea26c": [
+      "Amped Up",
+      ""
+    ],
+    "b1a2ef30d1d6e0b4": [
+      "Stalker",
+      "Still"
+    ],
+    "b1bd5a7085fe665b": [
+      "Bring It On",
+      "Still"
+    ],
+    "b1fa7d0da5de3dae": [
+      "Pull!",
+      "Animated"
+    ],
+    "b25bdc29a3cfd29d": [
+      "Survive",
+      "Still"
+    ],
+    "b2c49561c231d1b9": [
+      "Curb Stomp",
+      "Still"
+    ],
+    "b2ddbc619d66e36d": [
+      "Sight Unseen",
+      "Preview"
+    ],
+    "b2e545c0ea886a05": [
+      "Shock Sticks",
+      "Animated"
+    ],
+    "b3621e3d38dff862": [
+      "Til Valhalla",
+      "Still"
+    ],
+    "b3f248d96cd4d980": [
+      "Feel the Beat",
+      "Still"
+    ],
+    "b4128f544d84b280": [
+      "Bravissimo",
+      "Still"
+    ],
+    "b414dad6437fc721": [
+      "Over Stimulated",
+      ""
+    ],
+    "b4351703e4d22148": [
+      "Inquisitive Impulse",
+      "Still"
+    ],
+    "b4997689ddecaf17": [
+      "Not Today",
+      "Still"
+    ],
+    "b5244d5d8e4d5c48": [
+      "No Surprises",
+      "Animated"
+    ],
+    "b5338a7badb64582": [
+      "Stargazer",
+      "Still"
+    ],
+    "b57be632f4dea448": [
+      "Fired Up",
+      "Still"
+    ],
+    "b62c72bbfbcdbb82": [
+      "The Assist",
+      "Animated"
+    ],
+    "b63485b96595728b": [
+      "Hard Reset",
+      "Still"
+    ],
+    "b663aa2b57cfb3bd": [
+      "Killer Combo",
+      ""
+    ],
+    "b6a9ec463321a11f": [
+      "Looking Fierce",
+      "Still"
+    ],
+    "b6d0dde9213bb688": [
+      "Feel the Power",
+      ""
+    ],
+    "b70ad6377f1493ef": [
+      "Controlled Demolition",
+      ""
+    ],
+    "b7373b1ce9f3f54d": [
+      "Reach",
+      "Still"
+    ],
+    "b74312ca3ffb300f": [
+      "Bring It",
+      "Still"
+    ],
+    "b7610c2eb41d6e58": [
+      "Heavy Weight",
+      "Still"
+    ],
+    "b8183569a48d027e": [
+      "Guarded",
+      "Still"
+    ],
+    "b818a7d679135ed6": [
+      "Vogue",
+      "Still"
+    ],
+    "b824236c500d7e24": [
+      "Clever Girl",
+      "Animated"
+    ],
+    "b8245a6ea942ec46": [
+      "Peace Out",
+      ""
+    ],
+    "b8279981812e14ba": [
+      "Light It Up",
+      ""
+    ],
+    "b83e6725b597a2a0": [
+      "Fake Out",
+      ""
+    ],
+    "b868471ffcb88598": [
+      "Throne Room",
+      "Still"
+    ],
+    "b89b7321c812b416": [
+      "No Escape",
+      "Animated"
+    ],
+    "b8b265e36d8088a3": [
+      "Big Bruddah",
+      "Still"
+    ],
+    "b95c8b0f8d737b85": [
+      "Handled With Care",
+      "Still"
+    ],
+    "b96f821176f24c60": [
+      "Ring Toss",
+      "Still"
+    ],
+    "b97cc1127401de2f": [
+      "Dodge This",
+      ""
+    ],
+    "b9c302c001d1dd7b": [
+      "Hotwired",
+      "Still"
+    ],
+    "b9d862c1f551e0f2": [
+      "Dynamic Exit",
+      ""
+    ],
+    "b9f2666f64f2d6ce": [
+      "Ballet-Boozle",
+      "Still"
+    ],
+    "ba0b0a2f9e5a8826": [
+      "My Little Friend",
+      "Still"
+    ],
+    "ba250f4d0837836e": [
+      "Wrench In Your Plan",
+      "Animated"
+    ],
+    "ba26c12b0b9b6ca0": [
+      "Close Quarters Combat",
+      ""
+    ],
+    "badf9c4e15029caa": [
+      "Simulacrum",
+      "Still"
+    ],
+    "bae750baf56137f9": [
+      "Uber Trick",
+      ""
+    ],
+    "bb013cef650ff619": null,
+    "bb0637d4cfcc32cf": [
+      "From The Heart",
+      "Still"
+    ],
+    "bb2cc66ad6fe80db": [
+      "Death Deflection",
+      ""
+    ],
+    "bb9337fd8709c0b3": [
+      "In-flight Misfire",
+      ""
+    ],
+    "bb9918f77a7f576d": [
+      "Deadly Grace",
+      "Still"
+    ],
+    "bc6faf262f6b4739": [
+      "Charming",
+      "Animated"
+    ],
+    "bc7bc57e27c0407a": [
+      "Imminent Shutdown",
+      ""
+    ],
+    "bcde4566be3ae138": [
+      "Kick in the Head",
+      "Still"
+    ],
+    "bd3d9c0236167b8f": [
+      "Front Row Seat",
+      ""
+    ],
+    "bd6ed3acf17ced45": [
+      "Tailspin",
+      ""
+    ],
+    "bd96be65131ebe54": [
+      "Dashing Through the Snow",
+      "Animated"
+    ],
+    "bde5805806d5f878": [
+      "Flip the Switch",
+      "Still"
+    ],
+    "be9fded290b63910": [
+      "Peace",
+      "Still"
+    ],
+    "beb0bcd5dcbd5fe9": [
+      "Speedbagged",
+      "Animated"
+    ],
+    "bf14239ab57c27d2": [
+      "Circling Back",
+      ""
+    ],
+    "bf3c8fdafd7b31c5": [
+      "Quickdraw",
+      ""
+    ],
+    "c05aa039c3e0be8a": [
+      "Spread Your Wings",
+      ""
+    ],
+    "c15443ad4e1e8d50": [
+      "Stand Tall",
+      "Still"
+    ],
+    "c15655d18c245fb9": [
+      "Heavy Handed",
+      ""
+    ],
+    "c15f109b62a34b94": [
+      "Femme Fatale",
+      ""
+    ],
+    "c18c8fe5d94f5343": [
+      "Just Keep Swimming",
+      ""
+    ],
+    "c233bef156ec8fb8": [
+      "Ravenous",
+      "Still"
+    ],
+    "c29c52812bf141c8": [
+      "Gjallarhorn",
+      ""
+    ],
+    "c2e06a92be474c8f": [
+      "Renewed Hostility",
+      "Preview"
+    ],
+    "c2e7e3703ee7c720": [
+      "Parting Gift",
+      ""
+    ],
+    "c2f87c39e9aaee5c": [
+      "Rescue Me",
+      "Still"
+    ],
+    "c3727cb6d518360f": [
+      "Angel's Arrival",
+      "Still"
+    ],
+    "c376c025d23e39c1": [
+      "Ring Light",
+      "Still"
+    ],
+    "c382d65fd803f865": [
+      "Triple Threat",
+      ""
+    ],
+    "c3a99a9430ac2c16": [
+      "ABC",
+      "Still"
+    ],
+    "c41ebe67e2291bbd": [
+      "Next Scheme",
+      "Still"
+    ],
+    "c4490d5518b411c1": [
+      "Bad Medicine",
+      "Still"
+    ],
+    "c44ce013e6cc028b": [
+      "Prekill",
+      "Still"
+    ],
+    "c490aa7b936ceedf": [
+      "Danger Zone",
+      ""
+    ],
+    "c49429665a1688bc": [
+      "Hello From Salvo",
+      ""
+    ],
+    "c4b00bad35e3c22a": [
+      "Going Ballistic",
+      "Still"
+    ],
+    "c4c2c1606302f22c": [
+      "Charging D.O.C",
+      "Still"
+    ],
+    "c584abc078a32b02": [
+      "Soul Eater",
+      ""
+    ],
+    "c58d4baaa14fcbf4": [
+      "Roll Out",
+      "Still"
+    ],
+    "c5b0086a35825cbb": [
+      "Canopy Camouflage",
+      "Still"
+    ],
+    "c5bc8bfaa2086e19": [
+      "Pride and Joy",
+      "Animated"
+    ],
+    "c5ea57b0fec738ff": [
+      "All. Day.",
+      "Still"
+    ],
+    "c6b0454daaa4d620": [
+      "Play It Cool",
+      "Still"
+    ],
+    "c7b1c8d504f3ebe2": [
+      "Ferro Fury",
+      ""
+    ],
+    "c7bd25fa339a73cc": [
+      "Primal Scream",
+      "Still"
+    ],
+    "c7e43e9f404163b0": [
+      "Blind Fire",
+      "Still"
+    ],
+    "c8108c1e79fbd95c": [
+      "No Escape",
+      "Animated"
+    ],
+    "c83fd2b9f3e4b006": [
+      "Talking Game",
+      "Still"
+    ],
+    "c851240abc603c15": [
+      "Sky Show",
+      "Still"
+    ],
+    "c885047fb50b4a85": [
+      "Coming in Hot",
+      ""
+    ],
+    "c90778f89f6ce21b": [
+      "Skydive Slide",
+      ""
+    ],
+    "c91bb4418a91bc0f": [
+      "D.O.C.'s Shock",
+      "Preview"
+    ],
+    "c929e99aad9dd9ca": [
+      "Play for the Endzone",
+      "Still"
+    ],
+    "c9ac552a5cc2811f": [
+      "Winging It",
+      ""
+    ],
+    "c9ca19d0444bdc75": [
+      "Pirouette",
+      ""
+    ],
+    "ca1af87668c23bca": [
+      "Brand New Funk",
+      "Still"
+    ],
+    "ca6de8f26e4f048c": [
+      "With Honor",
+      "Preview"
+    ],
+    "ca7dde990f55a256": [
+      "Where You Belong",
+      "Animated"
+    ],
+    "ca97adc5e1b8706f": [
+      "Business End",
+      "Still"
+    ],
+    "ca9d532550b2d34f": [
+      "Ambush Artist",
+      "Animated"
+    ],
+    "cabb269017401b0e": [
+      "Nailed It",
+      "Still"
+    ],
+    "caf3bab9f3825e92": [
+      "You Really Love Me",
+      "Still"
+    ],
+    "cb196de80ca36374": [
+      "Over Stimulated",
+      "Preview"
+    ],
+    "cb22de33106bba11": [
+      "Blocked",
+      "Still"
+    ],
+    "cb8bd55cf9b9d7d4": [
+      "Helping Hand",
+      ""
+    ],
+    "cbfcc7f747e02d20": [
+      "Take a Peek",
+      "Animated"
+    ],
+    "cc5b5f989359b8a3": [
+      "Down Time",
+      "Still"
+    ],
+    "cca35db194aad615": [
+      "Kickin' It",
+      ""
+    ],
+    "ccbcfa60d2b2ed4c": [
+      "Curtain Call",
+      ""
+    ],
+    "cce11fd26576381a": [
+      "Passing Out Candy",
+      ""
+    ],
+    "cd0d67b338f55131": [
+      "Come On",
+      "Still"
+    ],
+    "cd0db14b5568353a": [
+      "Supernatural",
+      "Still"
+    ],
+    "cd6ade47e7f47f99": [
+      "Empath",
+      "Animated"
+    ],
+    "cde757471572174e": [
+      "Perdition",
+      ""
+    ],
+    "ce6d80b55e9c2de8": [
+      "D.O.C.'s Shock",
+      ""
+    ],
+    "ce8a3fd7373346b6": [
+      "Ciao",
+      "Still"
+    ],
+    "ced28f30eef63026": [
+      "Superiority Complex",
+      "Still"
+    ],
+    "ceebc36700c0781d": [
+      "Strike From Above",
+      "Still"
+    ],
+    "cf21dab2ac30a175": [
+      "Ajay's Lullaby",
+      ""
+    ],
+    "cf4d46f6c419d393": [
+      "Total Possession",
+      "Still"
+    ],
+    "cfae557c5c07bcb3": [
+      "Inspiration",
+      "Still"
+    ],
+    "cfaeca86bf45b482": [
+      "Pile On",
+      "Still"
+    ],
+    "d0104e1688d2e5e9": [
+      "If The Shoe Fits",
+      "Still"
+    ],
+    "d031e73b7144225c": [
+      "Rocket Racer",
+      ""
+    ],
+    "d059cc3a4c3f4b37": [
+      "Warcry",
+      ""
+    ],
+    "d071d1a64c2c415f": [
+      "Aim Assist",
+      "Still"
+    ],
+    "d076063150d1048b": [
+      "Winning Combination",
+      "Still"
+    ],
+    "d0ae0e5b6e1406ae": [
+      "Ambush Artist",
+      "Still"
+    ],
+    "d0cb945afc3b7611": [
+      "Perfectly Balanced",
+      "Still"
+    ],
+    "d0d355364758224e": [
+      "Victory!",
+      "Still"
+    ],
+    "d0e3dbf2563e822e": [
+      "Baller",
+      "Still"
+    ],
+    "d0f95fa551381c45": [
+      "Doctored Breakthrough",
+      ""
+    ],
+    "d12273b6ffca3735": [
+      "Dancing Queen",
+      "Animated"
+    ],
+    "d134d8c60ab17dc4": [
+      "Espresso Break",
+      "Still"
+    ],
+    "d178fae264b0e5f6": [
+      "Canopy Camouflage",
+      "Animated"
+    ],
+    "d1965c55d43eaf2b": [
+      "Passerotto",
+      "Still"
+    ],
+    "d19d2f083d82bbd9": [
+      "Mad Props",
+      "Still"
+    ],
+    "d1f9ae7e542189e2": [
+      "Mondays",
+      "Still"
+    ],
+    "d27edcca8b7d297a": [
+      "Piercing Plasma",
+      ""
+    ],
+    "d2aafbae7db1085e": [
+      "Palm Pilot",
+      "Still"
+    ],
+    "d2d405b80688fb68": [
+      "Full Throttled",
+      ""
+    ],
+    "d2fed51cf515448a": [
+      "Sorry!",
+      "Still"
+    ],
+    "d3ecae8c48056479": [
+      "Buddy System",
+      "Animated"
+    ],
+    "d3f4f992a1df88ab": [
+      "Grand Finale",
+      "Still"
+    ],
+    "d4023023a5867b82": [
+      "I Arise",
+      "Still"
+    ],
+    "d42e15fb68803297": [
+      "Last Breath",
+      "Preview"
+    ],
+    "d47127396a635bc7": [
+      "Almost Too Easy",
+      "Still"
+    ],
+    "d49d43064681ae0a": [
+      "Scientific Method",
+      "Still"
+    ],
+    "d4bc4314eaa6bf37": [
+      "Fully Assimilated",
+      "Animated"
+    ],
+    "d4e823d7f888cb1a": [
+      "Peacekiller",
+      "Animated"
+    ],
+    "d578002aeb6e6e76": [
+      "Tropical Menagerie",
+      "Animated"
+    ],
+    "d5b4ac069a6810f3": [
+      "Mind Games",
+      "Still"
+    ],
+    "d5b5e84ec728ed56": [
+      "Big Brother",
+      "Still"
+    ],
+    "d5e51ee5fbea2521": [
+      "Laser Vision",
+      ""
+    ],
+    "d68c235e7dd812cd": [
+      "Past and Present",
+      "Still"
+    ],
+    "d75b5c1bd18063b5": [
+      "Blade Runner",
+      "Still"
+    ],
+    "d75fe7938f943b86": [
+      "Luge Groove",
+      ""
+    ],
+    "d7afd54d4750f6d4": [
+      "Vantage Point",
+      "Still"
+    ],
+    "d9a4f8e5711ffd29": [
+      "The Collection",
+      "Still"
+    ],
+    "d9b944884e6677a5": [
+      "Grand Performance",
+      "Still"
+    ],
+    "d9cd5afda0676108": [
+      "You Really Love Me",
+      "Animated"
+    ],
+    "d9ee5ed33a4a7ad7": [
+      "Bicycle Kick",
+      "Still"
+    ],
+    "da42cb8d89f79148": [
+      "I Got You",
+      "Still"
+    ],
+    "da6d3ab142faf729": [
+      "Funslinger",
+      "Still"
+    ],
+    "daa0578e6c371b64": [
+      "Somer-Assault",
+      ""
+    ],
+    "daaaaa6c22a40460": [
+      "See Ya!",
+      ""
+    ],
+    "daba711b39005e90": [
+      "Good Vibes",
+      "Animated"
+    ],
+    "dac88a38e3c2f173": [
+      "Charmed",
+      "Still"
+    ],
+    "dac91c37ae2684d7": [
+      "Bonecage Brawler",
+      "Still"
+    ],
+    "dad8e2ca1f756dbe": [
+      "Fowl Play",
+      "Animated"
+    ],
+    "db1226e1f51fa429": [
+      "Lucky Headshot",
+      "Animated"
+    ],
+    "db6a3e5ba0e31cc0": [
+      "Hail to the King",
+      "Animated"
+    ],
+    "db7930a2ff94a5fd": [
+      "Jumping to Judgement",
+      "Still"
+    ],
+    "dbc60bb4a4935c31": null,
+    "dbede32ef9b50a7b": [
+      "Charging D.O.C",
+      "Animated"
+    ],
+    "dc15acb75dc06c0e": [
+      "Vibing",
+      ""
+    ],
+    "dc1778594e7b10bb": [
+      "Charming",
+      "Still"
+    ],
+    "dc357da60001b43a": [
+      "Slings and Arrows",
+      "Still"
+    ],
+    "dc460c91aaaf202f": [
+      "Demon Drop",
+      ""
+    ],
+    "dcc41d9a53456b65": [
+      "Misdirection",
+      "Animated"
+    ],
+    "dcd1e28ecc471748": [
+      "Strike a Pose",
+      ""
+    ],
+    "ddaba96f186fdae2": [
+      "From The Heart",
+      "Animated"
+    ],
+    "de0564945f043881": [
+      "Showdown",
+      "Animated"
+    ],
+    "de6e0a4b1cd7e338": [
+      "Pride and Joy",
+      "Still"
+    ],
+    "de7d02b0b2d4d0c9": [
+      "Hard to Get",
+      "Still"
+    ],
+    "df08e12812253f2f": [
+      "Salvo Stomp",
+      "Still"
+    ],
+    "df54b6fefe2a0e48": [
+      "Bring It",
+      "Animated"
+    ],
+    "dfb1e79dfe889dac": [
+      "Idle Threat",
+      "Still"
+    ],
+    "dfcd72c2cfb3cce9": [
+      "Fearless",
+      "Still"
+    ],
+    "e01407ab145cd332": [
+      "Rock 'n Load",
+      "Still"
+    ],
+    "e060305904dec44f": [
+      "Intense Focus",
+      "Still"
+    ],
+    "e0a4d1285e6ccb63": [
+      "Defragged",
+      "Still"
+    ],
+    "e0b88262e5dd9ffa": [
+      "Raven Dash",
+      ""
+    ],
+    "e0bcd207275a7eee": [
+      "Piercing Plasma",
+      "Preview"
+    ],
+    "e15e5c93fa883c6c": [
+      "Humble",
+      "Still"
+    ],
+    "e15fc3cd4844b5c8": [
+      "Orbital Focus",
+      ""
+    ],
+    "e173eb7d51ff5c4b": null,
+    "e1a1aea0bc84f533": [
+      "Mystic Crystals",
+      "Still"
+    ],
+    "e1bb748aa48e7c5b": [
+      "Special Delivery",
+      "Animated"
+    ],
+    "e1bef465608b30c8": [
+      "Flip Off",
+      ""
+    ],
+    "e1c2f08bdcd1a271": [
+      "Special Delivery",
+      "Still"
+    ],
+    "e1c9f2c820ffa219": [
+      "Looking SMRT",
+      "Still"
+    ],
+    "e2b974a66c4b79c8": [
+      "Charmed",
+      "Animated"
+    ],
+    "e2dd4b00985f1083": [
+      "Good Company",
+      "Still"
+    ],
+    "e30a566ec607d175": [
+      "Whirlwind",
+      ""
+    ],
+    "e370791ab2fb0cb3": [
+      "Close and Personal",
+      "Still"
+    ],
+    "e3a9e88bcc41cffa": [
+      "Out Of My Way",
+      "Still"
+    ],
+    "e3de37ebdf18c2f5": [
+      "Won't Hurt A Bit",
+      "Still"
+    ],
+    "e3f4eda94003acd1": [
+      "Natural Balance",
+      ""
+    ],
+    "e40d17c1a1c8bf20": [
+      "Toxic Scream",
+      ""
+    ],
+    "e432d6c51a686e12": [
+      "Claws Out",
+      "Still"
+    ],
+    "e43f477717abea39": [
+      "Spinal Stretch",
+      ""
+    ],
+    "e5073a62ef48457b": [
+      "Your Move",
+      "Still"
+    ],
+    "e5a303aa426d9cad": [
+      "Stern",
+      "Still"
+    ],
+    "e5b46b295ecd7b38": [
+      "Clear a Path",
+      ""
+    ],
+    "e5ba45a843f45eae": [
+      "Pleasant Perch",
+      "Still"
+    ],
+    "e5c9d1628fca842d": [
+      "Always Alert",
+      "Still"
+    ],
+    "e6a71f4f3a1e0018": [
+      "Dance Of Death",
+      ""
+    ],
+    "e7066b37ab7ae3d4": null,
+    "e70d4169759956d1": [
+      "Encore",
+      "Still"
+    ],
+    "e7116ff643fdc812": [
+      "Big Fun Gun",
+      ""
+    ],
+    "e74b440b3628908d": [
+      "Tailwind",
+      ""
+    ],
+    "e789f0ce7c7310cf": [
+      "Bad D.O.C.",
+      "Animated"
+    ],
+    "e873105336cb7f4e": [
+      "Hover Unit",
+      ""
+    ],
+    "e89ef85b0dabd421": [
+      "Evasive Autograph",
+      "Still"
+    ],
+    "e931cd2ce8315724": [
+      "Into the Light",
+      "Preview"
+    ],
+    "e95c27393ce7c275": [
+      "Hot Drop",
+      ""
+    ],
+    "e9880c97f5e43bff": [
+      "Solid Wingman",
+      "Still"
+    ],
+    "e98a36288c55266a": [
+      "Field Study",
+      "Still"
+    ],
+    "e9f36c49f1af6be9": [
+      "Electrical Contact",
+      ""
+    ],
+    "ea3fdfaf42821be2": [
+      "Close Up",
+      "Animated"
+    ],
+    "ea6563bf3f6e1792": [
+      "Pound It, Bro",
+      "Preview"
+    ],
+    "eb73702882be8d40": [
+      "Doctor's Orders",
+      "Still"
+    ],
+    "ebb24e24902b11cd": [
+      "Re-Galvanized",
+      "Still"
+    ],
+    "ec0830bc49d24233": [
+      "Decrypted",
+      "Still"
+    ],
+    "ec553ec729fd76a6": [
+      "Black Swan Dive",
+      ""
+    ],
+    "ec70e0c1789e1825": [
+      "Unbreakable Bond",
+      "Still"
+    ],
+    "ec859b13e0ffa461": [
+      "Out of Nowhere",
+      "Still"
+    ],
+    "ec9826b7d35c5dc2": [
+      "Raven Rampage",
+      ""
+    ],
+    "ecc123ff04892e91": [
+      "Grand Performance",
+      "Animated"
+    ],
+    "ecc8920457fdab6a": [
+      "Against the Ropes",
+      "Preview"
+    ],
+    "ece12d952519edd6": [
+      "Coming at You",
+      "Still"
+    ],
+    "ed05625bf07dc6e0": [
+      "Not So Fast",
+      "Animated"
+    ],
+    "ed30b8a6cc5a189e": [
+      "Festive Fire",
+      ""
+    ],
+    "ed654e705e414fa5": [
+      "Stalk",
+      "Still"
+    ],
+    "ed81b47c1deb560a": [
+      "Our Powers Combined",
+      "Animated"
+    ],
+    "ed85422f09d65fc3": [
+      "Buddy System",
+      "Still"
+    ],
+    "edf0aef925bab00e": [
+      "Load Imbalance",
+      "Still"
+    ],
+    "ee0a30f2099afef9": [
+      "Child's Play",
+      "Animated"
+    ],
+    "ee59bf8928d21aaa": [
+      "Daydreamer",
+      "Still"
+    ],
+    "ee5b68c6c240b7a0": [
+      "Iconic Look",
+      "Still"
+    ],
+    "ee70f15e50ee2a8b": [
+      "Work Hard, Play Hard",
+      "Animated"
+    ],
+    "eea43b50df46cf69": [
+      "Boomtown Smash",
+      "Animated"
+    ],
+    "eeefd6ec78dd242e": [
+      "Ratted Out",
+      ""
+    ],
+    "ef223f658cb57979": [
+      "Proper Form",
+      "Still"
+    ],
+    "ef35244a7cf10a6c": [
+      "Dance Dance Electrocution",
+      ""
+    ],
+    "ef87701f88be5a4f": [
+      "Singing in the Storm",
+      "Still"
+    ],
+    "efc983c8f3b1a138": [
+      "Quantum Mechanic",
+      "Animated"
+    ],
+    "f04e7ac8ebd31832": [
+      "Curtain Call",
+      "Still"
+    ],
+    "f0b6effea71e6c41": [
+      "Stand Your Ground",
+      "Still"
+    ],
+    "f196d46500a21701": [
+      "Connected",
+      "Still"
+    ],
+    "f24d55815c3c6ab6": [
+      "Field Study",
+      "Animated"
+    ],
+    "f276668e3da22877": [
+      "Respect",
+      "Still"
+    ],
+    "f2e941d1870c7ecb": [
+      "One Small Step",
+      "Animated"
+    ],
+    "f31f138bc1eff76d": [
+      "Let's Go!",
+      "Still"
+    ],
+    "f3dc9f6f20d86e3f": [
+      "Good As Gold",
+      "Still"
+    ],
+    "f3f1606c8aab6790": [
+      "Unstable Genius",
+      "Still"
+    ],
+    "f4e44ba0933be81a": [
+      "Tropical Menagerie",
+      "Still"
+    ],
+    "f4f788fdc64196d3": [
+      "Eat This",
+      "Still"
+    ],
+    "f4fc5a5004acb742": [
+      "Reveille",
+      ""
+    ],
+    "f503a0712b4f4a0e": [
+      "Family Matters",
+      "Still"
+    ],
+    "f548af1e3287ff35": [
+      "Speedbagged",
+      "Still"
+    ],
+    "f5731c872a8cf9ca": [
+      "Locked and Loaded",
+      "Still"
+    ],
+    "f5db854db892f652": [
+      "Lucky Headshot",
+      "Still"
+    ],
+    "f5ef3544fff6aa54": [
+      "One Step Ahead",
+      "Still"
+    ],
+    "f5fc05e885e2095d": [
+      "Curiosity",
+      "Still"
+    ],
+    "f65513d6c7b20e31": [
+      "Your Move",
+      "Animated"
+    ],
+    "f724eb347428d220": [
+      "Follow The Light",
+      ""
+    ],
+    "f7530d2f748cb7bb": [
+      "Game Time",
+      ""
+    ],
+    "f7ce6e6eae927b79": [
+      "Big Bruddah",
+      "Animated"
+    ],
+    "f7f72bf97bc27dc6": null,
+    "f82d60c845fa8800": [
+      "Last Breath",
+      ""
+    ],
+    "f8884babdd4ae6d5": [
+      "No Escape",
+      "Still"
+    ],
+    "f90e66b96f1f4c3f": [
+      "Bunny Ears",
+      "Still"
+    ],
+    "f9efcf6479c21258": [
+      "Surgical",
+      "Still"
+    ],
+    "fa1c82b6d5ac7096": [
+      "KO!",
+      "Still"
+    ],
+    "fa28ac60d00b6f5f": [
+      "Swing and a Miss",
+      ""
+    ],
+    "fad623acc689ec1c": [
+      "Windmill",
+      ""
+    ],
+    "fb4e74a838d9bbb6": [
+      "Built Not Bought",
+      "Still"
+    ],
+    "fb66c9104104e34c": [
+      "Respectful",
+      "Still"
+    ],
+    "fb94971df19d648f": [
+      "Flaunt It",
+      ""
+    ],
+    "fbc31fdfb3f642e8": [
+      "Respect",
+      "Still"
+    ],
+    "fbd3cbee88cb592f": [
+      "Iron Haymaker",
+      ""
+    ],
+    "fc732a7abb44ed9b": [
+      "Illusions of Grandeur",
+      ""
+    ],
+    "fcc2155867eef023": [
+      "Brace for Impact",
+      "Still"
+    ],
+    "fcfb2dccf1af6a77": [
+      "Floored",
+      "Still"
+    ],
+    "fd16c7f716515ae8": [
+      "Dead to Rights",
+      "Still"
+    ],
+    "fd1cbc04fe9b2ab9": [
+      "Bad D.O.C.",
+      "Still"
+    ],
+    "fd2147ee03aa1a1e": [
+      "Flip the Rift",
+      ""
+    ],
+    "fd387566120b498b": [
+      "Ready For Launch",
+      "Still"
+    ],
+    "fd61e1c8943efb48": [
+      "Return To Sender",
+      ""
+    ],
+    "fd71ae3cc9d19c60": [
+      "Tail Dance",
+      ""
+    ],
+    "fd95f158b0dfcd81": [
+      "Your Move",
+      "Still"
+    ],
+    "fe68785d703bd69d": [
+      "Usual Suspect",
+      "Animated"
+    ],
+    "fe86bc081ba8a150": [
+      "Smash Like",
+      "Animated"
+    ],
+    "fe89badd2c0dd3c6": [
+      "The Finer Things",
+      "Still"
+    ],
+    "fefb34f46326a695": [
+      "Ricochet",
+      ""
+    ],
+    "ff2cb88f76eeadf7": [
+      "Big Shot",
+      "Still"
+    ],
+    "ff4c079113cd8ffa": [
+      "Where You Belong",
+      "Still"
+    ],
+    "ff775aaa21aa87b9": [
+      "Glitch Glide",
+      ""
+    ],
+    "ff874d289b877363": [
+      "Fidget Spinner",
+      ""
+    ],
+    "fff4b96c10480abb": [
+      "Laid Back",
+      ""
+    ]
+  },
+  "short": {
+    "00f5236f86d0440c": [
+      "Winning Attitude",
+      ""
+    ],
+    "01774e44f5a6816e": [
+      "Fluid Moves",
+      ""
+    ],
+    "026e65a74c09c4d2": [
+      "Out of the Park",
+      ""
+    ],
+    "0314b46fe904b453": [
+      "It's Funky Enough",
+      ""
+    ],
+    "0369ab40ef31e6ca": [
+      "Pirouette",
+      ""
+    ],
+    "039c68920ccf795f": [
+      "Joyful Jig",
+      ""
+    ],
+    "03c84bcace38a2ae": [
+      "Sharper Image",
+      ""
+    ],
+    "061095061f97a715": [
+      "Void Guitar",
+      ""
+    ],
+    "0727d6f3848ce83d": [
+      "Throwdown",
+      ""
+    ],
+    "07d62b0f8a850362": [
+      "Power Loop",
+      ""
+    ],
+    "08573e732df6dd00": [
+      "Sneak Attack",
+      ""
+    ],
+    "089af4fa3e4edee6": [
+      "Curtsy",
+      ""
+    ],
+    "08a5c76806e570a4": [
+      "Brush It Off",
+      ""
+    ],
+    "08f82aa42919f3b2": [
+      "Six Swing",
+      ""
+    ],
+    "091a5e38b035beb7": [
+      "Proud Pennant",
+      ""
+    ],
+    "0a198cf2b3325b96": [
+      "Spin Up",
+      ""
+    ],
+    "0b41530515bd3618": [
+      "Stable Axis",
+      ""
+    ],
+    "0b70fdf3e946f9b5": [
+      "Enraged Glitch",
+      ""
+    ],
+    "0c3282b3d887bd40": [
+      "Great Minds Recline",
+      ""
+    ],
+    "0cafe5c5e01b3603": [
+      "Pumped and Ready",
+      ""
+    ],
+    "0cd372062fd82f0d": [
+      "Jump Rope Master",
+      "Loop"
+    ],
+    "0e7ab6eb6cea793b": [
+      "Time Of My Life",
+      ""
+    ],
+    "0e8250010aa4f2d2": [
+      "Hype Man",
+      ""
+    ],
+    "0ea55e2b7579f04b": [
+      "Standing Guard",
+      ""
+    ],
+    "0ee0c36088ab33a8": [
+      "Rampart Rodeo",
+      ""
+    ],
+    "0f4fe4e269249808": [
+      "Cool Down",
+      ""
+    ],
+    "101fda5eb60aeee4": [
+      "Take a Bow",
+      ""
+    ],
+    "103a32641b3bd076": [
+      "Up In Lights",
+      ""
+    ],
+    "10e25f21073a0d11": [
+      "Flourished Flag",
+      "Loop"
+    ],
+    "1199888c8ac8a743": [
+      "Party Crasher",
+      ""
+    ],
+    "119cba00b51fbb0b": [
+      "Personal Growth",
+      ""
+    ],
+    "12502898128b72f9": [
+      "Clear the Pipes",
+      ""
+    ],
+    "1404494043abeb1a": [
+      "Shot To The Heart",
+      ""
+    ],
+    "14830ae9bdf0b8c9": [
+      "Last Laugh",
+      ""
+    ],
+    "154db8d7c67bbc55": [
+      "Side Hustle",
+      ""
+    ],
+    "16ec6a3cd0f14015": [
+      "Shadowboxer",
+      ""
+    ],
+    "177f7130aa898c73": [
+      "Break It Down",
+      ""
+    ],
+    "182686c441699be5": [
+      "Teachers Pet",
+      ""
+    ],
+    "185dc1107daf9b3d": [
+      "Strongman",
+      ""
+    ],
+    "1bdf26c993903ccb": [
+      "Badbraltar",
+      ""
+    ],
+    "1c1aee2106e04419": [
+      "Join the Club",
+      ""
+    ],
+    "1c5496ae6507c39a": [
+      "Hitting the Cell",
+      ""
+    ],
+    "1c62f976100bdd73": [
+      "Practice Makes Perfect",
+      "Loop"
+    ],
+    "1c88df657649efc6": [
+      "Jump Rope Master",
+      ""
+    ],
+    "1df83a69237a77a2": [
+      "Dramatic Entrance",
+      ""
+    ],
+    "1e38d591114b1ce3": [
+      "Core Release",
+      ""
+    ],
+    "1e99b289615040ff": [
+      "Jammin'",
+      ""
+    ],
+    "1f9d364463ce935d": [
+      "Little Trickster",
+      ""
+    ],
+    "20de450b9862edca": [
+      "Quick Fix",
+      ""
+    ],
+    "21d3447b9382be89": [
+      "Playing It Cool",
+      ""
+    ],
+    "2206149dc9845c53": [
+      "Salvo Special",
+      ""
+    ],
+    "23b79f9d176a5ca8": [
+      "Light Show",
+      ""
+    ],
+    "284644ed76d97358": [
+      "Firestarter",
+      ""
+    ],
+    "29a6bb53afd51a2a": [
+      "Sweaty",
+      ""
+    ],
+    "29afeb490f34106b": [
+      "Prezzie Time",
+      ""
+    ],
+    "29c06212022e10b1": [
+      "Trick's on You",
+      ""
+    ],
+    "2a37798db33833db": [
+      "Friendly Discouragement",
+      ""
+    ],
+    "2a8ab722537828e3": [
+      "Sky Shuffle",
+      ""
+    ],
+    "2dddef5f905b5be2": [
+      "Sparks of Joy",
+      ""
+    ],
+    "2e66f6cb5ce242c6": [
+      "Smoke and Steel",
+      ""
+    ],
+    "2f3fe749098a9b0a": [
+      "Reluctant Celebration",
+      ""
+    ],
+    "301e0f85fd201a1a": [
+      "Strong Brew",
+      ""
+    ],
+    "303041b21c6645c2": [
+      "Primal Nature",
+      ""
+    ],
+    "30931df34e49d4fa": [
+      "Righteous Staff",
+      ""
+    ],
+    "3142ed6783ebb4c9": [
+      "Lantern Lighting",
+      ""
+    ],
+    "31dec6b65de4b929": [
+      "Cool Beats",
+      ""
+    ],
+    "343b0427a2ed5f0d": [
+      "One Leg Army",
+      ""
+    ],
+    "35c5430d86479ef3": [
+      "Nervous Energy",
+      ""
+    ],
+    "35e4b0297c0fb880": [
+      "Rhythm Machine",
+      ""
+    ],
+    "3671face9bfbea2b": [
+      "Can't Stomach This",
+      ""
+    ],
+    "3698c80eaa50afaf": [
+      "Smooth Moves",
+      ""
+    ],
+    "38c5a59f5e58c9d2": [
+      "Modern Day Cupid",
+      ""
+    ],
+    "392c5a7e85a72a33": [
+      "Compelling Threat",
+      ""
+    ],
+    "3b15aa59df579690": [
+      "Coping Skills",
+      ""
+    ],
+    "3c1d63470f64ce39": [
+      "Play to the Crowd",
+      ""
+    ],
+    "3c6a5946afa9d812": [
+      "Ferro Queen",
+      ""
+    ],
+    "3ce084975c5e65e8": [
+      "Sweatin' to the Outlands",
+      ""
+    ],
+    "3d3609f00248d505": [
+      "Hype Man",
+      ""
+    ],
+    "3d956ed143943007": [
+      "Cut Throat",
+      ""
+    ],
+    "3e83cc0a904da47d": [
+      "Dream Team",
+      ""
+    ],
+    "3ea1aadf314c0b31": [
+      "Fired Up",
+      ""
+    ],
+    "3ebbb4b3a6d1fa0a": [
+      "Playing With Fire",
+      "Loop"
+    ],
+    "3ecafefb70fa3159": [
+      "Revelry",
+      ""
+    ],
+    "40b62f74d07381e0": [
+      "Butterfly Barrage",
+      "Loop"
+    ],
+    "416a780a8a800eab": [
+      "Go With A Smile",
+      ""
+    ],
+    "42bac7ec5bb1e959": [
+      "Powers Combined",
+      ""
+    ],
+    "449b36eac9e2f27c": [
+      "Kiss Cam",
+      ""
+    ],
+    "46eca87d3473ebbe": [
+      "Take Notes",
+      ""
+    ],
+    "471ea2717030baef": [
+      "Zero Gun",
+      ""
+    ],
+    "485d108c751f9ef9": [
+      "Mi-RAGE",
+      ""
+    ],
+    "49022b5b51b93f7b": [
+      "Knockout Gas",
+      ""
+    ],
+    "498757e35c24afb4": [
+      "Wind Down",
+      ""
+    ],
+    "49d0f8ea04f4e0a2": [
+      "Slice and Dice",
+      ""
+    ],
+    "49faf6dd0adfdda5": [
+      "Toying with the Enemy",
+      ""
+    ],
+    "4a3f5244468a8165": [
+      "Job Well Done",
+      ""
+    ],
+    "4abf950d319d8718": [
+      "Elevated Applause",
+      ""
+    ],
+    "4b6726c4e6edcaf2": [
+      "Sweet Generosity",
+      ""
+    ],
+    "4d5527b09348e99d": [
+      "Squats",
+      ""
+    ],
+    "4e712212e0dc0ee1": [
+      "Playing With Fire",
+      ""
+    ],
+    "4ec11798c6e63822": [
+      "Ma Ti Prego!",
+      ""
+    ],
+    "4f35af4f002063d7": [
+      "Mirage Massage",
+      ""
+    ],
+    "505176552b09bba7": [
+      "Fancy Footwork",
+      ""
+    ],
+    "50e1e77c5f586993": [
+      "It's Funky Enough",
+      ""
+    ],
+    "510e75e995277a35": [
+      "New Whirl Order",
+      "Loop"
+    ],
+    "54c6417fb708ad77": [
+      "Burst of Flavor",
+      ""
+    ],
+    "55dda13c3e3f3e68": [
+      "Maraca Madness",
+      ""
+    ],
+    "56b968fd659c34ce": [
+      "Loosen Up",
+      ""
+    ],
+    "57c090fbc8d7300f": [
+      "Tracking",
+      ""
+    ],
+    "598f70dd69b7da10": [
+      "Whittle Break",
+      ""
+    ],
+    "59ebbfbad755db9b": [
+      "Proud Pennant",
+      "Loop"
+    ],
+    "5a734592297cf1d1": [
+      "Lean On Me",
+      ""
+    ],
+    "5ad730ab317824b1": [
+      "Telekinetic Energy",
+      ""
+    ],
+    "5b7a10ed90867e1a": [
+      "Bring It",
+      ""
+    ],
+    "5d4638390d0fcdb5": [
+      "Ground Pound",
+      ""
+    ],
+    "5e17228b834aee78": [
+      "Floating Point",
+      ""
+    ],
+    "602daa75be15e4c1": [
+      "Present Companion",
+      ""
+    ],
+    "622a5c4a6c9f40e6": [
+      "Lantern Lighting",
+      ""
+    ],
+    "6366d6333dc91743": [
+      "Hydraulics Test",
+      ""
+    ],
+    "637864b67bbfa7c9": [
+      "Tropical Tune",
+      ""
+    ],
+    "64ecb753a173d406": [
+      "Windswept Waltz",
+      ""
+    ],
+    "65747c7526b218e8": [
+      "Ground Pound",
+      ""
+    ],
+    "658ff6e2f6e778e4": [
+      "One Two Punch",
+      ""
+    ],
+    "65fdd4cf06a9a7b1": [
+      "Robotic Scourge",
+      ""
+    ],
+    "6708dedb8ba1abc4": [
+      "Seat Of Judgment",
+      ""
+    ],
+    "67bca0ec42b0c1b5": [
+      "Solo Match",
+      ""
+    ],
+    "68e52459d28cc17a": [
+      "Charge",
+      ""
+    ],
+    "6afa415d141ea27a": [
+      "Static Discharge",
+      ""
+    ],
+    "6b0bdc68a3ee5313": [
+      "Scorpion's Kiss",
+      ""
+    ],
+    "6b1eff6b080e4e8c": [
+      "Noxious Discovery",
+      ""
+    ],
+    "6c799c8c81c64fda": [
+      "Old Bot, New Trick",
+      ""
+    ],
+    "6d295d1bed8cb0a5": [
+      "Footwork",
+      "Loop"
+    ],
+    "6e2076c9dba2cc27": [
+      "Jerky Break",
+      "Loop"
+    ],
+    "6f76abd100aa444a": [
+      "Fight Your Demons",
+      "Loop"
+    ],
+    "70507a5accd8f429": [
+      "Oh Behave",
+      ""
+    ],
+    "70f81ed62b978cf8": [
+      "Gas Giant",
+      ""
+    ],
+    "710b66ae839971e9": [
+      "Crowd Pleaser",
+      ""
+    ],
+    "71b47a36af68cbbd": [
+      "Tropical Tune",
+      "Loop"
+    ],
+    "71c377c003e66952": [
+      "Performer at Heart",
+      ""
+    ],
+    "74b285e31d812424": [
+      "Brush It Off",
+      ""
+    ],
+    "761baa3c7847370e": [
+      "Only Need One",
+      "Loop"
+    ],
+    "76db3c8d9004f421": [
+      "Airwalk",
+      ""
+    ],
+    "77aac7f39ca08372": [
+      "Charged Whirlwind",
+      ""
+    ],
+    "782419ad236bc46d": [
+      "Encore",
+      ""
+    ],
+    "78bf4dcaef9dc190": [
+      "Murder in Motion",
+      ""
+    ],
+    "79025d49bf420ee1": [
+      "Parting the Void",
+      ""
+    ],
+    "79a66781583d2903": [
+      "Lighter Than Air",
+      ""
+    ],
+    "7b306bf3f4fffbbd": [
+      "Only Need One",
+      ""
+    ],
+    "7b3bb09383009bf3": [
+      "Possessed",
+      ""
+    ],
+    "7c88fc66cb8c9e45": [
+      "Flipping Out",
+      ""
+    ],
+    "7cb8a09b70c9e6f7": [
+      "Jam Session",
+      ""
+    ],
+    "7cc51a3f0b9bba51": [
+      "Hysterical Laughter",
+      ""
+    ],
+    "7d6aa96502a34108": [
+      "Butterfly Barrage",
+      ""
+    ],
+    "7dda57f1b683b519": [
+      "Kickflip",
+      ""
+    ],
+    "7e9295c50e9483e7": [
+      "Body Hack",
+      ""
+    ],
+    "7f8a0546b72d2ff3": [
+      "Bad Attitude",
+      ""
+    ],
+    "801cddfe376c0470": [
+      "Bust A Move",
+      ""
+    ],
+    "80dfbcbb9457fb10": [
+      "Easter Egg",
+      ""
+    ],
+    "8150cc9b7bdffcf5": [
+      "Robotic Groove",
+      ""
+    ],
+    "816712b33e075dc4": [
+      "Not Entertained",
+      ""
+    ],
+    "81824d23ad267d2c": [
+      "Slow Clap",
+      ""
+    ],
+    "81cfde01fb684b55": [
+      "XOXO",
+      ""
+    ],
+    "82bbe78eff398e7c": [
+      "Dancer of Death",
+      ""
+    ],
+    "83872f5c5e3cd332": [
+      "Motor Massage",
+      ""
+    ],
+    "84ce2819cd5021e7": [
+      "Haka",
+      ""
+    ],
+    "8516ec149a46e245": [
+      "Scorpion Sting",
+      ""
+    ],
+    "854281ed7dcaffa2": [
+      "Human Spring",
+      "Loop"
+    ],
+    "8562abcde4cceef3": [
+      "Burning Passion",
+      ""
+    ],
+    "8584efdaaa38e1cb": [
+      "Victory Pose",
+      ""
+    ],
+    "86711c9a33375e2f": [
+      "Blighted Breakdown",
+      ""
+    ],
+    "86b7df583fd48257": [
+      "Flying Footy",
+      ""
+    ],
+    "87cafa56558bc371": [
+      "Killer Joke",
+      ""
+    ],
+    "896d5951c78082d4": [
+      "Hip Hip Hooray",
+      "Loop"
+    ],
+    "89971c6b8c0d4029": [
+      "Perched",
+      ""
+    ],
+    "89c2bcfec14b9d82": [
+      "Highland Heave",
+      ""
+    ],
+    "8a716b281bb0440c": [
+      "In Hot Water",
+      ""
+    ],
+    "8b2cf97cc5a91bd0": [
+      "Blazing Blade",
+      ""
+    ],
+    "8b4713c8b2237670": [
+      "Stim Shuffle",
+      ""
+    ],
+    "8bc4ece218fd96c5": [
+      "Earned It",
+      ""
+    ],
+    "8cb446f5317d1cb4": [
+      "Present Arms",
+      ""
+    ],
+    "8ce03b796c872b9f": [
+      "Two to Tango",
+      ""
+    ],
+    "8dc2efd9c757395d": [
+      "New Whirl Order",
+      ""
+    ],
+    "8e20afc66cc5d91e": [
+      "Focus",
+      ""
+    ],
+    "90b8dba8bded027d": [
+      "Terrible Twos",
+      ""
+    ],
+    "91b22ba9f86d6357": [
+      "A Rose For You",
+      ""
+    ],
+    "921b172548bcfd40": [
+      "Sheila-xing",
+      "Loop"
+    ],
+    "922f4d5c85768d89": [
+      "Zeal Appeal",
+      ""
+    ],
+    "93635d2b93604234": [
+      "Higher Devotion",
+      ""
+    ],
+    "94f8d4d75ab4b1fe": [
+      "Lunar Lounge",
+      "Loop"
+    ],
+    "9681eded6ad23a47": [
+      "Sheila Shuffle",
+      ""
+    ],
+    "98bae2cfe969c248": [
+      "Guitar Tuner",
+      ""
+    ],
+    "9922c6b0dc539405": [
+      "Hip Hip Hooray",
+      ""
+    ],
+    "99fbb67ebd64e7b2": [
+      "Stare Down",
+      ""
+    ],
+    "9b1b74cfce6e555e": [
+      "In-Flight Meal",
+      ""
+    ],
+    "9c37b93f8c189a59": [
+      "Demon Time",
+      ""
+    ],
+    "9cef6a8ac287414b": [
+      "Acrobatic Assailant",
+      ""
+    ],
+    "9cf8467a3a675d70": [
+      "Big Shame",
+      ""
+    ],
+    "9e1faf49ebce4268": [
+      "Stay Sharp",
+      ""
+    ],
+    "9ebf88b1fdcffea5": [
+      "Electric Boogie",
+      ""
+    ],
+    "9ecb15fdd0d31df7": [
+      "Static Snack",
+      ""
+    ],
+    "9eea1c2abcd82913": [
+      "Fight Your Demons",
+      ""
+    ],
+    "9fdbdc7411db7c8d": [
+      "360 No Scope",
+      ""
+    ],
+    "a022d1f956ab324c": [
+      "Ruck and Roll",
+      ""
+    ],
+    "a0475a5e76f085a6": [
+      "Conductor",
+      ""
+    ],
+    "a117b8811a604bb9": [
+      "Gibby With It",
+      "Loop"
+    ],
+    "a1338ad267cb7747": [
+      "Tiny Dancer",
+      ""
+    ],
+    "a1ee93e56bc304bf": [
+      "Start Me Up",
+      ""
+    ],
+    "a27643ba9287dbbb": [
+      "Working the Angles",
+      "Loop"
+    ],
+    "a30e54a91a6848c0": [
+      "Cool Down",
+      "Loop"
+    ],
+    "a327a5217da6b8a5": [
+      "Hunter's Call",
+      ""
+    ],
+    "a3e11eb01aa21b36": [
+      "Party Jumpstarter",
+      ""
+    ],
+    "a58932d9b7c1e3b7": [
+      "Practice Makes Perfect",
+      ""
+    ],
+    "a5e056e2b62e8ff4": [
+      "Swordplay",
+      ""
+    ],
+    "a63a3810bfb03989": [
+      "Brain and Brawn",
+      ""
+    ],
+    "a6b81c3948d4eb35": [
+      "Jerky Break",
+      ""
+    ],
+    "a72237642bd19cb8": [
+      "I'll Lead",
+      ""
+    ],
+    "a814cd8fcb3c98d2": [
+      "Human Spring",
+      ""
+    ],
+    "a9ddd70c1fbc6fcd": [
+      "Footwork",
+      ""
+    ],
+    "aa000f3768fbd032": [
+      "Joyful Gigawatts",
+      ""
+    ],
+    "aa04605db2d96381": [
+      "To Your Strength",
+      ""
+    ],
+    "aa8956cae36193ba": [
+      "Factory Reset",
+      "Loop"
+    ],
+    "aac42dbc133c7fac": [
+      "Candy Shop",
+      ""
+    ],
+    "ab414046d15765ba": [
+      "Sample Testing",
+      ""
+    ],
+    "acd34879d6fcf262": [
+      "Uppercut",
+      ""
+    ],
+    "ad19fb839b7f3bfb": [
+      "Dark Hunter",
+      ""
+    ],
+    "aede724a56b5b4c1": [
+      "Off the Leash",
+      ""
+    ],
+    "af25a6933496831e": [
+      "Game Over",
+      ""
+    ],
+    "b28d543e219b7d80": [
+      "Fit for a Queen",
+      ""
+    ],
+    "b2ad76f9babec474": [
+      "Ruck and Roll",
+      "Loop"
+    ],
+    "b4f2b029f6bafab6": [
+      "TA DA!",
+      ""
+    ],
+    "b9373fc0dc462c45": [
+      "Art of the Hunt",
+      ""
+    ],
+    "ba10e3332804f9aa": [
+      "Dramatic End",
+      ""
+    ],
+    "bd70c47fce39bc05": [
+      "No Sweat",
+      ""
+    ],
+    "bdbc280414e53357": [
+      "Joyful Jig",
+      "Loop"
+    ],
+    "bdfbc732f319d632": [
+      "Throwdown",
+      ""
+    ],
+    "be082f4ad14274f8": [
+      "Come Get Some",
+      ""
+    ],
+    "be0ba593eba8fc4f": [
+      "Mom Dance",
+      ""
+    ],
+    "befbeb7e5bbcd11e": [
+      "Hálfr Pipe",
+      ""
+    ],
+    "c18e53f2c53315b7": [
+      "Get it Together",
+      ""
+    ],
+    "c2c93724dcb55bfc": [
+      "Switcheroo",
+      ""
+    ],
+    "c393321205562f77": [
+      "Thriller Killer",
+      ""
+    ],
+    "c3f696d3c34f4bb7": [
+      "Scorpion Sting",
+      "Loop"
+    ],
+    "c81202999fe011ed": [
+      "The Light Bombastic",
+      ""
+    ],
+    "c878b81a91daec87": [
+      "Feet Don't Fail",
+      ""
+    ],
+    "ca01c21862b21a15": [
+      "Unbridled Enthusiasm",
+      ""
+    ],
+    "cc48b8919cdca93d": [
+      "Bang",
+      ""
+    ],
+    "cc580dd69532cf51": [
+      "Trust Fall",
+      ""
+    ],
+    "cf7e08c3a657fe18": [
+      "Great Minds Recline",
+      "Loop"
+    ],
+    "cfb48efeb5877265": [
+      "Hover Pen",
+      ""
+    ],
+    "d07b5c67ad21666d": [
+      "Looking Sharp",
+      ""
+    ],
+    "d0e7d88074e69e30": [
+      "Fast Hands",
+      ""
+    ],
+    "d167be068e2dadd1": [
+      "Oi, Oi, Oi!",
+      ""
+    ],
+    "d22ed6fd1f22ae81": [
+      "Factory Reset",
+      ""
+    ],
+    "d24ff54ea1d0eab6": [
+      "Rhythm Machine",
+      "Loop"
+    ],
+    "d27e02fc36fca5ff": [
+      "Wind Down",
+      "Loop"
+    ],
+    "d3304fa27b6c13d3": [
+      "Lantern Lighting",
+      ""
+    ],
+    "d4bb483ef75e2133": [
+      "Time Out",
+      ""
+    ],
+    "d4faeaa6ed437d10": [
+      "Cerebral Vortex",
+      ""
+    ],
+    "d5b443c62d5bc5df": [
+      "Birds of a Feather",
+      ""
+    ],
+    "d615ff6430ed667a": [
+      "Flourish",
+      ""
+    ],
+    "d6953fe34258b24c": [
+      "Electric Conductor",
+      ""
+    ],
+    "d6e4992fc9cb21d2": [
+      "Inspiration",
+      ""
+    ],
+    "d6fd3ce24ba84a4d": [
+      "My Turf",
+      ""
+    ],
+    "d75b387aeeac8667": [
+      "Flipping Out",
+      ""
+    ],
+    "d8d48ec914ba5f97": [
+      "Shout Outs",
+      ""
+    ],
+    "da82861550425d0d": [
+      "Lunar Lounge",
+      ""
+    ],
+    "da9a5ed873e7ce18": [
+      "Keeping It Loose",
+      ""
+    ],
+    "daad2f82d1771acd": [
+      "Brokedancing",
+      ""
+    ],
+    "db4fd0d70587ea75": [
+      "Staff Spectacle",
+      ""
+    ],
+    "dbfa69aee9ce4ae2": [
+      "Overload",
+      ""
+    ],
+    "dcaf33d8539c196b": [
+      "Design Flaw",
+      ""
+    ],
+    "dd3f0080501fa694": [
+      "Guiding Lights",
+      ""
+    ],
+    "dd60a9092f49f017": [
+      "Beast Within",
+      ""
+    ],
+    "de2b3ccff9d8d703": [
+      "Living on the Edge",
+      ""
+    ],
+    "dee9041b76926196": [
+      "Heartbeat Remix",
+      ""
+    ],
+    "df2abdaac4b79ae3": [
+      "Working the Angles",
+      ""
+    ],
+    "df7039623ffef455": [
+      "Ones and Threes",
+      ""
+    ],
+    "e02f635baefcd96a": [
+      "Bad Daditude",
+      ""
+    ],
+    "e0f8f5f3f4c8f734": [
+      "Acrobat",
+      ""
+    ],
+    "e1c36df5cb2dbe6e": [
+      "Sheila-xing",
+      ""
+    ],
+    "e347e1e21a6af7db": [
+      "Jetpack Jack-O-Lantern",
+      ""
+    ],
+    "e34847a95b5db0e2": [
+      "A Cold One",
+      ""
+    ],
+    "e40c3f3f5ece7c12": [
+      "Crowd Pleaser",
+      ""
+    ],
+    "e44ccfedb6c2827d": [
+      "Dramatic Entrance",
+      ""
+    ],
+    "e61f588dad434f50": [
+      "Time Out",
+      "Loop"
+    ],
+    "e6e87660076f6698": [
+      "On the Flipside",
+      ""
+    ],
+    "e87bebdb8d15989c": [
+      "Trick Shot",
+      ""
+    ],
+    "ea2eddbdb3cfc664": [
+      "Giving Smiles",
+      ""
+    ],
+    "eb0f95fabe424161": [
+      "Suffering Silence",
+      ""
+    ],
+    "ebd2a163dbcdef69": [
+      "Uppercut",
+      ""
+    ],
+    "ecb50054a1587c97": [
+      "Infectious Fight",
+      ""
+    ],
+    "ed97f95ed3799d3c": [
+      "Festa Del Gatta",
+      ""
+    ],
+    "ee7c89f2a38432d2": [
+      "Blowing Kisses",
+      ""
+    ],
+    "ef7e74107c10c419": [
+      "Crushed It",
+      ""
+    ],
+    "efd20e5116231756": [
+      "Sharpened Reach",
+      ""
+    ],
+    "efe462d9b3e599ee": [
+      "Running Man Mags",
+      ""
+    ],
+    "f1b8128e51510622": [
+      "Once More With Apathy",
+      ""
+    ],
+    "f1d59252348e9f30": [
+      "Floating Point",
+      "Loop"
+    ],
+    "f2200a8497b6bd27": [
+      "Can't Touch This",
+      ""
+    ],
+    "f37e3d5c793c1b61": [
+      "Natural Advantage",
+      ""
+    ],
+    "f38a14b87c525e56": [
+      "Exceptional Victory",
+      ""
+    ],
+    "f42584813e05d64a": [
+      "Stundrop",
+      ""
+    ],
+    "f4f6a9dbbdc8234a": [
+      "Selfie",
+      ""
+    ],
+    "f51fcd894b2871ff": [
+      "Waltz for One",
+      ""
+    ],
+    "f5c93f0da0015402": [
+      "Eau de Nox",
+      ""
+    ],
+    "f5d12430d641a7a3": [
+      "Bestowed Gift",
+      ""
+    ],
+    "f71e48124559b1cf": [
+      "Livestream",
+      ""
+    ],
+    "f842f1e4fe11b35c": [
+      "Gibby With It",
+      ""
+    ],
+    "f8eeb2d84080be14": [
+      "Sparkling Spin Cycle",
+      ""
+    ],
+    "f94649520ea3424b": [
+      "Fistbump",
+      ""
+    ],
+    "fc58ab94abf75e87": [
+      "Acrobatic Assailant",
+      "Loop"
+    ],
+    "fd3468ce657ac1ce": [
+      "Getting Started",
+      ""
+    ],
+    "fea39f4ed9cece94": [
+      "Party Pooper",
+      ""
+    ],
+    "ff21ad22df7358ae": [
+      "Loose Cannon",
+      ""
+    ],
+    "ffb9e6c6b76730b4": [
+      "Flourished Flag",
+      ""
+    ]
+  }
+}

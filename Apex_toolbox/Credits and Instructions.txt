@@ -1,9 +1,10 @@
                                             ####################################			
-                                                   Apex Toolbox 3.8.0
+                                                   Apex Toolbox 3.10.6 Experimental
                                             ####################################
 
 Original Apex Toolbox by Random Blender Dude / Gl2imm.
-Apex Toolbox 3.8.0 is a maintained and modified release by Apex Legends Renders (ALR).
+Apex Toolbox 3.10.6 is a maintained and modified release by Apex Legends Renders (ALR).
+Experimental release: animation tools and automatic names have limited export coverage.
 This release remains distributed under GPL-3.0.
 
 Complete source code: https://github.com/xFyreGG/Apex-Toolbox-ALR
@@ -50,10 +51,10 @@ ApexShader+ - Modified original ApexShader done by @Emi_v7 from Legion+ and 3D A
 							
 											
 ####################################			
-       Toon Auto_tex:
+       Historical Toon Shader Credits:
 ####################################
 
-Apex ToonShader. For Texturing Models Similar to Comics Style. Works Same as AutoTex but with Toon Shader (only default textures in _images folder). Instructions inside Toolbox 
+The Toon shader tool was removed in 3.10.0. Original contributor credit is retained below.
 Credits: This is modified Shader from ToonShader done by LightningBoyStudio. They had allowed to use it in the Toolbox, so you may do your renders with it. Dont forget to check them out, follow, subscibe, likes, this will help them grow https://twitter.com/LightningBoySt1
 
 

@@ -5,3 +5,6 @@ __pycache__/
 *.blend2
 .idea/
 .vscode/
+artifacts/
+dist/
+*.log

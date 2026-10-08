@@ -38,11 +38,16 @@ ALIASES = {
     "apex_roles": "roles",
     "apex_shaders": "shaders",
     "apex_resolver": "resolver",
+    "apex_health": "health",
+    "apex_diagnostics": "diagnostics",
+    "apex_naming": "naming",
+    "apex_workflows": "workflows",
+    "apex_animations": "animations",
 }
 
 #: Modules that import ``bpy`` and so cannot be imported by a plain CPython
 #: test run.  Their signatures are read from the source instead.
-BPY_MODULES = ("autotex", "shaders", "graph")
+BPY_MODULES = ("autotex", "shaders", "graph", "health", "workflows", "animations")
 
 
 def _addon_source():
@@ -150,7 +155,7 @@ class ApiContractTest(unittest.TestCase):
 
     def test_no_mutable_default_arguments(self):
         for module_name in ("roles", "naming", "paths", "roots", "resolver",
-                            "autotex", "shaders", "graph"):
+                            "autotex", "shaders", "graph", "health", "diagnostics"):
             tree = ast.parse(_module_source(module_name))
             for node in ast.walk(tree):
                 if not isinstance(node, ast.FunctionDef):

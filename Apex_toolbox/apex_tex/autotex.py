@@ -15,8 +15,8 @@ whether it could texture it.  This module performs the work once:
 
 A material that cannot be resolved is left exactly as the importer made it.
 
-:func:`resolve_for_objects` is the shared entry point.  Auto Texture, Toon and
-Recolour all go through it, so there is exactly one texture-discovery
+:func:`resolve_for_objects` is the shared entry point.  Auto Texture and
+Recolour both go through it, so there is exactly one texture-discovery
 implementation in the add-on.
 """
 
@@ -61,9 +61,9 @@ def material_slots(objects):
             continue
         for slot in obj.material_slots:
             material = slot.material
-            if material is None or material.name in seen:
+            if material is None or material in seen:
                 continue
-            seen.add(material.name)
+            seen.add(material)
             ordered.append(material)
     return ordered
 
@@ -158,29 +158,33 @@ def browsed_directories():
 def _build_index(roots):
     """One shared, cached index of every plausible texture file.
 
-    Already-loaded images go in before the disk scan so that a texture Blender
-    already has is reused rather than loaded a second time as a duplicate
-    datablock.  Each directory is scanned at most once for the whole run.
+    Disk roots establish the trust order. Already-loaded, available images
+    then attach to matching paths so they are reused without outranking the
+    current model's export. Each root is scanned at most once for the run.
     """
     index = paths.TextureIndex()
+
+    for position, root in enumerate(roots):
+        index.add_root(root.path, rank=position + 1,
+                       recursive=root.recursive)
 
     for count, image in enumerate(bpy.data.images):
         if count >= MAX_TRACKED_IMAGES:
             break
         path = graph.image_filepath(image)
-        if not path:
+        if not path or not graph.image_is_available(image):
             continue
-        index.add_image(image.name, path, rank=0, image_key=image)
-
-    # ``discover`` already returns the roots best first, so the position in
-    # that list *is* the trust order.  Using it as the rank means the export
-    # folder the user just imported from beats an older copy of the same model
-    # sitting somewhere else on disk.
-    for position, root in enumerate(roots):
-        index.add_root(root.path, rank=position + 1,
-                       recursive=root.recursive)
+        # Unrelated images must not outrank the current export. On duplicate
+        # paths add_image attaches the datablock without changing root order.
+        index.add_image(os.path.basename(path), path, rank=len(roots) + 1,
+                        image_key=image)
 
     return index
+
+
+def _available_image(name):
+    image = bpy.data.images.get(name)
+    return image if graph.image_is_available(image) else None
 
 
 def _load_image(path, log):
@@ -201,9 +205,9 @@ def _images_for(results, log):
         image = result.image_key
         if image is None and result.path:
             image = _load_image(result.path, log)
-        if image is None:
+        if image is None or not graph.image_is_available(image) or not all(image.size):
             result.status = resolver.STATUS_MISSING
-            result.note = "file disappeared before it could be loaded"
+            result.note = "file is missing or contains no readable pixels"
             continue
         images[role] = image
     return images
@@ -248,8 +252,8 @@ def resolve_for_objects(objects, wanted_roles, texture_folder="",
                         report_lines=True):
     """Resolve ``wanted_roles`` for every material of ``objects``.
 
-    This is the one texture-discovery path in the add-on.  Auto Texture, Toon
-    and Recolour all call it, so a fix here fixes all three.
+    This is the one texture-discovery path in the add-on.  Auto Texture
+    and Recolour both call it, so a fix here benefits both workflows.
 
     ``remembered_roots`` and ``extra_roots`` accept ``None`` as "nothing"; the
     defaults are immutable rather than shared mutable lists.
@@ -294,7 +298,7 @@ def resolve_for_objects(objects, wanted_roles, texture_folder="",
             batch.index,
             graph_hits=info.hits,
             seeds=seeds,
-            image_by_name=lambda name: bpy.data.images.get(name),
+            image_by_name=_available_image,
         )
         _drop_redundant_roughness(results)
 
@@ -309,7 +313,7 @@ def resolve_for_objects(objects, wanted_roles, texture_folder="",
         images = _images_for(results, log)
         batch.results[material.name] = results
         batch.images[material.name] = images
-        batch.resolved_total += len(images)
+        batch.resolved_total += sum(r.resolved for r in results.values())
 
         for result in results.values():
             if result.resolved and result.path:
@@ -350,7 +354,6 @@ def resolve_from_folder(material, wanted_roles, folder, name_override=None,
         index,
         graph_hits=(),
         seeds=resolver.build_seeds(seed_name),
-        image_by_name=lambda name: bpy.data.images.get(name),
     )
     _drop_redundant_roughness(results)
     return results, _images_for(results, log)
@@ -376,7 +379,8 @@ def learn_roots(batch, remembered_roots, remember_callback):
 
 def run(context, shader_key, append_node_group,
         texture_folder="", search_subfolders=False, operator=None,
-        remembered_roots=None, remember_callback=None):
+        remembered_roots=None, remember_callback=None,
+        report_callback=None, objects=None):
     """Entry point used by the ``BUTTON_CUSTOM`` operator.
 
     :param remembered_roots: export folders previous runs succeeded in.
@@ -393,7 +397,7 @@ def run(context, shader_key, append_node_group,
             operator.report({"ERROR"}, "Unknown shader option %r" % shader_key)
         return {"CANCELLED"}
 
-    selected = list(context.selected_objects)
+    selected = list(context.selected_objects if objects is None else objects)
     materials = material_slots(selected)
     if not materials:
         message = "Select a mesh with at least one material first."
@@ -415,11 +419,19 @@ def run(context, shader_key, append_node_group,
         materials=materials,
     )
 
-    # Appending the node group changes the selection, so it happens after the
-    # capture pass and the selection is restored immediately afterwards.
-    if bpy.data.node_groups.get(definition.group_name) is None:
-        append_node_group(definition.group_name, selected)
-    if bpy.data.node_groups.get(definition.group_name) is None:
+    # Load the shader library only after capture and resolution. The add-on's
+    # append callback keeps the selection and active object unchanged.
+    try:
+        if batch.resolved_total and bpy.data.node_groups.get(definition.group_name) is None:
+            append_node_group(definition.group_name, selected)
+    except (OSError, RuntimeError) as error:
+        if report_callback is not None:
+            report_callback(batch, definition, {m.name: "Shader unavailable: %s" % error
+                                               for m in materials})
+        if operator is not None:
+            operator.report({'ERROR'}, "Could not load the shader library. See the texture report.")
+        return {'CANCELLED'}
+    if batch.resolved_total and bpy.data.node_groups.get(definition.group_name) is None:
         message = "Could not append the '%s' node group from ApexShader.blend." \
                   % definition.group_name
         _log("%s %s" % (PREFIX, message))
@@ -429,15 +441,17 @@ def run(context, shader_key, append_node_group,
 
     textured = 0
     skipped = 0
+    outcomes = {}
 
     for material, info in zip(batch.materials, batch.infos):
         results = batch.results.get(material.name, {})
         images = batch.images.get(material.name, {})
 
-        if not images:
+        missing = [r for r in results.values() if r.status == resolver.STATUS_MISSING]
+        if not images or missing:
             skipped += 1
-            missing = [r for r in results.values()
-                       if r.status == resolver.STATUS_MISSING]
+            outcomes[material.name] = ("Left untouched: a referenced texture is unavailable."
+                                       if missing else "Left untouched: no textures found.")
             if missing or info.role_hints:
                 _log("%s Material textures referenced by CAST but source "
                      "files are unavailable. Re-export from RSX with "
@@ -450,13 +464,15 @@ def run(context, shader_key, append_node_group,
 
         try:
             shaders.build_material(material, definition, images)
-        except (RuntimeError, KeyError, AttributeError) as error:
+        except (RuntimeError, KeyError, AttributeError, TypeError, ValueError) as error:
             skipped += 1
+            outcomes[material.name] = "Left untouched: %s" % error
             _log("%s Failed to rebuild '%s': %s. The imported material was "
                  "left untouched." % (PREFIX, material.name, error))
             continue
 
         textured += 1
+        outcomes[material.name] = "Textured successfully."
         _log("%s Textured %s" % (PREFIX, material.name))
         _log("")
 
@@ -464,6 +480,8 @@ def run(context, shader_key, append_node_group,
         _log("%s %d texture(s) resolved automatically."
              % (PREFIX, batch.resolved_total))
     learn_roots(batch, remembered_roots, remember_callback)
+    if report_callback is not None:
+        report_callback(batch, definition, outcomes)
 
     summary = "Auto Texture: %d material(s) textured, %d left untouched." % (
         textured, skipped)
@@ -474,6 +492,6 @@ def run(context, shader_key, append_node_group,
         else:
             operator.report(
                 {"WARNING"},
-                summary + " See the console; set a Texture Search Folder if "
+                summary + " See the texture report; set a Texture Search Folder if "
                           "the textures live somewhere Auto Texture cannot see.")
     return {"FINISHED"}

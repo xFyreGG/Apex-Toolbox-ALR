@@ -204,13 +204,25 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
     built successfully, so a failure part way through leaves the imported
     material usable.
     """
-    tree = material.node_tree
-    previous_nodes = list(tree.nodes)
-
     group_tree = bpy.data.node_groups.get(definition.group_name)
     if group_tree is None:
         raise RuntimeError(
             "Shader node group '%s' is not available" % definition.group_name)
+
+    if not material.is_editable:
+        raise RuntimeError("Linked material is read-only; make it local first")
+    # Enabling nodes creates defaults on non-node materials. Restore the flag
+    # on failure so even that material keeps its previous appearance.
+    used_nodes = material.use_nodes
+    material.use_nodes = True
+    tree = material.node_tree
+    previous_nodes = list(tree.nodes)
+    previous_active = tree.nodes.active
+    previous_outputs = [n for n in previous_nodes
+                        if n.bl_idname == 'ShaderNodeOutputMaterial'
+                        and n.is_active_output]
+    image_settings = {image: (image.colorspace_settings.name, image.alpha_mode)
+                      for image in images.values() if image is not None}
 
     created = []
     texture_nodes = {}
@@ -220,7 +232,6 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
                                   key=lambda kv: _legacy_index(kv[0])):
             if image is None:
                 continue
-            apply_colorspace(image, role)
             node = tree.nodes.new("ShaderNodeTexImage")
             created.append(node)
             node.image = image
@@ -233,6 +244,17 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
         created.append(group_node)
         group_node.node_tree = group_tree
         group_node.location = (300, 0)
+
+        required = {definition.sockets.get(R.GLOSS if r == R.ROUGHNESS else r)
+                    for r in texture_nodes if r not in definition.extra_roles}
+        if plug_alpha:
+            required.update(name for role, name in definition.alpha_sockets.items()
+                            if role in texture_nodes)
+        missing = [name for name in required
+                   if name and name not in group_node.inputs]
+        if missing or not group_node.outputs:
+            raise RuntimeError("Shader is missing sockets: %s"
+                               % (", ".join(sorted(missing)) or "surface output"))
 
         output_node = tree.nodes.new("ShaderNodeOutputMaterial")
         created.append(output_node)
@@ -276,12 +298,22 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
                 source = invert.outputs["Color"]
             tree.links.new(group_node.inputs[socket_name], source)
 
+        for role, image in images.items():
+            apply_colorspace(image, role)
+
     except Exception:
         for node in created:
             try:
                 tree.nodes.remove(node)
             except RuntimeError:
                 pass
+        for image, (colorspace, alpha_mode) in image_settings.items():
+            image.colorspace_settings.name = colorspace
+            image.alpha_mode = alpha_mode
+        for node in previous_outputs:
+            node.is_active_output = True
+        tree.nodes.active = previous_active
+        material.use_nodes = used_nodes
         raise
 
     # Success: retire the imported / previous graph.
@@ -290,6 +322,13 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
             tree.nodes.remove(node)
         except RuntimeError:
             pass
+
+    # Free the historic names only after the old graph has gone. Re-running
+    # previously produced 0.001 / 6.001, breaking downstream numeric lookups.
+    for role, node in texture_nodes.items():
+        node.name = _legacy_node_name(role)
+    output_node.is_active_output = True
+    tree.nodes.active = group_node
 
     # ``blend_method`` disappeared in Blender 4.3 (EEVEE Next); setting it is
     # best effort so Auto_tex keeps working on both sides of that change.
