@@ -1,4 +1,14 @@
-# Apex Toolbox 3.10.11 — Experimental (in development)
+# Apex Toolbox 3.10.12 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- The folder dialog now stays at the RSX `mdl` directory even if Blender's
+  browse control opens a highlighted model folder. Tick the model folders in
+  the list and import them together; the dialog remembers `mdl` next time.
+
+---
+
+## Apex Toolbox 3.10.11 — Experimental
 
 Update date: **2026-10-08**
 

@@ -2,6 +2,10 @@
                                                       Version History:
                                             ####################################
 
+v3.10.12 Experimental Changes (2026-10-08):
+	- Keep the folder list at the RSX mdl root, even when Blender opens a highlighted model folder.
+	- Remember the selected mdl directory for future imports.
+
 v3.10.11 Experimental Changes (2026-10-08):
 	- Added a folder selection dialog to choose individual models from an RSX parent folder.
 	- File importing remains available from the same Import & Texture button.

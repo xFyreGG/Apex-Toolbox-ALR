@@ -264,6 +264,24 @@ class WorkflowIntegration(unittest.TestCase):
                     if 'apex_source_model' in obj}
         self.assertEqual(imported, {'alpha_LOD0.cast', 'gamma_LOD0.cast'})
 
+    def test_folder_dialog_returns_to_mdl_after_browser_opens_child(self):
+        mdl = self.folder / 'mdl'
+        mdl.mkdir()
+        for name in ('alpha', 'beta'):
+            outer = mdl / name
+            inner = outer / name
+            inner.mkdir(parents=True)
+            model_file(self.cast, inner / (name + '_LOD0.cast'))
+        self.assertEqual(model_files.model_root(mdl / 'alpha'), mdl)
+        self.assertEqual(bpy.ops.object.apex_import_texture(
+            ui_stage='CHOOSE', source_mode='FOLDERS',
+            parent_folder=str(mdl / 'alpha'),
+            folder_items=[{'name': 'beta', 'selected': True}]), {'FINISHED'})
+        imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
+                    if 'apex_source_model' in obj}
+        self.assertEqual(imported, {'beta_LOD0.cast'})
+        self.assertEqual(bpy.context.scene.my_prefs.model_parent_folder, str(mdl))
+
     def test_import_model_folders_rejects_ambiguous_and_large_batches(self):
         ambiguous = self.folder / 'ambiguous'
         ambiguous.mkdir()

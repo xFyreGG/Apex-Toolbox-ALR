@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 10, 11),
+    "version": (3, 10, 12),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -614,6 +614,7 @@ class APEX_PG_animation_library(bpy.types.PropertyGroup):
 
 class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
     import_summary: bpy.props.StringProperty()
+    model_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
     include_model_meshes: BoolProperty(
         name='Include Model Meshes', default=True,
         description='Include meshes parented to a selected armature or empty, and meshes bound to its rig')
@@ -1092,6 +1093,10 @@ def refresh_import_folders(self, context):
     previous = {item.name: item.selected for item in self.folder_items}
     self.folder_items.clear()
     folder = bpy.path.abspath(self.parent_folder)
+    root = str(apex_model_files.model_root(folder))
+    if root != folder:
+        self.parent_folder = root
+        return
     if not os.path.isdir(folder):
         return
     try:
@@ -1147,6 +1152,8 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
     def invoke(self, context, event):
         self.shader = context.scene.my_prefs.cust_enum2
         self.ui_stage = 'CHOOSE'
+        if context.scene.my_prefs.model_parent_folder:
+            self.parent_folder = context.scene.my_prefs.model_parent_folder
         return context.window_manager.invoke_props_dialog(self, width=540)
 
     def draw(self, context):
@@ -1155,6 +1162,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             if self.source_mode == 'FOLDERS':
                 self.layout.prop(self, 'parent_folder')
                 if self.folder_items:
+                    self.layout.label(text='Tick folders here, then import.', icon='INFO')
                     self.layout.prop(self, 'folder_search', text='', icon='VIEWZOOM')
                     self.layout.template_list('APEX_UL_import_folders', '', self,
                                               'folder_items', self, 'folder_index', rows=10)
@@ -1196,6 +1204,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             except (OSError, ValueError) as error:
                 self.report({'ERROR'}, str(error))
                 return {'CANCELLED'}
+            context.scene.my_prefs.model_parent_folder = parent
             return self.import_paths(context, paths)
         directory = bpy.path.abspath(self.directory or os.path.dirname(self.filepath))
         selected = ([os.path.join(directory, item.name) for item in self.files]

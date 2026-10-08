@@ -8,6 +8,13 @@ LOD_SUFFIX = re.compile(r"(?:[_-]lod)(\d+)$", re.IGNORECASE)
 MAX_BATCH_MODELS = 50
 
 
+def model_root(folder):
+    """Use the RSX mdl directory when a browser returns one of its children."""
+    folder = Path(folder)
+    return next((path for path in (folder, *folder.parents)
+                 if path.name.casefold() == 'mdl'), folder)
+
+
 def model_cast(folder):
     """Return a folder's model CAST, preferring LOD0 over lower-detail exports."""
     folder = Path(folder)

@@ -300,3 +300,8 @@ The **3.10.11** folder selection dialog was checked in Blender 5.2.2 with
 three sibling model folders. Two checked folders imported while the unchecked
 folder remained out of the scene. Source and extracted-ZIP workflow tests and
 package smoke pass. The modal UI still needs a real Blender click-through.
+
+The **3.10.12** folder-root correction was checked against nested RSX-style
+`mdl/model/model/model_LOD0.cast` fixtures. Passing a highlighted model folder
+normalizes the dialog to `mdl`; selecting another sibling imports only that
+model and remembers the `mdl` directory.
