@@ -2,13 +2,13 @@
 
 Apex Toolbox is a Blender add-on for working with Apex Legends models exported through RSX and CAST. It helps with model scale, texturing, materials, rigging and scene setup.
 
-**Public release: 3.8.0.** [Download the installable ZIP](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.8.0). This version supports Blender 4.0 or newer and was checked with Blender 4.2. It includes automatic RSX/CAST texturing, Apex shaders, recolour and toon tools, rig helpers, lighting and effects.
+**Public release: 3.9.1.** [Download the installable ZIP](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.9.1). This version supports Blender 4.0 or newer and was checked with Blender 4.2. It includes automatic RSX/CAST texturing, Apex shaders, recolour and toon tools, rig helpers, lighting and effects. Version 3.9.1 adds scene health checks, missing-texture repair, texturing reports and XYZ Euler rotation conversion.
 
-**Experimental build: 3.10.7.** [See the experimental build and access details](https://apexlegendsrenders.com/creator-tools) under Apex Toolbox. It adds one-click Import & Texture, animation browsing with built-in English in-game names, and item-to-bone pairing. These features are **not in the public 3.8.0 ZIP**. The default branch contains work on this newer build; use the tagged 3.8.0 release if you need the public version's source.
+**Experimental build: 3.10.7.** [See the experimental build and access details](https://apexlegendsrenders.com/creator-tools) under Apex Toolbox. It adds one-click Import & Texture, animation browsing with built-in English in-game names, and item-to-bone pairing. These features are **not in the public 3.9.1 ZIP**. The default branch contains work on this newer build; use the tagged 3.9.1 release if you need the public version's source.
 
 ## Install the public release
 
-1. Download `Apex_toolbox_v3.8.0.zip` from the [3.8.0 release](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.8.0). Keep the ZIP intact.
+1. Download `Apex-Toolbox-ALR-3.9.1.zip` from the [3.9.1 release](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.9.1). Keep the ZIP intact.
 2. In Blender, open **Edit → Preferences → Add-ons → Install from Disk**, select the ZIP, and enable **Apex Toolbox**.
 3. Open the 3D View sidebar and select **Apex Tools**.
 
