@@ -1,9 +1,9 @@
                                             ####################################			
-                                                   Apex Toolbox 3.8.0
+                                                   Apex Toolbox 3.9.1
                                             ####################################
 
 Original Apex Toolbox by Random Blender Dude / Gl2imm.
-Apex Toolbox 3.8.0 is a maintained and modified release by Apex Legends Renders (ALR).
+Apex Toolbox 3.9.1 is a maintained and modified release by Apex Legends Renders (ALR).
 This release remains distributed under GPL-3.0.
 
 Complete source code: https://github.com/xFyreGG/Apex-Toolbox-ALR

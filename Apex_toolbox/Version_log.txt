@@ -2,6 +2,20 @@
                                                       Version History:
                                             ####################################
 
+v3.9.1 Changes (2026-09-28):
+	- Quaternion to XYZ Euler for models and pose bones, also included in model preparation. Existing animation is left unchanged.
+	- Visible version and release archive verification follow the add-on version.
+
+v3.9.0 Changes (2026-09-08):
+	- Saved, copyable reports after texturing.
+	- Removed obsolete Discord, Garlicus skins, Biast12 assets and donation buttons.
+	- Scene Health checks and issue-based mesh selection.
+	- Missing-texture repair without rebuilding shaders.
+	- Model scope from selected rigs and repeat-safe model preparation.
+	- RSX Recolour, shader rollback, image reuse and bounded-search repairs.
+	- Lite staging works without Extended assets.
+	- See WORKFLOW_GUIDE.md for the new tools and scope.
+
 v3.8.0 Changes:
 	Public release maintained by ALR, preserving Random Blender Dude as the original author.
 	- Modern RSX / CAST support and modern RSX texture naming support.

@@ -76,11 +76,21 @@ class TextureIndex(object):
     #: turn into a multi-minute recursive walk.
     MAX_FILES = 40000
     MAX_DEPTH = 6
+    MAX_ENTRIES = 100000
+    MAX_DIRECTORIES = 4096
 
     def __init__(self):
         self._files = []
         self._seen_files = set()
         self._seen_roots = set()
+        self._entries = 0
+        self._directories = 0
+        self.warnings = []
+        self._by_path = {}
+
+    def _warn(self, message):
+        if message not in self.warnings:
+            self.warnings.append(message)
 
     # -- roots -------------------------------------------------------------
 
@@ -101,21 +111,43 @@ class TextureIndex(object):
             return 0
 
         added = 0
-        if recursive:
-            directory = os.path.normpath(directory)
-            base_depth = directory.rstrip("\\/").count(os.sep)
-            for current, subdirs, files in os.walk(directory):
-                if current.count(os.sep) - base_depth >= self.MAX_DEPTH:
-                    del subdirs[:]
-                added += self._add_files(current, files, rank)
-                if len(self._files) >= self.MAX_FILES:
-                    break
-        else:
+        pending = [(directory, 0)]
+        while pending:
+            if len(self._files) >= self.MAX_FILES:
+                self._warn("Texture limit reached; choose a smaller search folder.")
+                break
+            if (self._entries >= self.MAX_ENTRIES
+                    or self._directories >= self.MAX_DIRECTORIES):
+                self._warn("Search limit reached; choose a smaller search folder.")
+                break
+            current, depth = pending.pop()
+            self._directories += 1
+            entries = []
             try:
-                entries = os.listdir(directory)
-            except OSError:
-                return 0
-            added += self._add_files(directory, entries, rank)
+                with os.scandir(current) as scan:
+                    for entry in scan:
+                        if self._entries >= self.MAX_ENTRIES:
+                            self._warn("Search limit reached; choose a smaller search folder.")
+                            break
+                        self._entries += 1
+                        entries.append(entry)
+                directories = []
+                for entry in sorted(entries, key=lambda e: (e.name.casefold(), e.name)):
+                    if entry.is_dir(follow_symlinks=False):
+                        if recursive and depth < self.MAX_DEPTH:
+                            directories.append((entry.path, depth + 1))
+                        elif recursive:
+                            self._warn("Depth limit reached; choose a folder closer to the textures.")
+                    elif (entry.is_file(follow_symlinks=False)
+                          and naming.is_image_file(entry.name)):
+                        if self.add_file(entry.path, rank=rank):
+                            added += 1
+                        if len(self._files) >= self.MAX_FILES:
+                            self._warn("Texture limit reached; choose a smaller search folder.")
+                            break
+                pending.extend(reversed(directories))
+            except OSError as error:
+                self._warn("Could not read %s: %s" % (current, error))
         return added
 
     def _add_files(self, directory, names, rank):
@@ -138,21 +170,37 @@ class TextureIndex(object):
         """Add a single file (or already loaded image).  ``True`` when new."""
         identity = _identity(path)
         if identity in self._seen_files:
+            entry = self._by_path[identity]
+            entry.root_rank = min(entry.root_rank, rank)
+            if image_key is not None:
+                entry.image_key = image_key
+            return False
+        if len(self._files) >= self.MAX_FILES:
+            self._warn("Texture limit reached; choose a smaller search folder.")
             return False
         self._seen_files.add(identity)
-        self._files.append(
-            TextureFile(path, name=name, root_rank=rank, image_key=image_key))
+        entry = TextureFile(path, name=name, root_rank=rank, image_key=image_key)
+        self._files.append(entry)
+        self._by_path[identity] = entry
         return True
 
     def add_image(self, name, path, rank=0, image_key=None, size=None):
         """Register an image datablock that may not exist on disk any more."""
         identity = _identity(path) if path else ("<image>" + name)
         if identity in self._seen_files:
+            entry = self._by_path[identity]
+            entry.root_rank = min(entry.root_rank, rank)
+            if image_key is not None:
+                entry.image_key = image_key
+            return False
+        if len(self._files) >= self.MAX_FILES:
+            self._warn("Texture limit reached; choose a smaller search folder.")
             return False
         self._seen_files.add(identity)
         entry = TextureFile(path or name, name=name, root_rank=rank,
                             image_key=image_key, size=size)
         self._files.append(entry)
+        self._by_path[identity] = entry
         return True
 
     # -- queries -----------------------------------------------------------
