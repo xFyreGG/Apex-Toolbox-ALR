@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 8, 0),
+    "version": (3, 9, 0),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -27,10 +27,11 @@ import os
 import re
 from bpy.types import Scene
 from bpy.props import (BoolProperty,FloatProperty)
-import requests
+from urllib.request import Request, urlopen
 import webbrowser
 import sys
 import platform
+import textwrap
 
 ##########################################
 #   Reload-safe submodule handling
@@ -67,11 +68,15 @@ from .apex_tex import autotex as apex_autotex
 from .apex_tex import roles as apex_roles
 from .apex_tex import shaders as apex_shaders
 from .apex_tex import resolver as apex_resolver
+from .apex_tex import diagnostics as apex_diagnostics
+from .apex_tex import health as apex_health
+from .apex_tex import naming as apex_naming
+from .apex_tex.versions import newer_version
 
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 4
+APEX_TEX_API_VERSION = 7
 
 
 def modules_are_stale():
@@ -92,7 +97,7 @@ def require_fresh_modules(operator=None):
 
 
 ## Toolbox vars ##
-ver = "v3.8.0"
+ver = "v3.9.0"
 #ver = "v.3.6"
 lts_ver = ver
 loadImages = True
@@ -197,7 +202,7 @@ def assets_installed():
     folder = bpy.path.abspath(folder)
     if not os.path.isdir(folder):
         return False
-    return os.path.basename(os.path.normpath(folder)) == "Apex_Toolbox_Assets"
+    return os.path.isfile(os.path.join(folder, "Assets.blend"))
 
 
 def assets_blend():
@@ -216,8 +221,8 @@ def require_assets(operator):
         operator.report(
             {"ERROR"},
             "This needs the Apex Toolbox Assets pack. Set its folder in "
-            "Preferences > Add-ons > Apex Toolbox (the folder must be named "
-            "Apex_Toolbox_Assets).")
+            "Preferences > Add-ons > Apex Toolbox (choose the folder "
+            "containing Assets.blend).")
     return False
 
 
@@ -239,13 +244,53 @@ def store_texture_roots(paths_list):
         pass
 
 
-def use_absolute_paths():
-    """Recolor and Auto Texture need absolute image paths to resolve files."""
-    bpy.context.preferences.filepaths.use_relative_paths = False
-
-
 def selected_meshes(context):
     return [o for o in context.selected_objects if o.type == "MESH"]
+
+
+def texture_targets(context):
+    return apex_health.model_meshes(context.selected_objects, context.view_layer,
+                                    context.scene.my_prefs.include_model_meshes)
+
+
+def health_targets(context):
+    if context.scene.my_prefs.health_scope == 'VIEW_LAYER':
+        return [obj for obj in context.view_layer.objects if obj.type == 'MESH']
+    return texture_targets(context)
+
+
+def save_tool_report(prefs, kind, summary, body):
+    field = kind + '_report'
+    report = getattr(prefs, field)
+    if report is None:
+        report = bpy.data.texts.new('Apex ' + kind.title() + ' Report')
+        setattr(prefs, field, report)
+    report.clear()
+    report.write(body)
+    report.cursor_set(0, character=0, select=False)
+    setattr(prefs, kind + '_summary', summary)
+
+
+def capture_texture_report(context, batch, definition, outcomes):
+    summary, body = apex_diagnostics.texture_report(batch, definition, outcomes)
+    save_tool_report(context.scene.my_prefs, 'texture', summary, body)
+
+
+def draw_wrapped(layout, text, context):
+    width = max(24, int(getattr(context.region, 'width', 300) / 7))
+    layout = layout.column(align=True)
+    for line in textwrap.wrap(text, width=width):
+        layout.label(text=line)
+
+
+def draw_report_actions(layout, kind):
+    row = layout.row(align=True)
+    op = row.operator('object.apex_report', text='Open Report', icon='TEXT')
+    op.kind = kind
+    op.copy = False
+    op = row.operator('object.apex_report', text='Copy', icon='COPYDOWN')
+    op.kind = kind
+    op.copy = True
 
 
 def selected_armature(context):
@@ -328,17 +373,22 @@ def show_text_datablock(context, name, body, operator=None):
     if text is None:
         text = bpy.data.texts.new(name)
         text.write(body)
-    text.current_line_index = 0
+    text.cursor_set(0, character=0, select=False)
+
+    def display(area):
+        area.spaces.active.text = text
+        area.spaces.active.top = 0
+        area.spaces.active.show_word_wrap = True
 
     for window in context.window_manager.windows:
         for area in window.screen.areas:
             if area.type == "TEXT_EDITOR":
-                area.spaces.active.text = text
+                display(area)
                 return True
     area = getattr(context, "area", None)
     if area is not None and area.type == "VIEW_3D":
         area.ui_type = "TEXT_EDITOR"
-        area.spaces.active.text = text
+        display(area)
         return True
     if operator is not None:
         operator.report(
@@ -470,8 +520,7 @@ class apexToolsPreferences(bpy.types.AddonPreferences):
         name="Toolbox Assets Folder",
         description="Optional. Folder of the downloaded Apex Toolbox Assets "
                     "pack, which unlocks the HDRI themes, loot, heirlooms, "
-                    "badges and lobby items. The folder itself must be named "
-                    "'Apex_Toolbox_Assets'",
+                    "badges and lobby items. Choose the folder containing Assets.blend",
         default="",
         maxlen=1024,
         subtype="DIR_PATH")
@@ -505,7 +554,7 @@ class apexToolsPreferences(bpy.types.AddonPreferences):
         box.label(text="Folders", icon='FILE_FOLDER')
         box.prop(self, "asset_folder")
         if self.asset_folder and not assets_installed():
-            box.label(text="Folder must be named 'Apex_Toolbox_Assets'",
+            box.label(text="Assets.blend is missing from this folder",
                       icon='ERROR')
         box.prop(self, "legion_folder")
 
@@ -529,7 +578,34 @@ class apexToolsPreferences(bpy.types.AddonPreferences):
             box.label(text="No export folder remembered yet.", icon='INFO')
 
 
+class APEX_PG_health_issue(bpy.types.PropertyGroup):
+    code: bpy.props.StringProperty()
+    severity: bpy.props.StringProperty()
+    object: bpy.props.PointerProperty(type=bpy.types.Object)
+    title: bpy.props.StringProperty()
+    detail: bpy.props.StringProperty()
+
+
 class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
+    include_model_meshes: BoolProperty(
+        name='Include Model Meshes', default=True,
+        description='Include meshes parented to a selected armature or empty, and meshes bound to its rig')
+    texture_report: bpy.props.PointerProperty(type=bpy.types.Text)
+    texture_summary: bpy.props.StringProperty()
+    health_report: bpy.props.PointerProperty(type=bpy.types.Text)
+    health_summary: bpy.props.StringProperty()
+    repair_report: bpy.props.PointerProperty(type=bpy.types.Text)
+    repair_summary: bpy.props.StringProperty()
+    health_scope: bpy.props.EnumProperty(
+        name='Check', default='SELECTION',
+        items=[('SELECTION', 'Selected Models', 'Selected meshes and included model meshes'),
+               ('VIEW_LAYER', 'View Layer', 'All meshes in the current view layer, plus camera and world checks')])
+    health_issues: bpy.props.CollectionProperty(type=APEX_PG_health_issue)
+    health_index: bpy.props.IntProperty(default=0, min=0)
+    repair_folder: bpy.props.StringProperty(
+        name='New Texture Folder', subtype='DIR_PATH',
+        description='Search for moved images by exact filename; duplicate matches are left unchanged')
+    repair_subfolders: BoolProperty(name='Search Subfolders', default=True)
     
     name : bpy.props.StringProperty(name= "ver", default="", maxlen=40) #not in use            
                     
@@ -731,11 +807,10 @@ NETWORK_TIMEOUT = 8
 def _fetch(url):
     """GET ``url`` and return the body, or ``None`` on any failure."""
     try:
-        response = requests.get(url, allow_redirects=True,
-                                timeout=NETWORK_TIMEOUT)
-        response.raise_for_status()
-        return response.text
-    except Exception as error:                    # requests raises many types
+        request = Request(url, headers={'User-Agent': 'Apex-Toolbox/' + ver})
+        with urlopen(request, timeout=NETWORK_TIMEOUT) as response:
+            return response.read().decode('utf-8', errors='replace')
+    except (OSError, ValueError) as error:
         print("Apex Toolbox: could not reach %s (%s)" % (url, error))
         return None
 
@@ -875,15 +950,6 @@ class LGNDTRANSLATE_URL(bpy.types.Operator):
         if link == "check_update":
             fetch_online_versions(self)
 
-        if link == "buy coffee":
-            webbrowser.open_new("https://buy.stripe.com/7sI2cd3495IGbYc8wz")
-
-        if link == "garlicus_list":
-            webbrowser.open_new("https://docs.google.com/spreadsheets/d/123c1OigzmI4UaSZIEcKbIJFjgXVfAmXFrXQmM1dZMOU/edit#gid=0")        
-
-        if link == "biast_archive":
-            webbrowser.open_new("https://biast12.site/")            
-            
         if link == "io_anim_seanim":
             webbrowser.open_new("https://github.com/SE2Dev/io_anim_seanim/releases")
             
@@ -922,6 +988,16 @@ class LGNDTRANSLATE_URL(bpy.types.Operator):
                 return {"CANCELLED"}
             show_text_datablock(context, "Instructions", body, self)
 
+        if link == 'workflow_guide':
+            path = os.path.join(my_path, 'WORKFLOW_GUIDE.md')
+            try:
+                with open(path, encoding='utf-8') as handle:
+                    body = handle.read()
+            except OSError as error:
+                self.report({'ERROR'}, 'Could not open the workflow guide: %s' % error)
+                return {'CANCELLED'}
+            show_text_datablock(context, 'Apex Workflow Guide', body, self)
+
         if link == "version":
             path = os.path.join(my_path, "Version_log.txt")
             try:
@@ -947,9 +1023,6 @@ class LGNDTRANSLATE_URL(bpy.types.Operator):
             bpy.context.space_data.text = bpy.data.texts['Your Favourite Addon Link']
             '''
             
-        if link == "discord":
-            webbrowser.open_new("https://discord.gg/gFa4mY7")
-
         return {'FINISHED'}
         
     
@@ -957,17 +1030,16 @@ class LGNDTRANSLATE_URL(bpy.types.Operator):
 def append_apex_node_group(group_name, restore_selection=()):
     """Append one of the Apex shader node groups from ApexShader.blend.
 
-    ``bpy.ops.wm.append`` replaces the selection, so the objects Auto_tex is
-    working on are re-selected afterwards -- the same dance the operator has
-    always done, kept in one place.
+    Selection and the active object remain unchanged. ``restore_selection``
+    is retained for compatibility with the existing operator callbacks.
     """
-    names = [obj.name for obj in restore_selection]
-    bpy.ops.wm.append(directory=my_path + blend_file + ap_node,
-                      filename=group_name)
-    for name in names:
-        obj = bpy.data.objects.get(name)
-        if obj is not None:
-            obj.select_set(True)
+    # Loading datablocks directly leaves the user's selection and active
+    # object intact, including in background Blender and non-3D editors.
+    with bpy.data.libraries.load(os.path.join(my_path, 'ApexShader.blend'),
+                                 link=False) as (available, requested):
+        if group_name not in available.node_groups:
+            raise RuntimeError("Shader '%s' is missing from ApexShader.blend" % group_name)
+        requested.node_groups = [group_name]
 
 
 class BUTTON_CUSTOM(bpy.types.Operator):
@@ -978,15 +1050,18 @@ class BUTTON_CUSTOM(bpy.types.Operator):
     implementation across all three shader options.
     """
 
-    bl_label = "BUTTON CUSTOM"
+    bl_label = "Texture Model"
     bl_idname = "object.button_custom"
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT' and bool(texture_targets(context))
 
     def execute(self, context):
         if not require_fresh_modules(self):
             return {'CANCELLED'}
         prefs = context.scene.my_prefs
-        use_absolute_paths()
         return apex_autotex.run(
             context,
             shader_key=prefs.cust_enum2,
@@ -996,7 +1071,159 @@ class BUTTON_CUSTOM(bpy.types.Operator):
             operator=self,
             remembered_roots=remembered_texture_roots(),
             remember_callback=store_texture_roots,
+            objects=texture_targets(context),
+            report_callback=lambda *args: capture_texture_report(context, *args),
         )
+
+
+class APEX_OT_report(bpy.types.Operator):
+    """Open the latest saved report in the Text Editor, or copy its full contents"""
+    bl_idname = 'object.apex_report'
+    bl_label = 'Apex Report'
+    kind: bpy.props.EnumProperty(items=[('texture', 'Texture', ''),
+                                        ('health', 'Scene Health', ''),
+                                        ('repair', 'Repair', '')])
+    copy: BoolProperty(default=False, options={'SKIP_SAVE'})
+
+    def execute(self, context):
+        report = getattr(context.scene.my_prefs, self.kind + '_report')
+        if report is None:
+            self.report({'WARNING'}, 'Run the tool to create a report first.')
+            return {'CANCELLED'}
+        if self.copy:
+            context.window_manager.clipboard = report.as_string()
+            self.report({'INFO'}, 'Report copied.')
+        else:
+            show_text_datablock(context, report.name, report.as_string(), self)
+        return {'FINISHED'}
+
+
+class APEX_OT_check_scene(bpy.types.Operator):
+    """Check materials, missing images, UVs, rig targets and render setup without changing them"""
+    bl_idname = 'object.apex_check_scene'
+    bl_label = 'Check Scene Health'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        prefs = context.scene.my_prefs
+        objects = health_targets(context)
+        if not objects and prefs.health_scope == 'SELECTION':
+            self.report({'WARNING'}, 'Select a model, or choose View Layer to check the scene.')
+            return {'CANCELLED'}
+        issues = apex_health.inspect_scene(objects, context.scene,
+                                           prefs.health_scope == 'VIEW_LAYER')
+        prefs.health_issues.clear()
+        prefs.health_index = 0
+        for issue in issues:
+            entry = prefs.health_issues.add()
+            for field in ('code', 'severity', 'object', 'title', 'detail'):
+                setattr(entry, field, getattr(issue, field))
+        summary, body = apex_health.format_health(issues, len(objects), prefs.health_scope)
+        save_tool_report(prefs, 'health', summary, body)
+        self.report({'INFO'}, summary)
+        return {'FINISHED'}
+
+
+class APEX_OT_select_issues(bpy.types.Operator):
+    """Select visible, selectable meshes in the last health check, optionally by issue type"""
+    bl_idname = 'object.apex_select_issues'
+    bl_label = 'Select Affected Meshes'
+    bl_options = {'REGISTER', 'UNDO'}
+    code: bpy.props.StringProperty(default='', options={'SKIP_SAVE'})
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT'
+
+    def execute(self, context):
+        targets = {issue.object for issue in context.scene.my_prefs.health_issues
+                   if issue.object and (not self.code or issue.code == self.code)}
+        targets = [obj for obj in targets if obj.name in context.view_layer.objects
+                   and obj.visible_get(view_layer=context.view_layer) and not obj.hide_select]
+        if not targets:
+            self.report({'WARNING'}, 'No visible, selectable meshes for these issues. Run Check again if the scene changed.')
+            return {'CANCELLED'}
+        for obj in context.selected_objects:
+            obj.select_set(False)
+        targets.sort(key=lambda obj: obj.name.casefold())
+        for obj in targets:
+            obj.select_set(True)
+        context.view_layer.objects.active = targets[0]
+        return {'FINISHED'}
+
+
+class APEX_OT_repair_textures(bpy.types.Operator):
+    """Relink missing images by unique exact filename; shared images update for all users"""
+    bl_idname = 'object.apex_repair_textures'
+    bl_label = 'Repair Missing Textures'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT'
+
+    def execute(self, context):
+        prefs = context.scene.my_prefs
+        objects = health_targets(context)
+        if not objects and prefs.health_scope == 'SELECTION':
+            self.report({'WARNING'}, 'Select a model first.')
+            return {'CANCELLED'}
+        folder = bpy.path.abspath(prefs.repair_folder) if prefs.repair_folder else ''
+        images = apex_health.referenced_images(
+            objects, context.scene.world if prefs.health_scope == 'VIEW_LAYER' else None)
+        try:
+            summary, body = apex_health.repair_images(images, folder, prefs.repair_subfolders)
+        except ValueError as error:
+            self.report({'WARNING'}, str(error))
+            return {'CANCELLED'}
+        save_tool_report(prefs, 'repair', summary, body)
+        bpy.ops.object.apex_check_scene()
+        self.report({'INFO'}, summary)
+        return {'FINISHED'}
+
+
+class APEX_UL_health_issues(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data,
+                  active_propname, index):
+        row = layout.row(align=True)
+        row.label(text=item.title, icon='ERROR' if item.severity == 'ERROR' else 'INFO')
+        row.label(text=item.object.name if item.object else 'Scene')
+
+
+def model_xyz_euler(context):
+    targets = apex_health.model_rotation_targets(context.selected_objects, context.view_layer)
+    bones = [bone for obj in targets if obj.type == 'ARMATURE' for bone in obj.pose.bones]
+    return apex_health.use_xyz_euler(targets, bones)
+
+
+def report_xyz_euler(operator, result):
+    objects, bones, skipped = result
+    message = 'XYZ Euler: %d objects, %d bones changed.' % (objects, bones)
+    if skipped:
+        message += ' %d animated, driven, constrained or read-only targets left unchanged.' % skipped
+    operator.report({'WARNING'} if skipped else {'INFO'}, message)
+
+
+class APEX_OT_xyz_euler(bpy.types.Operator):
+    """Switch quaternion rotations to XYZ Euler on selected models and their bones, or selected pose bones; preserve orientation and skip animated, driven, constrained or read-only targets"""
+    bl_label = 'Quaternion to XYZ Euler'
+    bl_idname = 'object.apex_xyz_euler'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.mode == 'POSE':
+            return bool(context.selected_pose_bones)
+        return context.mode == 'OBJECT' and any(
+            obj.type in {'MESH', 'ARMATURE', 'EMPTY'} for obj in context.selected_objects)
+
+    def execute(self, context):
+        if not require_fresh_modules(self):
+            return {'CANCELLED'}
+        result = (apex_health.use_xyz_euler((), context.selected_pose_bones)
+                  if context.mode == 'POSE' else model_xyz_euler(context))
+        report_xyz_euler(self, result)
+        return {'FINISHED'} if sum(result[:2]) or not result[2] else {'CANCELLED'}
 
 
 class APEX_OT_forget_texture_roots(bpy.types.Operator):
@@ -1036,8 +1263,6 @@ class BUTTON_TOON(bpy.types.Operator):
             self.report({'WARNING'},
                         "Select the mesh objects you want to toon shade.")
             return {'CANCELLED'}
-        use_absolute_paths()
-
         selection = [obj.name for obj in bpy.context.selected_objects]
          
         if bpy.data.node_groups.get('Apex ToonShader') == None:
@@ -1110,7 +1335,7 @@ class BUTTON_TOON(bpy.types.Operator):
                             if mod.name == "OUTLINE_SOLIDIFY":
                                 exists = True
                         if exists:
-                            mod = bpy.context.object.modifiers["OUTLINE_SOLIDIFY"]
+                            mod = o.modifiers["OUTLINE_SOLIDIFY"]
                             mod.thickness = -0.1
                         else: 
                             o.modifiers.new("OUTLINE_SOLIDIFY","SOLIDIFY")
@@ -1427,11 +1652,16 @@ class BUTTON_CUSTOM2(bpy.types.Operator):
             self.report({'WARNING'},
                         "Choose the skin's texture folder first.")
             return {'CANCELLED'}
-        use_absolute_paths()
         texSets = [['albedoTexture'],['specTexture'],['emissiveTexture'],['scatterThicknessTexture'],['opacityMultiplyTexture'],['normalTexture'],['glossTexture'],['aoTexture'],['cavityTexture'],['anisoSpecDirTexture'],['iridescenceRampTexture']]
         ttf_texSets = [['col'],['spc'],['ilm'],['nml'],['gls'],['ao']]
         
-        recolor_folder = prefs.recolor_folder
+        recolor_folder = os.path.normpath(bpy.path.abspath(prefs.recolor_folder))
+        if not os.path.isdir(recolor_folder):
+            self.report({'WARNING'}, 'The skin folder does not exist.')
+            return {'CANCELLED'}
+        recolor_folder = os.path.join(recolor_folder, '')
+        visited_materials = set()
+        report_lines = ['APEX TOOLBOX | Recolour', '', 'Skin folder: ' + recolor_folder]
         
         
         #print("Realpath") 
@@ -1442,7 +1672,7 @@ class BUTTON_CUSTOM2(bpy.types.Operator):
         #print(os.path.dirname(os.path.realpath(recolor_folder)))   
             
         ######## Check if the Extended asset pack is installed ########
-        asset_folder_set = bpy.path.abspath(addon_asset_folder())
+        asset_folder_set = os.path.join(bpy.path.abspath(addon_asset_folder()), '')
         assets_set = 1 if assets_installed() else 0
         
         print("asset_folder_set: " + asset_folder_set)       
@@ -1501,13 +1731,12 @@ class BUTTON_CUSTOM2(bpy.types.Operator):
             if o.type == 'MESH':
                 sel_objects = bpy.context.selected_objects
                 for mSlot in o.material_slots:
-                    if mSlot.material is None:
+                    if mSlot.material is None or mSlot.material in visited_materials:
                         continue
                     MatNodeTree = mSlot.material
+                    visited_materials.add(MatNodeTree)
                     
-                    mSlot_clean = mSlot.name
-                    if "." in mSlot.name:
-                        mSlot_clean = mSlot.name.split(".")[0] 
+                    mSlot_clean = apex_naming.strip_datablock_suffix(mSlot.name)
 
                     #rec_folder2 = ("D:\Personal\G-Drive\Blender\Apex\models\Wraith\Materials\wraith_lgnd_v19_liberator_rc01\\") #recolour folder
                     #rec_folder2 = ("D:\\Personal\\G-Drive\\Blender\\Apex\\models\Wraith\\pilot_light_wraith_legendary_01\\_images\\") #recolour folder
@@ -1612,7 +1841,32 @@ class BUTTON_CUSTOM2(bpy.types.Operator):
                                             exist = 1
                                             break
                                         
-                        if exist == 1:
+                        # Resolve before deciding whether a skin is usable.
+                        # The old PNG-only gate rejected RSX _col / _nml and
+                        # every non-PNG skin before reaching the shared resolver.
+                        definition = apex_shaders.SHADER_DEFS[prefs.cust_enum]
+                        candidates = [(folderpath, foldername),
+                                      (recolor_folder, foldername),
+                                      (os.path.join(recolor_folder, 'base'), mSlot_clean)]
+                        if assets_set:
+                            candidates.append((os.path.join(asset_folder_set, '0. Legend_base'),
+                                               mSlot_clean))
+                        if ttf == 'skn':
+                            skn_name = mSlot_clean.rsplit('_', 2)[0]
+                            for suffix in ('_skn_02', '_skn_31'):
+                                candidates.append((os.path.join(recolor_folder, skn_name + suffix),
+                                                   skn_name + suffix))
+                        images = {}
+                        for candidate_folder, candidate_name in dict.fromkeys(candidates):
+                            results, candidate_images = apex_autotex.resolve_from_folder(
+                                MatNodeTree, definition.wanted_roles,
+                                candidate_folder, name_override=candidate_name)
+                            if apex_roles.ALBEDO in candidate_images:
+                                images = candidate_images
+                                folderpath, foldername = candidate_folder, candidate_name
+                                break
+
+                        if images:
                             # Recolour now shares the Auto Texture resolver
                             # instead of carrying its own hardcoded
                             # "<name>_<role>Texture.png" probe, so an RSX
@@ -1627,35 +1881,34 @@ class BUTTON_CUSTOM2(bpy.types.Operator):
                                     definition.group_name) is None:
                                 append_apex_node_group(definition.group_name,
                                                        sel_objects)
-                            results, images = apex_autotex.resolve_from_folder(
-                                MatNodeTree, definition.wanted_roles,
-                                folderpath, name_override=foldername)
-                            if not images:
-                                print("[Recolour] %s - nothing resolved in %s"
-                                      % (mSlot_clean, folderpath))
-                                continue
                             for line in apex_resolver.format_report(
                                     mSlot_clean, "Recolour folder", results,
                                     order=definition.wanted_roles,
                                     prefix="[Recolour]"):
                                 print(line)
+                                report_lines.append(line)
                             try:
                                 apex_shaders.build_material(
                                     MatNodeTree, definition, images,
                                     plug_alpha=rec_alpha)
                             except (RuntimeError, KeyError,
-                                    AttributeError) as error:
+                                    AttributeError, TypeError, ValueError) as error:
                                 print("[Recolour] %s could not be rebuilt: %s"
                                       % (mSlot_clean, error))
+                                skipped += 1
+                                report_lines.append('%s: left untouched (%s)' % (mSlot_clean, error))
                                 continue
                             recoloured += 1
                             print("[Recolour] Textured " + mSlot_clean)
                         else:
                             skipped += 1
+                            report_lines.append('%s: no matching albedo found; left untouched.' % mSlot_clean)
                             print("[Recolour] '%s' has no '%s_albedoTexture' "
                                   "style texture in %s"
                                   % (mSlot_clean, foldername, folderpath))
 
+        save_tool_report(prefs, 'texture', 'Recolour: %d updated; %d left untouched' % (recoloured, skipped),
+                         '\n'.join(report_lines) + '\n')
         if recoloured:
             self.report({"INFO"},
                         "Recolour: %d material(s) re-textured, %d skipped."
@@ -3026,7 +3279,7 @@ class LB_BUTTON_SPAWN(bpy.types.Operator):
             blend_file = ("/Assets.blend")
         
         asset_folder = bpy.path.abspath(addon_asset_folder())
-        if not require_assets(self):
+        if lobby_other != 'Animated Staging' and not require_assets(self):
             return {"CANCELLED"}
 
 
@@ -3302,6 +3555,9 @@ class EF_BUTTON_SPAWN(bpy.types.Operator):
             
         #### Adjust Model ####
         if cool_effect == 'adjust_model':
+            if context.mode != 'OBJECT':
+                self.report({'WARNING'}, 'Switch to Object Mode to prepare the model.')
+                return {'CANCELLED'}
             if not bpy.context.selected_objects:
                 self.report({'WARNING'},
                             "Select the imported model (its armature, or its "
@@ -3312,21 +3568,9 @@ class EF_BUTTON_SPAWN(bpy.types.Operator):
                             "No armature among the selected objects. Select "
                             "the model's bones object.")
                 return {'CANCELLED'}
-            else:
-                selection = [obj.name for obj in bpy.context.selected_objects]
-                for o in bpy.context.selected_objects:
-                    if o.type == 'ARMATURE':
-                        bpy.ops.object.select_all(action='DESELECT')   
-                        bpy.context.view_layer.objects.active = None  
-                        bpy.data.objects[o.name].select_set(True)  
-                        bpy.context.view_layer.objects.active = bpy.data.objects[o.name]                                                    
-                        bpy.ops.transform.rotate(value=1.5708, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False))
-                        bpy.ops.transform.resize(value=(0.0254, 0.0254, 0.0254), orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL')
-                        bpy.ops.view3d.view_all()
-                        for x in range(len(selection)):
-                            bpy.data.objects[selection[x]].select_set(True)
-                            x += 1                        
-                        break
+            converted, skipped = apex_health.prepare_armatures(context.selected_objects)
+            self.report({'INFO'}, '%d rigs prepared; %d already prepared.' % (converted, skipped))
+            report_xyz_euler(self, model_xyz_euler(context))
             
         return {'FINISHED'}             
                               
@@ -3366,7 +3610,7 @@ class APEX_PT_main(ApexPanel, bpy.types.Panel):
             box.label(text="Update finishes on restart")
             return
 
-        if lts_ver > ver:
+        if newer_version(lts_ver, ver):
             layout.operator('object.lgndtranslate_url',
                             text="Update Available: " + lts_ver,
                             icon='IMPORT').link = "update"
@@ -3390,6 +3634,7 @@ class APEX_PT_model(ApexPanel, bpy.types.Panel):
                         text="Set Correct Model Size",
                         icon='FULLSCREEN_ENTER').cool_effect = 'adjust_model'
         layout.label(text="Select the armature", icon='INFO')
+        layout.operator('object.apex_xyz_euler', icon='DRIVER_ROTATIONAL_DIFFERENCE')
 
 
 class APEX_PT_materials(ApexPanel, bpy.types.Panel):
@@ -3416,6 +3661,12 @@ class APEX_PT_autotex(ApexPanel, bpy.types.Panel):
         layout.use_property_decorate = False
         prefs = context.scene.my_prefs
 
+        targets = texture_targets(context)
+        layout.label(text='%d meshes / %d materials' % (
+            len(targets), len(apex_autotex.material_slots(targets))), icon='OUTLINER_OB_MESH')
+        row = layout.row()
+        row.use_property_split = False
+        row.prop(prefs, 'include_model_meshes')
         layout.prop(prefs, "cust_enum2", text="Shader")
 
         column = layout.column()
@@ -3423,6 +3674,15 @@ class APEX_PT_autotex(ApexPanel, bpy.types.Panel):
         column.scale_y = 1.3
         column.operator("object.button_custom", text="Texture Model",
                         icon='TEXTURE')
+        if not targets:
+            draw_wrapped(layout, 'Select meshes or the model armature to begin.', context)
+        elif context.mode != 'OBJECT':
+            layout.label(text='Switch to Object Mode', icon='INFO')
+        if prefs.texture_report:
+            box = layout.box()
+            box.label(text='Last texture report', icon='INFO')
+            draw_wrapped(box, prefs.texture_summary, context)
+            draw_report_actions(box, 'texture')
 
 
 class APEX_PT_autotex_search(ApexPanel, bpy.types.Panel):
@@ -3707,12 +3967,7 @@ class APEX_PT_apex_effects(ApexPanel, bpy.types.Panel):
         
         
         asset_folder_set = bpy.path.abspath(addon_asset_folder())
-        assets_set = 0
-
-        if os.path.exists(asset_folder_set) == True:
-            asset_folder_set = asset_folder_set.split(fbs)[-2]
-            if asset_folder_set == "Apex_Toolbox_Assets":
-                assets_set = 1
+        assets_set = 1 if assets_installed() else 0
         
                         
         ######### Wraith #########
@@ -4317,13 +4572,69 @@ class APEX_PT_scene_utils(ApexPanel, bpy.types.Panel):
                         icon='X').cool_effect = 'wireframe_clear'
 
 
+class APEX_PT_health(ApexPanel, bpy.types.Panel):
+    """Find problems before texturing or rendering"""
+    bl_label = 'Scene Health'
+    bl_idname = 'APEX_PT_health'
+    bl_order = 6
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        prefs = context.scene.my_prefs
+        layout.prop(prefs, 'health_scope', text='Scope')
+        layout.operator('object.apex_check_scene', text='Check Scene Health', icon='VIEWZOOM')
+        if prefs.health_report:
+            draw_wrapped(layout, prefs.health_summary, context)
+            layout.label(text='Last check · rerun after edits', icon='INFO')
+            if prefs.health_issues:
+                layout.template_list('APEX_UL_health_issues', '', prefs, 'health_issues',
+                                     prefs, 'health_index', rows=4)
+                index = min(prefs.health_index, len(prefs.health_issues) - 1)
+                issue = prefs.health_issues[index]
+                box = layout.box()
+                draw_wrapped(box, issue.detail, context)
+                if issue.object:
+                    box.operator('object.apex_select_issues', text='Select This Issue Type',
+                                 icon='RESTRICT_SELECT_OFF').code = issue.code
+                layout.operator('object.apex_select_issues', text='Select All Affected Meshes',
+                                icon='RESTRICT_SELECT_OFF').code = ''
+            draw_report_actions(layout, 'health')
+        else:
+            draw_wrapped(layout, 'Check missing textures, materials, UV maps and rig targets.', context)
+
+
+class APEX_PT_repair(ApexPanel, bpy.types.Panel):
+    """Reconnect moved textures without replacing your shaders"""
+    bl_label = 'Repair Missing Textures'
+    bl_idname = 'APEX_PT_repair'
+    bl_parent_id = 'APEX_PT_health'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        prefs = context.scene.my_prefs
+        layout.prop(prefs, 'repair_folder', text='Texture Folder')
+        layout.prop(prefs, 'repair_subfolders', text='Subfolders')
+        row = layout.row()
+        row.enabled = bool(prefs.repair_folder)
+        row.operator('object.apex_repair_textures', text='Repair Missing Textures', icon='FILE_REFRESH')
+        draw_wrapped(layout, 'Uses the scope above. Unique filenames only; shader links stay intact.', context)
+        if prefs.repair_report:
+            draw_wrapped(layout, prefs.repair_summary, context)
+            draw_report_actions(layout, 'repair')
+
+
 ######### About / Help ###########
 class APEX_PT_about(ApexPanel, bpy.types.Panel):
     """Documentation, links and the asset pack"""
 
     bl_label = "About & Help"
     bl_idname = "APEX_PT_about"
-    bl_order = 6
+    bl_order = 7
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -4331,6 +4642,8 @@ class APEX_PT_about(ApexPanel, bpy.types.Panel):
         extended = assets_installed()
 
         column = layout.column(align=True)
+        column.operator('object.lgndtranslate_url', text='Workflow Guide',
+                        icon='HELP').link = 'workflow_guide'
         column.operator('object.lgndtranslate_url',
                         text="Instructions & Credits",
                         icon='HELP').link = "instructions"
@@ -4356,14 +4669,6 @@ class APEX_PT_about(ApexPanel, bpy.types.Panel):
         column.operator('object.lgndtranslate_url',
                         text="Original Apex Toolbox",
                         icon='URL').link = "upstream"
-        column.operator('object.lgndtranslate_url', text="Toolbox Discord",
-                        icon='COMMUNITY').link = "discord"
-        column.operator('object.lgndtranslate_url', text="Garlicus Skins List",
-                        icon='URL').link = "garlicus_list"
-        column.operator('object.lgndtranslate_url', text="Biast12 Apex Assets",
-                        icon='URL').link = "biast_archive"
-        column.operator('object.lgndtranslate_url', text="Buy me a Coffee",
-                        icon='FUND').link = "buy coffee"
 
 
 ######### Updates Tracker ###########
@@ -4400,7 +4705,7 @@ class APEX_PT_updates(ApexPanel, bpy.types.Panel):
             split = column.split(factor=0.6)
             split.label(text="Legion+")
             split.label(text="v." + legion_cur_ver)
-            if legion_lts_ver > legion_cur_ver:
+            if newer_version(legion_lts_ver, legion_cur_ver):
                 column.operator(
                     'object.lgndtranslate_url',
                     text="Legion+ v." + str(legion_lts_ver) + " available",
@@ -4411,7 +4716,7 @@ class APEX_PT_updates(ApexPanel, bpy.types.Panel):
             split.label(text=name)
             split.label(text="v." + addon_ver[index])
             latest, link = _addon_update_info(name)
-            if latest and latest > addon_ver[index]:
+            if latest and newer_version(latest, addon_ver[index]):
                 column.operator(
                     'object.lgndtranslate_url',
                     text=name + " v." + str(latest) + " available",
@@ -4444,9 +4749,16 @@ def _addon_update_info(name):
 ##########################################
 classes = (
         apexToolsPreferences,
+        APEX_PG_health_issue,
         PROPERTIES_CUSTOM,
         LGNDTRANSLATE_URL,
         BUTTON_CUSTOM,
+        APEX_OT_report,
+        APEX_OT_xyz_euler,
+        APEX_OT_check_scene,
+        APEX_OT_select_issues,
+        APEX_OT_repair_textures,
+        APEX_UL_health_issues,
         APEX_OT_forget_texture_roots,
         BUTTON_TOON,
         BUTTON_SHADOW,
@@ -4482,6 +4794,8 @@ classes = (
         APEX_PT_shadow,
         APEX_PT_apex_effects,
         APEX_PT_scene_utils,
+        APEX_PT_health,
+        APEX_PT_repair,
         APEX_PT_about,
         APEX_PT_updates,
         )

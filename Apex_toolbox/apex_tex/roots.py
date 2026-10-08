@@ -256,7 +256,13 @@ def discover(material_dirs=(), names=(), manual="", search_subfolders=False,
             return
         normalised = os.path.normpath(path)
         key = os.path.normcase(normalised)
-        if key in seen or not _isdir(normalised, isdir):
+        if key in seen:
+            if recursive:
+                for root in roots:
+                    if os.path.normcase(root.path) == key:
+                        root.recursive = True
+            return
+        if not _isdir(normalised, isdir):
             return
         seen.add(key)
         roots.append(Root(normalised, rank, recursive, origin))

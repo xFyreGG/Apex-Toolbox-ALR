@@ -1,6 +1,10 @@
 # Auto_tex + RSX compatibility
 
-Apex Toolbox v3.8.0
+Apex Toolbox v3.9.0
+
+Version 3.9 adds automatic texture reports, model scope and **Scene
+Health → Repair Missing Textures**. See [WORKFLOW_GUIDE.md](WORKFLOW_GUIDE.md)
+for these workflows. Existing RSX/Legion texture naming remains supported.
 
 Auto_tex now understands both the classic **Legion+** export convention and
 current **RSX → CAST** exports. Nothing was removed: the legacy behaviour is
@@ -426,5 +430,7 @@ works too.
 python Apex_toolbox/apex_tex/tests/run_tests.py
 ```
 
-Blender integration and real-export validation scripts live alongside the
-release notes.
+Blender integration and render validation scripts are in `tests/` at the
+repository root. See `TESTING.md` for commands. These use synthetic fixtures
+and the bundled shader library; external importer/exporter implementations
+and optional Extended assets are not included in that validation.
