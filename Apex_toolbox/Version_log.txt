@@ -2,6 +2,60 @@
                                                       Version History:
                                             ####################################
 
+v3.10.7 Experimental Changes (2026-09-28):
+	- Added Pair Items for left hand, right hand and weapon attachment bones.
+	- Added a searchable custom bone choice and selected-rig shortcut.
+	- Snaps the imported item armature to the posed bone while retaining its child meshes.
+
+v3.10.6 Experimental Changes (2026-09-28):
+	- Moved Animations into Rigging & Animation, with a separate Rig Tools foldout.
+	- Simplified browsing and grouped advanced controls under Options & Details.
+	- Grouped shader, lighting and scene tools by workflow; collapsed troubleshooting.
+	- Removed repeated help/status text and updated labels and navigation guides.
+
+v3.10.5 Experimental Changes (2026-09-28):
+	- Included English in-game names across legends; applied automatically on link/refresh.
+	- Kept manual language/newer-name imports under advanced name controls.
+	- Preserved imported name overrides and added an undoable reset to included names.
+	- Read RSX mod-value comments correctly when importing item settings.
+
+v3.10.4 Changes (2026-09-28):
+	- Per-model animation Favourites and Recent (last 20 successful loads), saved in the blend file.
+	- Optional exact in-game names from RSX localization and animation item settings exports.
+	- Search both names; show clip variants and preserve the original export name.
+	- Cancellable name imports, Undo, and bookmark preservation across export refreshes.
+
+v3.10.3 Changes (2026-09-28):
+	- Remove Animation / T-Pose keeps Actions reusable and restores the rest pose, with Undo.
+	- Animation indexing uses cancellable batches without time, file-count or depth cutoffs.
+	- Added category filters for Gladcard / Banner, Emote, Lobby, Finishers and Movement.
+
+v3.10.2 Changes (2026-09-28):
+	- Load Animation resets the armature's local object rotation while preserving position, scale and rotation mode. Supports cached clips and Undo; failed imports leave rotation unchanged.
+
+v3.10.1 Changes (2026-09-28):
+	- Moved model size and XYZ Euler tools into Manual Adjustments below Import & Texture.
+
+v3.10.0 Changes (2026-09-28):
+	- Import & Texture for CAST models, including preparation and existing-material isolation.
+	- Link RSX animation rigs to models, search exported CAST clips, and load/reuse Actions.
+	- Preserve previous Actions and restore original scene state when animation import fails.
+	- Removed Toon shader tools; Auto Shadow is now under Apex Effects.
+
+v3.9.1 Changes (2026-09-28):
+	- Quaternion to XYZ Euler for models and pose bones, also included in model preparation. Existing animation is left unchanged.
+	- Visible version and release archive verification follow the add-on version.
+
+v3.9.0 Changes (2026-09-08):
+	- Saved, copyable reports after texturing.
+	- Removed obsolete Discord, Garlicus skins, Biast12 assets and donation buttons.
+	- Scene Health checks and issue-based mesh selection.
+	- Missing-texture repair without rebuilding shaders.
+	- Model scope from selected rigs and repeat-safe model preparation.
+	- RSX Recolour, shader rollback, image reuse and bounded-search repairs.
+	- Lite staging works without Extended assets.
+	- See WORKFLOW_GUIDE.md for the new tools and scope.
+
 v3.8.0 Changes:
 	Public release maintained by ALR, preserving Random Blender Dude as the original author.
 	- Modern RSX / CAST support and modern RSX texture naming support.

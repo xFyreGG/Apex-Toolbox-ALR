@@ -1,6 +1,10 @@
 # Auto_tex + RSX compatibility
 
-Apex Toolbox v3.8.0
+Apex Toolbox v3.10.6
+
+Version 3.9 adds automatic texture reports, model scope and **Scene
+Health → Repair Missing Textures**. See [WORKFLOW_GUIDE.md](WORKFLOW_GUIDE.md)
+for these workflows. Existing RSX/Legion texture naming remains supported.
 
 Auto_tex now understands both the classic **Legion+** export convention and
 current **RSX → CAST** exports. Nothing was removed: the legacy behaviour is
@@ -22,7 +26,7 @@ one layer of the new resolver, not a thing that was replaced.
 4. Import the `.cast` file into Blender.
 5. Select the imported armature.
 6. Open **Apex Tools → Model**.
-7. Click **Set Correct Model Size**.
+7. Open **Model → Manual Adjustments** and click **Set Correct Model Size**.
 8. Select the model meshes to texture.
 9. Open **Materials → Auto Texture**.
 10. Choose **Apex Shader**, **Apex Shader+ v3.4**, or **S/G-Blender**.
@@ -30,7 +34,7 @@ one layer of the new resolver, not a thing that was replaced.
 12. Texture discovery should normally happen automatically.
 
 No texture folder needs to be chosen. If automatic discovery cannot work out
-where the export lives, open **Search Options**, set the *Texture Search
+where the export lives, open **Materials → Auto Texture**, set the *Texture
 Folder*, and press *Texture Model* again — after that the folder is remembered
 and later models from the same export resolve on their own.
 
@@ -261,7 +265,7 @@ Texture then prints
 [Auto_tex] Automatic texture root unavailable and no Texture Search Folder is set.
 ```
 
-and the *Texture Search Folder* under **Search Options** is the fallback. It is
+and the *Texture Folder* under **Materials → Auto Texture** is the fallback. It is
 optional: leave it empty and Auto Texture searches automatically.
 
 There is a hard ceiling of 40 000 files and six directory levels so that
@@ -411,7 +415,7 @@ so it is obvious *why* nothing was connected.
 
 ## 12. Shared discovery
 
-Auto Texture, **Recolour** and the **Toon shader** all go through the same
+Auto Texture and **Recolour** go through the same
 `resolve_for_objects` / `resolve_from_folder` entry points, so there is exactly
 one texture-discovery implementation in the add-on. Recolour keeps its own
 skin-folder selection logic but no longer carries a second hardcoded
@@ -426,5 +430,7 @@ works too.
 python Apex_toolbox/apex_tex/tests/run_tests.py
 ```
 
-Blender integration and real-export validation scripts live alongside the
-release notes.
+Blender integration and render validation scripts are in `tests/` at the
+repository root. See `TESTING.md` for commands. These use synthetic fixtures
+and the bundled shader library; external importer/exporter implementations
+and optional Extended assets are not included in that validation.
