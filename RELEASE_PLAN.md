@@ -4,23 +4,22 @@ Release timing: **hold the public 3.11.0 release while the experimental channel
 has an awareness window**. The build is ready for promotion, but readiness is
 not a reason to publish it immediately. There is no supporter testing quota or
 72-hour waiting period. The public stable is currently **3.9.1** on GitHub;
-the last supporter experimental build is **3.10.21** on R2. All supporter tiers
-retain early access. Release 3.11.0 publicly when the maintainer decides the
-preview has had enough exposure and the website update is ready.
+the latest supporter experimental build is **3.11.0** on R2 and Creator Tools.
+All supporter tiers retain early access. Release 3.11.0 publicly when the
+maintainer decides the preview has had enough exposure and the stable website
+update is ready.
 
 The local 3.11.0 ZIP passed the source, packaged add-on, real RSX export,
 installation, animation and render checks recorded in `TESTING.md` on
-10 October 2026. The current public and supporter downloads have not changed.
-Before saying 3.11.0 is available to supporters, upload the exact ZIP to R2,
-list it on Creator Tools for every supporter tier, and verify the gated
-download. If distributed ahead of the public GitHub release, give recipients
-the corresponding GPL source and licence with the build.
+10 October 2026. The maintainer also reported that the installed build works
+as intended in their Blender setup. The R2 listing reports the expected
+3.11.0 filename and exact ZIP byte size. Public stable remains 3.9.1. The
+3.11.0 ZIP includes the add-on source and licence for recipients.
 
 ## Awareness window
 
-1. Correct the public GitHub README, which still describes 3.10.8 as the
-   experimental build. Align it with the build actually available on the
-   website. Do not advertise an unreleased download as available.
+1. The public GitHub README and Creator Tools page now describe the available
+   3.11.0 preview. Keep them aligned as builds change.
 2. Record three short, practical demos: selecting several model folders and
    importing them side by side; finding a legend rig and a named animation;
    and importing a single animation CAST. Show the result in Blender, with
@@ -35,11 +34,11 @@ the corresponding GPL source and licence with the build.
    the data to decide whether the next step is another demo, better onboarding
    or the public release.
 
-## Remaining release checks
+## Checks before public release
 
-1. Install `dist/Apex-Toolbox-ALR-3.11.0.zip` in a clean foreground Blender
-   4.2.2 and 5.2.2 profile. Open the Apex Tools sidebar and use a disposable
-   project for the following checks.
+1. The ZIP was installed and enabled in clean Blender 4.2.2 and 5.2.2
+   profiles during internal testing. The maintainer has also used the build
+   in Blender. Repeat these checks if the ZIP changes before public release.
 2. Import and texture one legend, one weapon and one Misc prop from separate
    RSX model folders in one batch. Check group filters, search, selection
    persistence, side-by-side placement, textures and Undo. Repeat a single

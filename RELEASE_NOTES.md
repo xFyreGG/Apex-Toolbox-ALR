@@ -1,10 +1,10 @@
-# Apex Toolbox 3.11.0: Stable release candidate (local)
+# Apex Toolbox 3.11.0: Supporter preview of the next stable release
 
 Update date: **2026-10-10**
 
 - Brings the tested 3.10 experimental model, animation and item-pairing work
   together under a new stable version number. The public download remains 3.9.1
-  until the final hands-on check and public release are complete.
+  until the later public release.
 - **Import & Texture** accepts selected RSX model folders from Legends, Weapons
   and Misc, then places imported models side by side. Search and group changes
   keep checked folders selected. The legend selector covers all 28 legends on
@@ -15,10 +15,10 @@ Update date: **2026-10-10**
 - The rig picker finds the RSX `animrig` library even when the current model has
   an unrelated old CAST link. Legacy IK pole controls no longer create a
   Blender dependency cycle, and a second IK setup is rejected cleanly.
-- The 3.11.0 ZIP has passed internal testing. The public release is being held
-  to give the early-access channel time for demonstrations and discovery.
-  The currently published supporter download remains 3.10.21 until the
-  verified 3.11.0 build is uploaded and listed on Creator Tools.
+- The 3.11.0 ZIP passed internal testing and a hands-on check by the
+  maintainer. It is available to all supporter tiers through Creator Tools.
+  The public release is being held to give early access time for
+  demonstrations and discovery.
 
 ---
 
