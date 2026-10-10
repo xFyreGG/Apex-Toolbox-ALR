@@ -15,10 +15,10 @@ Update date: **2026-10-10**
 - The rig picker finds the RSX `animrig` library even when the current model has
   an unrelated old CAST link. Legacy IK pole controls no longer create a
   Blender dependency cycle, and a second IK setup is rejected cleanly.
-- The 3.11.0 ZIP has passed internal testing. It will go directly to the
-  public GitHub stable channel after the final hands-on check; it will not be
-  added to the supporter experimental channel. The existing supporter
-  download remains 3.10.21 until a newer experimental build is available.
+- The 3.11.0 ZIP has passed internal testing. The public release is being held
+  to give the early-access channel time for demonstrations and discovery.
+  The currently published supporter download remains 3.10.21 until the
+  verified 3.11.0 build is uploaded and listed on Creator Tools.
 
 ---
 

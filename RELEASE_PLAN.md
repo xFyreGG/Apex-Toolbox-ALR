@@ -1,15 +1,39 @@
 # Apex Toolbox 3.11.0 public release plan
 
-Release timing: publish after the maintainer's final hands-on check and the
-website update are ready. There is no supporter trial or 72-hour waiting
-period. The public stable is currently **3.9.1** on GitHub; the last supporter
-experimental build is **3.10.21** on R2. Do not upload 3.11.0 to R2 as an
-experimental build. All supporter tiers retain access when a newer
-experimental build is available.
+Release timing: **hold the public 3.11.0 release while the experimental channel
+has an awareness window**. The build is ready for promotion, but readiness is
+not a reason to publish it immediately. There is no supporter testing quota or
+72-hour waiting period. The public stable is currently **3.9.1** on GitHub;
+the last supporter experimental build is **3.10.21** on R2. All supporter tiers
+retain early access. Release 3.11.0 publicly when the maintainer decides the
+preview has had enough exposure and the website update is ready.
 
 The local 3.11.0 ZIP passed the source, packaged add-on, real RSX export,
 installation, animation and render checks recorded in `TESTING.md` on
 10 October 2026. The current public and supporter downloads have not changed.
+Before saying 3.11.0 is available to supporters, upload the exact ZIP to R2,
+list it on Creator Tools for every supporter tier, and verify the gated
+download. If distributed ahead of the public GitHub release, give recipients
+the corresponding GPL source and licence with the build.
+
+## Awareness window
+
+1. Correct the public GitHub README, which still describes 3.10.8 as the
+   experimental build. Align it with the build actually available on the
+   website. Do not advertise an unreleased download as available.
+2. Record three short, practical demos: selecting several model folders and
+   importing them side by side; finding a legend rig and a named animation;
+   and importing a single animation CAST. Show the result in Blender, with
+   captions and the Creator Tools URL.
+3. Publish the demos over two to three weeks through ALR's Discord, X and
+   short-form video accounts. Share in relevant creator communities where
+   project posts are allowed. Lead with the free 3.9.1 download and show the
+   supporter preview as the optional way to use the newer workflows now.
+4. Track Creator Tools visits, clicks on the stable and experimental paths,
+   completed downloads and supporter joins. Review which demo led to useful
+   engagement. A small audience is not a reason to delay indefinitely; use
+   the data to decide whether the next step is another demo, better onboarding
+   or the public release.
 
 ## Remaining release checks
 
@@ -29,8 +53,9 @@ installation, animation and render checks recorded in `TESTING.md` on
 5. Prepare and review the website's stable picker entry for 3.11.0. It must
    display the selected version's features and metadata, link to the GitHub
    release, and keep older public releases available. The current 3.10.21
-   supporter build must not be presented as newer than stable 3.11.0. Show
-   that no newer experimental build is available until one is published.
+   supporter build must not be presented as newer than stable 3.11.0. At the
+   public launch, show that no newer experimental build is available until
+   one is published.
 
 The automated and real-export checks in `TESTING.md` already passed. Repeat
 them only after a code or package change, or to investigate a specific failure.
@@ -56,7 +81,8 @@ results, and the console error. Keep raw game exports out of the public repo.
 
 ## Publication sequence
 
-1. Confirm the release source commit and run `py -3 tools/verify_release.py`
+1. After the awareness window, confirm the release source commit and run
+   `py -3 tools/verify_release.py`
    against `dist/Apex-Toolbox-ALR-3.11.0.zip`. Record its SHA-256. Publish the
    exact tested source and ZIP on GitHub as `v3.11.0`, using the prepared
    release notes. Do not rebuild the ZIP after this check.
