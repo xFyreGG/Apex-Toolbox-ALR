@@ -4,7 +4,7 @@ Update date: **2026-10-10**
 
 - Brings the tested 3.10 experimental model, animation and item-pairing work
   together under a new stable version number. The public download remains 3.9.1
-  until this candidate completes testing.
+  until the final hands-on check and public release are complete.
 - **Import & Texture** accepts selected RSX model folders from Legends, Weapons
   and Misc, then places imported models side by side. Search and group changes
   keep checked folders selected. The legend selector covers all 28 legends on
@@ -15,8 +15,10 @@ Update date: **2026-10-10**
 - The rig picker finds the RSX `animrig` library even when the current model has
   an unrelated old CAST link. Legacy IK pole controls no longer create a
   Blender dependency cycle, and a second IK setup is rejected cleanly.
-- The installable ZIP is still in local testing. The supporter experimental
-  download remains 3.10.21 until the candidate is uploaded and verified.
+- The 3.11.0 ZIP has passed internal testing. It will go directly to the
+  public GitHub stable channel after the final hands-on check; it will not be
+  added to the supporter experimental channel. The existing supporter
+  download remains 3.10.21 until a newer experimental build is available.
 
 ---
 

@@ -334,7 +334,8 @@ Blender 4.2.2 and 5.2.2. The workflow tests and package smoke used the exact
 match the current add-on source byte for byte. The Blender 5.2 integration test
 for pose-bone selection was updated to use the API available in that version;
 the add-on code was unchanged. Real RSX exports, foreground picker interaction
-and supporter testing remain release gates in `RELEASE_PLAN.md`.
+and a foreground maintainer check remained release gates at the time. The
+3.11.0 plan no longer requires a supporter test.
 
 A follow-up real-export check on 2026-10-10 imported three model folders from
 the user's RSX `mdl` library through the packaged folder-selection path. All
