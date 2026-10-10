@@ -1,3 +1,21 @@
+# Apex Toolbox 3.11.0: Early access preview
+
+The tested 3.11.0 ZIP is available to all ALR supporter tiers through
+[Creator Tools](https://apexlegendsrenders.com/creator-tools). Public stable
+remains 3.9.1 while early access has time to run.
+
+- Import and texture one or several RSX model folders. Browse Legends, Weapons
+  and Misc, narrow the list by name, and place imported models side by side.
+- Find animation rigs by legend, search clips with known English names, remove
+  an animation to return to rest pose, or apply one animation CAST directly.
+- Pair an imported item to a hand, weapon or other bone. The legend selector
+  covers all 28 current legends. The rig picker handles old CAST links more
+  reliably, and Blender 5.2 rig compatibility has been improved.
+- Checked in Blender 4.2.2 and 5.2.2. The ZIP contains add-on source under
+  GPL-3.0-or-later. It does not include game models, textures or animations.
+
+---
+
 # Apex Toolbox 3.10.8 — Experimental (in development)
 
 Update date: **2026-10-08**
