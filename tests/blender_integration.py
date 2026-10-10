@@ -528,7 +528,9 @@ class BlenderIntegration(unittest.TestCase):
         bpy.ops.object.mode_set(mode='POSE')
         try:
             for bone in rig.data.bones:
-                bone.select = bone.name == 'root'
+                # Blender 5.2 moved pose selection from Bone to PoseBone.
+                selectable = rig.pose.bones[bone.name] if hasattr(root, 'select') else bone
+                selectable.select = bone.name == 'root'
             rig.data.bones.active = rig.data.bones['root']
             self.assertEqual(bpy.ops.object.apex_xyz_euler(), {'FINISHED'})
             bpy.context.view_layer.update()
@@ -536,6 +538,21 @@ class BlenderIntegration(unittest.TestCase):
             self.assertEqual(child.rotation_mode, 'QUATERNION')
             assert_matrix_close(self, root.matrix, before)
             self.assertEqual(bpy.context.mode, 'POSE')
+        finally:
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+    def test_pose_bone_selection_works_in_pose_and_object_mode(self):
+        rig = make_rig()
+        bpy.ops.object.mode_set(mode='POSE')
+        bpy.ops.pose.select_all(action='DESELECT')
+        addon.select_pose_bone(rig, 'root')
+        self.assertEqual([bone.name for bone in bpy.context.selected_pose_bones], ['root'])
+        bpy.ops.pose.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        addon.select_pose_bone(rig, 'child')
+        bpy.ops.object.mode_set(mode='POSE')
+        try:
+            self.assertEqual([bone.name for bone in bpy.context.selected_pose_bones], ['child'])
         finally:
             bpy.ops.object.mode_set(mode='OBJECT')
 

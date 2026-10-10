@@ -1,8 +1,8 @@
-# Apex Toolbox 3.10.13 — daily workflows
+# Apex Toolbox 3.11.0: daily workflows
 
-**Experimental release:** animation tools and automatic names are still being
-validated across exports. Successful sample playback does not guarantee every
-clip, skin or rig variant. Unknown/conflicting names retain their export labels.
+Animation names depend on the available RSX export data. Unknown or conflicting
+names retain their export labels. Test unfamiliar rig and clip variants before
+using them in a finished scene.
 
 All tools live in **3D View → Sidebar → Apex Tools**. The existing shaders,
 effects, rig helpers, Recolour and Legion+/RSX workflows remain available.
@@ -21,10 +21,13 @@ Imported prop rigs can be attached under **Rigging & Animation → Pair Items**.
 Enable the [CAST Blender importer](https://github.com/dtzxporter/cast) first.
 Export the model from RSX as CAST with material textures enabled. Click
 **Model → Import & Texture** and choose **Model folders** or **CAST files**.
-For model folders, the dialog opens the bookmarked RSX `mdl` directory and
-lists its model folders. Select the folders you want there, then click
+For model folders, the dialog opens the bookmarked RSX `mdl` directory. Choose
+**Legends**, **Weapons**, or **Misc**, then choose a legend, weapon, or other
+group to see its folders. Select the folders you want there, then click
 **Import Selected Models**. You do not need to open the native file browser or
-enter each model folder. The dialog remembers a changed directory.
+enter each model folder. Search narrows the chosen group and can combine words in any order (for example,
+`alter outnoir`). Checked folders stay selected when you switch views. The
+dialog remembers a changed directory.
 If the chosen folder itself contains one model,
 you can import it without ticking a subfolder. For CAST files, click **OK** to
 open the file browser and select one or several files from the same folder.
@@ -49,6 +52,17 @@ Missing textures leave that model available. One Undo step removes the batch.
 Select model CAST exports only; rig and animation CAST exports are reported as
 failed imports. Other formats keep their usual import workflow.
 
+## Import one animation CAST
+
+Select a legend armature or a mesh bound to it, then use **Rigging & Animation →
+Animations → Import Animation CAST**. Choose one CAST file from an RSX `animseq`
+export or an `anims_<rig name>` folder. The animation is applied immediately and
+kept in the list so it can be loaded again. You do not need to link a rig first.
+Files with more than one animation sequence need a full rig link; the single-file
+button accepts exactly one sequence. Imported clips remain in the list when a
+rig is linked or refreshed. Bone compatibility and the **Allow Missing Bones**
+option work the same way as loading from a linked rig.
+
 ## Link a legend's animation rig
 
 1. In RSX, choose **CAST** for animation rig and animation sequence exports,
@@ -56,7 +70,9 @@ failed imports. Other formats keep their usual import workflow.
 2. Keep `<rig name>.cast` beside its `anims_<rig name>` folder. The rig CAST
    contains the skeleton; the companion folder contains the animation clips.
 3. Select the legend's armature or one of its bound meshes in Blender.
-4. Open **Rigging & Animation → Animations → Link Animation Rig** and select the rig CAST.
+4. Open **Rigging & Animation → Animations → Link Animation Rig**. Choose the
+   legend, then select one of its rigs from the list. Unrecognized pilot rigs
+   appear under **Other rigs**. Use **Other CAST** for a rig outside the list.
 5. Wait for indexing to finish, choose an optional **Category**, search the list,
    select a clip, then click **Load Animation**.
 
@@ -169,7 +185,8 @@ invented T-pose.
 Animations use quaternion channels for playback. The unanimated XYZ Euler tool
 does not convert animation curves. Additive clips are labelled and need a base
 animation blended in Blender's NLA Editor. Animated bones must match by name;
-**Allow Missing Bones** explicitly permits partial clips and reports skipped bones.
+**Allow Missing Bones** is on by default. It permits partial clips and reports
+skipped bones; turn it off in Options & Details to require every animated bone.
 Matching names alone do not guarantee that two different legends have compatible
 rest poses. Link the rig exported for your legend.
 

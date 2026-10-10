@@ -14,11 +14,11 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 10, 14),
+    "version": (3, 11, 0),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
-    "warning": "Experimental release: animation tools and automatic names have limited export coverage",
+    "warning": "Animation names depend on the available RSX export data",
     "category": "3D View"
 }
 #"version": (3, 6)
@@ -310,6 +310,15 @@ def selected_armature(context):
     return None
 
 
+def select_pose_bone(armature, bone_name):
+    """Select a pose bone with Blender 4.2 and 5.2's respective APIs."""
+    pose_bone = armature.pose.bones[bone_name]
+    if hasattr(pose_bone, 'select'):
+        pose_bone.select = True
+    else:
+        pose_bone.bone.select = True
+
+
 def attachment_armature_poll(_self, obj):
     return obj.type == 'ARMATURE'
 
@@ -571,6 +580,7 @@ class APEX_PG_animation_clip(bpy.types.PropertyGroup):
     menu_name: bpy.props.StringProperty()
     menu_role: bpy.props.StringProperty()
     menu_source: bpy.props.StringProperty()
+    external: BoolProperty(name='Imported Animation', default=False)
 
 
 def animation_filter_changed(library, context):
@@ -608,13 +618,14 @@ class APEX_PG_animation_library(bpy.types.PropertyGroup):
     rest_rotation: bpy.props.FloatVectorProperty(size=4)
     fit_timeline: BoolProperty(name='Match Timeline and FPS', default=True,
                               description='Set the scene frame range and playback rate to this clip')
-    allow_missing: BoolProperty(name='Allow Missing Bones', default=False,
+    allow_missing: BoolProperty(name='Allow Missing Bones', default=True,
                                description='Load matching bone tracks even when some animated bones are absent')
 
 
 class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
     import_summary: bpy.props.StringProperty()
     model_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
+    animation_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
     include_model_meshes: BoolProperty(
         name='Include Model Meshes', default=True,
         description='Include meshes parented to a selected armature or empty, and meshes bound to its rig')
@@ -1083,10 +1094,28 @@ class APEX_UL_import_folders(bpy.types.UIList):
         layout.prop(item, 'selected', text=item.name)
 
     def filter_items(self, context, data, propname):
-        query = data.folder_search.strip().casefold()
         items = getattr(data, propname)
-        return ([self.bitflag_filter_item if not query or query in item.name.casefold() else 0
+        return ([self.bitflag_filter_item if apex_model_files.folder_matches(
+                     item.name, data.folder_search, data.folder_category,
+                     data.folder_group) else 0
                  for item in items], [])
+
+
+_import_folder_group_items = {
+    'LEGENDS': [('NONE', 'Choose a legend', '')],
+    'WEAPONS': [('NONE', 'Choose a weapon or item', '')],
+    'MISC': [('NONE', 'Choose a group', '')],
+}
+
+
+def import_folder_group_items(self, context):
+    return _import_folder_group_items.get(self.folder_category,
+                                          _import_folder_group_items['LEGENDS'])
+
+
+def import_folder_category_changed(self, context):
+    self.folder_group = 'NONE'
+    self.folder_search = ''
 
 
 def refresh_import_folders(self, context):
@@ -1111,6 +1140,14 @@ def refresh_import_folders(self, context):
         item = self.folder_items.add()
         item.name = name
         item.selected = previous.get(name, False)
+    for category, prompt in (('LEGENDS', 'Choose a legend'),
+                             ('WEAPONS', 'Choose a weapon or item'),
+                             ('MISC', 'Choose a group')):
+        options = apex_model_files.model_group_options(names, category)
+        _import_folder_group_items[category] = [('NONE', prompt, '')] + [
+            (group, '%s (%d)' % (label, count), '')
+            for group, label, count in options]
+    self.folder_group = 'NONE'
     if context and context.scene:
         context.scene.my_prefs.model_parent_folder = folder
 
@@ -1135,7 +1172,14 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
     folder_items: bpy.props.CollectionProperty(type=APEX_PG_import_folder,
                                                options={'HIDDEN', 'SKIP_SAVE'})
     folder_index: bpy.props.IntProperty(options={'HIDDEN', 'SKIP_SAVE'})
-    folder_search: bpy.props.StringProperty(name='Find model')
+    folder_search: bpy.props.StringProperty(name='Search',
+                                           description='Match any words in the folder name, in any order')
+    folder_category: bpy.props.EnumProperty(name='Models', items=[
+        ('LEGENDS', 'Legends', 'Legend skins and pilot models'),
+        ('WEAPONS', 'Weapons', 'Weapons, heirlooms and held items'),
+        ('MISC', 'Misc', 'Props, environment models and other exports')],
+        default='LEGENDS', update=import_folder_category_changed)
+    folder_group: bpy.props.EnumProperty(name='Show', items=import_folder_group_items)
     change_parent: BoolProperty(name='Change folder', default=False)
     ui_stage: bpy.props.EnumProperty(items=[('DIRECT', 'Direct', ''),
                                             ('CHOOSE', 'Choose', ''),
@@ -1161,6 +1205,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             folder = apex_model_files.bookmarked_mdl(bookmarks)
         if folder:
             self.parent_folder = folder
+        self.folder_group = 'NONE'
         return context.window_manager.invoke_props_dialog(
             self, width=540, confirm_text='Import Selected Models')
 
@@ -1176,12 +1221,22 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                     self.layout.prop(self, 'parent_folder')
                 if self.folder_items:
                     self.layout.label(text='Select folders here; do not open them.', icon='INFO')
-                    self.layout.prop(self, 'folder_search', text='', icon='VIEWZOOM')
-                    self.layout.template_list('APEX_UL_import_folders', '', self,
-                                              'folder_items', self, 'folder_index', rows=10)
+                    self.layout.prop(self, 'folder_category', expand=True)
+                    self.layout.prop(self, 'folder_group', text='Show')
+                    if self.folder_group != 'NONE':
+                        self.layout.prop(self, 'folder_search', text='Search', icon='VIEWZOOM')
+                        self.layout.template_list('APEX_UL_import_folders', '', self,
+                                                  'folder_items', self, 'folder_index', rows=10)
                     count = sum(item.selected for item in self.folder_items)
-                    self.layout.label(text='%d selected of %d (maximum 50)' % (
-                        count, len(self.folder_items)))
+                    visible = sum(apex_model_files.folder_matches(
+                        item.name, self.folder_search, self.folder_category,
+                        self.folder_group)
+                        for item in self.folder_items)
+                    if self.folder_group == 'NONE':
+                        self.layout.label(text='Choose a group to see its folders.')
+                    else:
+                        self.layout.label(text='%d shown · %d selected (maximum 50)' % (
+                            visible, count))
                 else:
                     self.layout.label(text='Choose a model folder or a parent folder.', icon='INFO')
             else:
@@ -1453,6 +1508,61 @@ class AnimationScanOperator:
             return {'CANCELLED'}
 
 
+def refresh_animation_rigs(self, context):
+    self.rig_items.clear()
+    folder = bpy.path.abspath(self.parent_folder)
+    names = [name for name, _ in apex_model_files.legend_animation_rigs(folder)]
+    for name in names:
+        self.rig_items.add().name = name
+    _animation_rig_legend_items[:] = [('NONE', 'Choose a legend', '')] + [
+        (legend, '%s (%d)' % (label, count), '')
+        for legend, label, count in apex_model_files.animation_rig_legend_options(names)]
+    self.rig_legend = 'NONE'
+    self.rig_index = 0
+
+
+_animation_rig_legend_items = [('NONE', 'Choose a legend', '')]
+
+
+def animation_rig_legend_items(self, context):
+    return _animation_rig_legend_items
+
+
+def animation_rig_legend_changed(self, context):
+    self.rig_search = ''
+    self.rig_index = next((i for i, item in enumerate(self.rig_items)
+                           if apex_model_files.animation_rig_matches(
+                               item.name, self.rig_legend)), 0)
+
+
+def animation_rig_search_changed(self, context):
+    query = self.rig_search.strip().casefold()
+    if query and self.rig_items and (not 0 <= self.rig_index < len(self.rig_items)
+                                     or not apex_model_files.animation_rig_matches(
+                                         self.rig_items[self.rig_index].name,
+                                         self.rig_legend, query)):
+        self.rig_index = next((i for i, item in enumerate(self.rig_items)
+                               if apex_model_files.animation_rig_matches(
+                                   item.name, self.rig_legend, query)), self.rig_index)
+
+
+class APEX_UL_animation_rigs(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        layout.label(text=item.name, icon='ARMATURE_DATA')
+
+    def filter_items(self, context, data, propname):
+        return ([self.bitflag_filter_item if apex_model_files.animation_rig_matches(
+                     item.name, data.rig_legend, data.rig_search) else 0
+                 for item in getattr(data, propname)], [])
+
+
+def preferred_animation_rig_folder(candidates):
+    existing = [path for path in candidates if path and os.path.isdir(path)]
+    return next((path for path in existing
+                 if apex_model_files.legend_animation_rigs(path)),
+                existing[0] if existing else '')
+
+
 class APEX_OT_link_animation_rig(AnimationScanOperator, bpy.types.Operator, ImportHelper):
     """Choose an RSX rig exported as CAST with Export Rig Sequences enabled and animation format CAST"""
     bl_idname = 'object.apex_link_animation_rig'
@@ -1460,6 +1570,24 @@ class APEX_OT_link_animation_rig(AnimationScanOperator, bpy.types.Operator, Impo
     bl_options = {'REGISTER'}
     filename_ext = '.cast'
     filter_glob: bpy.props.StringProperty(default='*.cast', options={'HIDDEN'})
+    source_mode: bpy.props.EnumProperty(name='Choose', items=[
+        ('LEGENDS', 'Legend rigs', 'Choose an exported legend rig from the list'),
+        ('FILE', 'Other CAST', 'Browse to any exported animation rig CAST')],
+        default='LEGENDS')
+    parent_folder: bpy.props.StringProperty(name='Animation rigs folder', subtype='DIR_PATH',
+                                            update=refresh_animation_rigs)
+    rig_items: bpy.props.CollectionProperty(type=APEX_PG_import_folder,
+                                            options={'HIDDEN', 'SKIP_SAVE'})
+    rig_index: bpy.props.IntProperty(options={'HIDDEN', 'SKIP_SAVE'})
+    rig_legend: bpy.props.EnumProperty(name='Legend', items=animation_rig_legend_items,
+                                      update=animation_rig_legend_changed)
+    rig_search: bpy.props.StringProperty(name='Search rigs',
+                                        update=animation_rig_search_changed)
+    change_parent: BoolProperty(name='Change folder', default=False)
+    ui_stage: bpy.props.EnumProperty(items=[('DIRECT', 'Direct', ''),
+                                            ('CHOOSE', 'Choose', ''),
+                                            ('FILE', 'File', '')],
+                                     default='DIRECT', options={'HIDDEN', 'SKIP_SAVE'})
 
     @classmethod
     def poll(cls, context):
@@ -1467,8 +1595,108 @@ class APEX_OT_link_animation_rig(AnimationScanOperator, bpy.types.Operator, Impo
         return (not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
                 and rig is not None and rig.is_editable)
 
+    def invoke(self, context, event):
+        self.ui_stage = 'CHOOSE'
+        prefs = context.scene.my_prefs
+        rig = apex_workflows.selected_rig(context)
+        linked = rig.apex_animation_library.rig_file
+        candidates = [prefs.animation_parent_folder,
+                      os.path.dirname(bpy.path.abspath(linked)) if linked else '']
+        candidates = [os.path.dirname(path) if path and
+                      os.path.basename(os.path.normpath(path)).casefold().startswith('pilot_') else path
+                      for path in candidates]
+        model_root = bpy.path.abspath(prefs.model_parent_folder) if prefs.model_parent_folder else ''
+        if model_root and os.path.basename(os.path.normpath(model_root)).casefold() == 'mdl':
+            candidates.append(os.path.join(os.path.dirname(model_root), 'animrig'))
+        bookmarks = bpy.utils.user_resource('CONFIG', path='bookmarks.txt')
+        candidates.append(apex_model_files.bookmarked_animrig(bookmarks))
+        self.parent_folder = preferred_animation_rig_folder(candidates)
+        self.rig_legend = 'NONE'
+        return context.window_manager.invoke_props_dialog(
+            self, width=540, confirm_text='Link Selected Rig')
+
+    def draw(self, context):
+        if self.ui_stage != 'CHOOSE':
+            return
+        self.layout.prop(self, 'source_mode', expand=True)
+        if self.source_mode == 'FILE':
+            self.layout.label(text='Next, choose an exported rig CAST.', icon='INFO')
+            return
+        if self.rig_items and not self.change_parent:
+            self.layout.label(text='Legend rigs in ' + os.path.basename(
+                os.path.normpath(self.parent_folder)), icon='FILE_FOLDER')
+            self.layout.prop(self, 'change_parent', text='Change folder')
+        else:
+            self.layout.prop(self, 'parent_folder')
+        if self.rig_items:
+            self.layout.prop(self, 'rig_legend', text='Legend')
+            if self.rig_legend != 'NONE':
+                self.layout.prop(self, 'rig_search', text='Search', icon='VIEWZOOM')
+                self.layout.template_list('APEX_UL_animation_rigs', '', self,
+                                          'rig_items', self, 'rig_index', rows=10)
+            else:
+                self.layout.label(text='Choose a legend to see its rigs.', icon='INFO')
+        else:
+            self.layout.label(text='Choose an RSX animrig folder containing legend exports.', icon='INFO')
+
     def execute(self, context):
+        if self.ui_stage == 'CHOOSE' and self.source_mode == 'FILE':
+            self.ui_stage = 'FILE'
+            self.filepath = ''
+            if self.parent_folder:
+                self.directory = self.parent_folder
+            context.window_manager.fileselect_add(self)
+            return {'RUNNING_MODAL'}
+        if self.ui_stage == 'CHOOSE':
+            if (not self.rig_items or not 0 <= self.rig_index < len(self.rig_items)
+                    or not apex_model_files.animation_rig_matches(
+                        self.rig_items[self.rig_index].name,
+                        self.rig_legend, self.rig_search)):
+                self.report({'ERROR'}, 'Choose a legend rig from the list.')
+                return {'CANCELLED'}
+            name = self.rig_items[self.rig_index].name
+            candidates = dict(apex_model_files.legend_animation_rigs(
+                bpy.path.abspath(self.parent_folder)))
+            filepath = candidates.get(name)
+            if not filepath:
+                self.report({'ERROR'}, 'That rig export is no longer available. Choose another rig.')
+                return {'CANCELLED'}
+            context.scene.my_prefs.animation_parent_folder = self.parent_folder
+            return self.start_scan(context, filepath)
         return self.start_scan(context, self.filepath)
+
+
+class APEX_OT_import_animation_cast(bpy.types.Operator, ImportHelper):
+    """Apply one CAST animation sequence to the selected armature"""
+    bl_idname = 'object.apex_import_animation_cast'
+    bl_label = 'Import Animation CAST'
+    bl_options = {'REGISTER', 'UNDO'}
+    filename_ext = '.cast'
+    filter_glob: bpy.props.StringProperty(default='*.cast', options={'HIDDEN'})
+
+    @classmethod
+    def poll(cls, context):
+        rig = apex_workflows.selected_rig(context)
+        return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
+                    and rig and rig.is_editable and rig.data.is_editable)
+
+    def execute(self, context):
+        if not require_fresh_modules(self):
+            return {'CANCELLED'}
+        try:
+            rig = apex_workflows.selected_rig(context)
+            item, missing = apex_animations.import_single_clip(context, rig, self.filepath, self)
+            message = 'Imported %s.' % apex_animations.clip_label(item, rig.apex_animation_library)
+            if missing:
+                message += ' Skipped %d missing bones.' % missing
+            if item.additive:
+                message += ' Additive clip: blend it with a base action in the NLA Editor.'
+            self.report({'WARNING'} if missing or item.additive else {'INFO'}, message)
+            redraw_animation_panels(context)
+            return {'FINISHED'}
+        except Exception as error:
+            self.report({'ERROR'}, str(error))
+            return {'CANCELLED'}
 
 
 class APEX_OT_refresh_animations(AnimationScanOperator, bpy.types.Operator):
@@ -2008,7 +2236,7 @@ class BUTTON_SHADOW(bpy.types.Operator):
                         if nose_bone is not None:
                             bpy.ops.object.posemode_toggle()
                             bpy.context.object.data.bones.active = nose_bone
-                            nose_bone.select = True
+                            select_pose_bone(sel_objects[0], nose_bone.name)
                             bpy.ops.view3d.snap_cursor_to_selected()               
                             bpy.ops.object.posemode_toggle()
                             bpy.data.objects['Shadow eyes'].location = bpy.context.scene.cursor.location
@@ -2028,7 +2256,7 @@ class BUTTON_SHADOW(bpy.types.Operator):
                             bpy.context.view_layer.objects.active = bpy.data.objects[sel_names[0]]    
                             boneToSelect2 = bpy.data.objects[sel_names[0]].pose.bones[nose_bone.name].bone
                             bpy.context.object.data.bones.active = boneToSelect2
-                            boneToSelect2.select = True  
+                            select_pose_bone(bpy.data.objects[sel_names[0]], boneToSelect2.name)
                             bpy.ops.object.parent_set(type='BONE')
                             
                             bpy.ops.object.select_all(action='DESELECT')
@@ -2640,6 +2868,12 @@ class BUTTON_IKBONE(bpy.types.Operator):
                 "'%s' is missing the limb bones this needs (%s). It expects a "
                 "standard Apex legend rig." % (arm.name, ", ".join(missing[:3])))
             return {'CANCELLED'}
+        if any(name in arm.data.bones for name in ik_bone_names + ik_pole_names) or any(
+                constraint.type == 'IK'
+                for name in constr_bones
+                for constraint in arm.pose.bones[name].constraints):
+            self.report({'WARNING'}, "IK controls are already present on this rig.")
+            return {'CANCELLED'}
 
         if arm is not None:
             # The edit-mode toggles below act on the active object.
@@ -2718,7 +2952,7 @@ class BUTTON_IKBONE(bpy.types.Operator):
             ##### Add Constrains #####
             for x in range(len(constr_bones)):
                 ik_bone = arm.pose.bones[constr_bones[x]].bone
-                bpy.context.selected_objects[0].pose.bones[ik_bone.name].bone.select = True
+                select_pose_bone(arm, ik_bone.name)
                 bpy.context.selected_objects[0].data.bones.active = ik_bone
                 bpy.ops.pose.constraint_add(type='IK')
                 constr = bpy.context.object.pose.bones[constr_bones[x]].constraints["IK"]
@@ -2737,19 +2971,9 @@ class BUTTON_IKBONE(bpy.types.Operator):
                     constr.chain_count = 3
                     
                     
-            ##### Limit Distance IK Poles ##### 
-            for x in range(len(ik_pole_names)): 
-                lim_bone = arm.pose.bones[ik_pole_names[x]].bone 
-                bpy.context.selected_objects[0].pose.bones[lim_bone.name].bone.select = True
-                bpy.context.selected_objects[0].data.bones.active = lim_bone
-                bpy.ops.pose.constraint_add(type='LIMIT_DISTANCE')
-                limit = bpy.context.object.pose.bones[ik_pole_names[x]].constraints["Limit Distance"]
-                limit.target = arm
-                limit.subtarget = constr_bones[x]
-                if x >= 2:
-                    limit.distance = 1
-                else:
-                    limit.distance = 0.5
+            # Keep pole controls independent of their IK chains. Constraining a
+            # pole to the driven wrist or ankle creates a dependency cycle and
+            # makes the solver's result depend on evaluation order.
 
 
         return {'FINISHED'} 
@@ -4085,8 +4309,9 @@ class APEX_PT_animations(ApexPanel, bpy.types.Panel):
                      text='Change Rig' if library.rig_file else 'Link Animation Rig', icon='LINKED')
         if library.rig_file:
             row.operator('object.apex_refresh_animations', text='', icon='FILE_REFRESH')
-        if not library.rig_file:
-            draw_wrapped(layout, 'Link the animation rig exported from RSX.', context)
+        layout.operator('object.apex_import_animation_cast', text='Import Animation CAST', icon='IMPORT')
+        if not library.clips:
+            draw_wrapped(layout, 'Link an RSX rig or import one CAST animation.', context)
             layout.operator('object.lgndtranslate_url', text='Export Setup Guide', icon='HELP').link = 'workflow_guide'
             layout.operator('object.apex_remove_animation', icon='LOOP_BACK')
             return
@@ -5283,8 +5508,10 @@ classes = (
         BUTTON_CUSTOM,
         APEX_PG_import_folder,
         APEX_UL_import_folders,
+        APEX_UL_animation_rigs,
         APEX_OT_import_texture,
         APEX_OT_link_animation_rig,
+        APEX_OT_import_animation_cast,
         APEX_OT_import_animation_names,
         APEX_OT_builtin_animation_names,
         APEX_OT_refresh_animations,

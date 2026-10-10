@@ -5,17 +5,31 @@
 Missing rigs/empty exports are recorded as unavailable, never reported as passed.
 """
 import argparse
+import ast
 import json
 from pathlib import Path
 import sys
+import tempfile
 import time
 import traceback
+import zipfile
 
 import addon_utils
 import bpy
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT), str(ROOT / 'tests')]
+release = None
+if '--release' in sys.argv:
+    tree = ast.parse((ROOT / 'Apex_toolbox' / '__init__.py').read_text(encoding='utf-8'))
+    info = next(ast.literal_eval(node.value) for node in tree.body
+                if isinstance(node, ast.Assign)
+                and any(isinstance(target, ast.Name) and target.id == 'bl_info'
+                        for target in node.targets))
+    version = '.'.join(map(str, info['version']))
+    release = tempfile.TemporaryDirectory()
+    with zipfile.ZipFile(ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version)) as archive:
+        archive.extractall(release.name)
+sys.path[:0] = [str(Path(release.name) if release else ROOT), str(ROOT / 'tests')]
 from workflow_integration import addon
 from Apex_toolbox.apex_tex import animations, workflows
 
@@ -26,6 +40,13 @@ def category(item):
         return 'SKYDIVE'
     return next((key for key in ('EMOTE', 'GLADCARD', 'FINISHER')
                  if animations.clip_matches(name, key)), None)
+
+
+def curve_count(action):
+    if hasattr(action, 'fcurves'):
+        return len(action.fcurves)
+    return sum(len(bag.fcurves) for layer in action.layers
+               for strip in layer.strips for bag in strip.channelbags)
 
 
 def clear_scene():
@@ -43,6 +64,7 @@ def main():
     parser.add_argument('--audit', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--release', action='store_true')
+    parser.add_argument('--only', nargs='*', default=[])
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
     audit = json.loads(args.audit.read_text(encoding='utf-8'))
     addon_utils.enable('io_scene_cast', default_set=False)
@@ -52,6 +74,8 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     for source in audit['libraries']:
         name = Path(source['folder']).name
+        if args.only and name not in args.only:
+            continue
         result = dict(export=name, status='unavailable', samples=[], clips=0, named=0, notes=[])
         report['libraries'].append(result)
         started = time.monotonic()
@@ -96,13 +120,13 @@ def main():
                 assert index in animations.visible_clip_indices(library)
                 assert bpy.ops.object.apex_load_animation() == {'FINISHED'}
                 action = rig.animation_data.action
-                assert action and action.fcurves
+                assert action and curve_count(action)
                 assert bpy.ops.object.apex_remove_animation() == {'FINISHED'}
                 assert rig.animation_data.action is None
                 assert bpy.ops.object.apex_load_animation() == {'FINISHED'}
                 assert rig.animation_data.action == action
                 result['samples'].append(dict(category=group, clip=item.name, menu_name=item.menu_name,
-                                              curves=len(action.fcurves)))
+                                              curves=curve_count(action)))
                 tested.add(group)
             result['status'] = 'passed' if tested else 'index_only'
             if not tested:

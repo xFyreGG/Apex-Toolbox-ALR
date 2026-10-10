@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory() as directory:
     assert Path(addon.__file__).resolve().is_relative_to(extracted)
     assert tuple(addon.bl_info['version']) == expected_version
     assert addon.ver == 'v' + version_label
-    assert 'Experimental' in addon.bl_info['warning']
+    assert 'RSX export data' in addon.bl_info['warning']
     addon.register()
     assert not hasattr(addon, 'BUTTON_TOON')
     assert addon.APEX_PT_shadow.bl_parent_id == 'APEX_PT_apex_effects'

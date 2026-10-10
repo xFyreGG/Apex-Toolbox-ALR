@@ -56,6 +56,16 @@ cleanup, compatibility checks, cached actions, timing, selection, Object/Pose
 Mode, saved links, save/reopen and missing-importer handling. No game files or
 user scenes are used. `tests/workflow_ui.py` provides a disposable UI fixture.
 
+For a read-only check with exported game files, run `tests/real_single_animation.py`
+with `-- --rig <rig.cast> --clip <anims_rig/sequence.cast>`. Add `--release`
+to check the built experimental ZIP instead of the source tree.
+
+For a real batch import check, run `tests/real_model_folders.py` with
+`-- --mdl <exported_files/mdl> --models <folder1> <folder2> [<folder3> ...]`.
+It confirms that only the chosen model folders import and that their world-space
+bounds do not overlap. Add `--release` to test the ZIP. Neither real-export
+check saves a scene or copies game files into the repository.
+
 Activation and reload:
 
 ```text
@@ -87,12 +97,17 @@ filename and package smoke check derive their version from `bl_info`.
 
 ```text
 python tools/build_release.py
+python tools/verify_release.py
 ```
 
 The archive is written to `dist/`, takes its version from `bl_info`, preserves the
 `Apex_toolbox/` root and bundled assets, and omits test files and Python caches.
 The build verifies the archive contents and CRCs. It does not install, publish
 or change the user's Blender preferences.
+The verification script checks that every ZIP entry matches the current add-on
+tree and prints its byte size and SHA-256. `tests/install_zip_smoke.py` also
+checks Blender's actual Install from Disk path; run it with
+`BLENDER_USER_SCRIPTS` set to a disposable directory.
 
 Verify the built archive in a fresh Blender process:
 
@@ -311,3 +326,94 @@ format and a Blender 5.2 bookmark file, including the user's configured RSX
 bookmark. The folder list now populates from the root without entering a
 model folder; packaged integration and smoke tests pass. The native file
 browser does not handle folder import and is no longer part of this path.
+
+The **3.10.21** pre-stable baseline on 2026-10-10 passed **125 pure Python
+tests**, **54 CAST workflow tests** and **37 Blender integration tests** in both
+Blender 4.2.2 and 5.2.2. The workflow tests and package smoke used the exact
+3.10.21 ZIP available through the experimental channel. Its 43 packaged files
+match the current add-on source byte for byte. The Blender 5.2 integration test
+for pose-bone selection was updated to use the API available in that version;
+the add-on code was unchanged. Real RSX exports, foreground picker interaction
+and supporter testing remain release gates in `RELEASE_PLAN.md`.
+
+A follow-up real-export check on 2026-10-10 imported three model folders from
+the user's RSX `mdl` library through the packaged folder-selection path. All
+three models and 19 meshes imported, with side-by-side placement and aligned
+centres and bottoms. A direct Wraith `animrig` sequence import, remove and
+reload also passed against the ZIP. Real Axle, Mirage and Horizon rig exports
+linked 367, 564 and 623 clips respectively in Blender 5.2.2. These checks
+still do not replace a foreground mouse-driven picker test.
+
+The local **3.10.22** hardening ZIP passed 54 extracted-ZIP CAST workflow tests,
+38 Blender integration tests and package smoke in both Blender 4.2.2 and
+5.2.2. The real three-model folder batch passed in both versions (19 meshes,
+about 4.4 seconds), as did direct import/remove/reload of a Wraith animation
+from `animrig`. A controlled single-model folder import in Blender 5.2.2 took
+1.50 seconds with 3.10.14 and 1.48 seconds with 3.10.21. Profiling attributed
+about one second of the import to Blender validating 31 distinct texture
+images, rather than folder selection or CAST loading. This is a one-model
+measurement, not a guarantee for every export or storage device.
+The legacy IK operator completed on a real Wraith rig in both Blender versions,
+but both reported dependency-cycle warnings. Its visual behaviour has not yet
+been verified and remains an open check in the release plan.
+Another packaged 3.10.22 batch combined an Ash legend model, an R-301 weapon
+and a bench prop. All three imported (24 meshes) and passed the same alignment
+and non-overlap checks in Blender 5.2.2.
+
+In a foreground Blender 5.2.2 session on 2026-10-10, the 3.10.22 source
+picker retained selections while switching from Axle under Legends to R-301
+under Weapons and Bench under Misc. One Import click brought in all three
+real folders, adding 25 meshes to a disposable scene that already held one
+synthetic mesh. Framing the result showed separate models. The animation rig
+picker also displayed the real `animrig` library with Axle mapped to
+`pilot_medium_overdrive`. The foreground click to link that rig did not
+produce a confirmed list update in the fixture, so that specific UI action
+needs another check before the release gate is closed.
+
+The local **3.10.23** source fixes a picker default found in that session:
+an unrelated previously linked CAST folder no longer takes precedence over
+a valid RSX `animrig` library. The new regression test and all 55 CAST
+workflow tests pass in Blender 4.2.2 and 5.2.2, both from source and from the
+3.10.23 ZIP. Package smoke also passes in both versions. The live supporter
+download remains 3.10.21.
+
+The packaged 3.10.23 build also passed a real Axle, R-301 and bench batch in
+Blender 5.2.2: three models, 25 meshes, aligned and without overlapping bounds.
+The ZIP is 4,750,435 bytes with SHA-256
+`c02114cf7aaa8d4051b5d23ceec88e42338102e89008b59f8df88d5f3126a43e`;
+all packaged add-on files match the local source.
+
+The local **3.11.0 stable candidate** on 2026-10-10 passed **125 pure Python
+tests**, **38 Blender integration tests** and **56 CAST workflow tests** in both
+Blender 4.2.2 and 5.2.2. The workflow tests ran against the extracted ZIP.
+Package smoke, isolated ZIP installation and enablement, and a three-shader
+Cycles render also passed in both Blender versions. The foreground packaged
+rig-link path completed in both versions. The 6,001-clip scan and animation
+name scan passed their event-loop, cancellation, Undo and cleanup checks in
+Blender 5.2.2.
+
+From the packaged ZIP, a real Axle, R-301 and bench batch imported 24 meshes
+with aligned, non-overlapping bounds in both versions. A real Wraith `animrig`
+clip imported, removed and reloaded in both versions. The Wraith IK helper
+produced eight controls and four IK chains in both versions; moving hand and
+foot controls moved the driven bones, repeated setup was rejected, and Blender
+reported no dependency cycles. A disposable Blender 5.2 viewport check showed
+the character posed without visible distortion.
+
+The current official 28-legend roster was checked against the model picker and
+the local RSX `mdl` library. All 28 have a group in the legend selector; none
+of the character model folders were classified as Misc. The training dummy is
+in Misc. Legend-themed props remain under Misc or Weapons as appropriate.
+
+A read-only audit of 33 local `animrig` folders indexed **16,896 clips** and
+found **1,183** built-in names. Full playback from the packaged ZIP passed in
+29 libraries, covering 113 named clips. Two small variant libraries indexed
+successfully but had no named cosmetic clips to sample. The Lifeline mythic
+export has no clips, and the Rampart export has no standalone rig CAST and one
+truncated sequence; those two variants were recorded as unavailable, not
+passed. Axle, Mirage and Horizon playback samples also passed in Blender 4.2.2.
+
+The 3.11.0 ZIP contains 43 files, is **4,750,445 bytes**, and has SHA-256
+`b56eeb7aa513a265c2fb63255210f17e5d5a559becd3d822f83ec441086e3762`.
+Every entry matches its add-on source file byte for byte. No local RSX exports,
+test fixtures, private paths or other workspace artifacts are included.

@@ -1,3 +1,134 @@
+# Apex Toolbox 3.11.0: Stable release candidate (local)
+
+Update date: **2026-10-10**
+
+- Brings the tested 3.10 experimental model, animation and item-pairing work
+  together under a new stable version number. The public download remains 3.9.1
+  until this candidate completes testing.
+- **Import & Texture** accepts selected RSX model folders from Legends, Weapons
+  and Misc, then places imported models side by side. Search and group changes
+  keep checked folders selected. The legend selector covers all 28 legends on
+  the current official roster; the training dummy stays in Misc.
+- Animation tools can link a legend rig or import one `animseq` CAST directly.
+  The library supports searching, in-game names where known, removal to rest
+  pose and saved links. Allow Missing Bones is enabled by default.
+- The rig picker finds the RSX `animrig` library even when the current model has
+  an unrelated old CAST link. Legacy IK pole controls no longer create a
+  Blender dependency cycle, and a second IK setup is rejected cleanly.
+- The installable ZIP is still in local testing. The supporter experimental
+  download remains 3.10.21 until the candidate is uploaded and verified.
+
+---
+
+# Apex Toolbox 3.10.23: Experimental candidate (local)
+
+Update date: **2026-10-10**
+
+- The animation rig picker now prefers a valid RSX `animrig` library when an
+  already linked CAST file lives in an unrelated folder. This prevents the
+  picker opening an empty legend list despite a discoverable library.
+- Checked the model picker in Blender 5.2 with a foreground batch selected
+  across Legends, Weapons and Misc. All three real exports imported together.
+- This candidate is local. The supporter experimental download remains 3.10.21.
+
+---
+
+# Apex Toolbox 3.10.22: Experimental candidate (local)
+
+Update date: **2026-10-10**
+
+- Fixed bone selection in older rig and effect tools on Blender 5.2. Blender
+  4.2 keeps using its original Bone selection API. The pose-bone selection
+  check now runs on both versions.
+- Checked the packaged model-folder import against three real RSX exports and
+  direct animation import against a real Wraith `animrig` clip. These checks
+  are repeatable with the optional scripts in `tests/`.
+- This candidate is being hardened locally. The latest uploaded supporter
+  experimental build remains 3.10.21.
+
+---
+
+# Apex Toolbox 3.10.21 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- Group Overdrive rigs under **Axle**, Holo rigs under **Mirage**, and Nova rigs
+  under **Horizon**. Matching Holo and Nova companion rigs now appear in the
+  picker when they contain a CAST rig and sequence folder.
+- The model-folder picker also recognizes Overdrive and Nova character skins as
+  Axle and Horizon.
+
+---
+
+# Apex Toolbox 3.10.20 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- The animation rig picker now lets you choose a legend before listing its
+  exported rigs. Unrecognized pilot rigs remain under **Other rigs**, and
+  **Other CAST** still opens the file browser for a rig outside the list.
+
+---
+
+# Apex Toolbox 3.10.19 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- Choose a legend, weapon or other group before browsing its model folders.
+  Search applies to that group, and checked folders stay selected when you
+  switch groups.
+
+---
+
+# Apex Toolbox 3.10.18 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- The model-folder picker now shows **Legends**, **Weapons**, and **Misc** views
+  instead of one long list. Search narrows the current view, and checked folders
+  remain selected when switching views. Exports that do not match a known legend
+  or weapon name stay available under Misc.
+
+---
+
+# Apex Toolbox 3.10.17 — Experimental
+
+Update date: **2026-10-08**
+
+- The model-folder picker now supports a multiword search.
+- With Allow Missing Bones enabled, CAST receives only tracks for bones on the
+  selected model. The Toolbox still reports the number skipped, without
+  printing a warning for every unmatched track.
+
+---
+
+# Apex Toolbox 3.10.16 — Experimental
+
+Update date: **2026-10-08**
+
+- **Import Animation CAST** now applies a single exported animseq CAST directly
+  to the selected armature, without linking an animation rig. The clip stays
+  in the browser for reuse and survives linking or refreshing a full rig.
+- Standalone imports use the existing bone checks, missing-bone option,
+  temporary-rig import and undo handling. Files containing zero or several
+  sequences are rejected with an explanation.
+
+---
+
+# Apex Toolbox 3.10.15 — Experimental (in development)
+
+Update date: **2026-10-08**
+
+- Link Animation Rig now opens a searchable list of exported legend rigs from
+  RSX's `animrig` folder. It finds the folder beside a remembered or bookmarked
+  `mdl` export, remembers a changed folder, and keeps **Other CAST** for rigs
+  outside the `pilot_*` legend folders.
+- **Allow Missing Bones** is enabled by default for new animation libraries.
+  A clip still reports how many bone tracks were skipped; turn the option off
+  in **Options & Details** to require a full match.
+
+---
+
 # Apex Toolbox 3.10.14 — Experimental (in development)
 
 Update date: **2026-10-08**

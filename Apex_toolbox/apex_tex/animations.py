@@ -84,6 +84,17 @@ class Clip:
     additive: bool
     guid: str = ''
     sequence_hash: str = ''
+    external: bool = False
+
+
+def clip_from_node(path, node, external=False):
+    return Clip(str(path), node.offset, node.properties.get('n') or path.stem,
+                node.properties.get('fr') or 30.0,
+                any(child.properties.get('m') == 'additive'
+                    for child in node.children if child.kind == b'curv'),
+                format(node.guid, 'x'),
+                next((format(child.guid, 'x') for child in node.children
+                      if child.kind == b'skel'), ''), external)
 
 
 class IncrementalScan:
@@ -151,14 +162,7 @@ class LibraryScan(IncrementalScan):
                 for roots in cast_index.iter_cast(path):
                     yield
                 for node in cast_index.nodes_of(roots, b'anim'):
-                    self.entries.append(Clip(str(path), node.offset,
-                                             node.properties.get('n') or path.stem,
-                                             node.properties.get('fr') or 30.0,
-                                             any(n.properties.get('m') == 'additive'
-                                                 for n in node.children if n.kind == b'curv'),
-                                             format(node.guid, 'x'),
-                                             next((format(n.guid, 'x') for n in node.children
-                                                   if n.kind == b'skel'), '')))
+                    self.entries.append(clip_from_node(path, node))
                     yield
                 del roots
             except (OSError, ValueError, UnicodeError) as error:
@@ -261,6 +265,52 @@ def link_library(rig, filepath):
         scan.close()
 
 
+def import_single_clip(context, rig, filepath, operator=None):
+    """Apply one CAST animseq without linking a full RSX rig export."""
+    path = Path(bpy.path.abspath(filepath)).resolve()
+    nodes = cast_index.nodes_of(cast_index.read_cast(path), b'anim')
+    if len(nodes) != 1:
+        raise ValueError('Choose a CAST file with one animation sequence; found %d.' % len(nodes))
+    clip = clip_from_node(path, nodes[0], external=True)
+    library = rig.apex_animation_library
+    existing = next((item for item in library.clips
+                     if export_path_key(item.filepath) == export_path_key(path)
+                     and item.offset == clip.offset), None)
+    added = existing is None
+    item = library.clips.add() if added else existing
+    previous_index = library.index
+    if added:
+        item.name, item.filepath, item.offset = clip.name, clip.filepath, clip.offset
+        item.fps, item.additive = clip.fps, clip.additive
+        item.guid, item.sequence_hash, item.external = clip.guid, clip.sequence_hash, True
+        try:
+            set_catalog_name(item, animation_names.bundled_catalog())
+        except (OSError, ValueError, TypeError):
+            pass
+    try:
+        missing = load_clip(context, rig, item, library.fit_timeline,
+                            library.allow_missing, operator)
+    except Exception:
+        if added:
+            library.clips.remove(len(library.clips) - 1)
+            library.index = previous_index
+        raise
+    if not added:
+        item.name, item.fps, item.additive = clip.name, clip.fps, clip.additive
+        item.guid, item.sequence_hash = clip.guid, clip.sequence_hash
+        if item.menu_source != 'CUSTOM':
+            try:
+                set_catalog_name(item, animation_names.bundled_catalog())
+            except (OSError, ValueError, TypeError):
+                pass
+    library.browse_mode = 'ALL'
+    library.category = 'ALL'
+    library.filter_text = ''
+    library.index = next(index for index, current in enumerate(library.clips) if current == item)
+    library.summary = '%d animations available.' % len(library.clips)
+    return item, missing
+
+
 def replace_library(rig, path, entries, warnings):
     library = rig.apex_animation_library
     warnings = list(warnings)
@@ -269,6 +319,12 @@ def replace_library(rig, path, entries, warnings):
     except (OSError, ValueError, TypeError) as error:
         catalog = None
         warnings.append('Included names could not be read; reinstall Apex Toolbox. %s' % error)
+    entries = list(entries)
+    incoming = {(export_path_key(clip.filepath), clip.offset) for clip in entries}
+    for item in library.clips:
+        if item.external and (export_path_key(item.filepath), item.offset) not in incoming:
+            entries.append(Clip(item.filepath, item.offset, item.name, item.fps,
+                                item.additive, item.guid, item.sequence_hash, True))
     old = {(item.filepath, item.offset): (item.action, item.stamp) for item in library.clips}
     # Names survive changed buffer sizes and offsets when a CAST file is
     # re-exported. Never transfer a favourite to a different named clip that
@@ -279,7 +335,7 @@ def replace_library(rig, path, entries, warnings):
     new_counts = Counter(clip_key(item) for item in entries)
     saved = {clip_key(item): (item.favourite, item.recent_order, item.guid, item.sequence_hash,
                              item.menu_name, item.menu_role, item.menu_source)
-             for item in library.clips if same_rig and old_counts[clip_key(item)] == 1}
+             for item in library.clips if (same_rig or item.external) and old_counts[clip_key(item)] == 1}
     selected_name = (clip_key(library.clips[library.index])
                      if library.index < len(library.clips) else None)
     selected = ((library.clips[library.index].filepath, library.clips[library.index].offset)
@@ -293,6 +349,7 @@ def replace_library(rig, path, entries, warnings):
         item.name, item.filepath, item.offset = clip.name, clip.filepath, clip.offset
         item.fps, item.additive = clip.fps, clip.additive
         item.guid, item.sequence_hash = clip.guid, clip.sequence_hash
+        item.external = clip.external
         if catalog is not None:
             set_catalog_name(item, catalog)
         item.action, item.stamp = old.get((clip.filepath, clip.offset), (None, ''))
@@ -419,6 +476,14 @@ def load_clip(context, rig, item, fit_timeline=True, allow_missing=False, operat
                 if (not frames or not values or len(values) != len(frames) * width
                         or max(frames) > 100000 or any(not math.isfinite(v) for v in values)):
                     raise ValueError('Invalid or oversized animation keyframes. Re-export this clip.')
+            if missing:
+                # The CAST importer reports every unmatched rotation, position
+                # and scale track separately. Allow Missing Bones already
+                # validated this partial import; skip those curves in this
+                # disposable decoded node and keep the single operator summary.
+                cast_node.childNodes = [child for child in cast_node.childNodes
+                                        if not isinstance(child, decoder.Curve)
+                                        or child.NodeName().casefold() not in missing]
             options = workflows.import_options(rna, operator, import_reset=True, import_time=False)
             importer.importAnimationNode(options, cast_node, str(path), temp)
             action = temp.animation_data.action if temp.animation_data else None
