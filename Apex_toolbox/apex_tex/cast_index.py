@@ -93,7 +93,7 @@ def iter_cast(path):
                     else:
                         stream.seek(length, 1)
                 # Only metadata used by the browser is retained.
-                if name in {'n', 'nn', 'kp', 'm', 'fr', 'lo'}:
+                if name in {'n', 'nn', 'kp', 'm', 'fr', 'lo'} or (kind == b'file' and name == 'p'):
                     props[name] = value
                 yield None  # Allow the UI to yield even inside a large node.
             children = []

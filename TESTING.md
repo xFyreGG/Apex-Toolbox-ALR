@@ -18,6 +18,10 @@ a disposable rig before assigning them to the selected model.
 folder.
 `auto_rigs.py` discovers matching legend exports and queues animation libraries
 without changing imported models or applying an Action.
+`import_plan.py` validates chosen model exports before import and arranges the
+successful imports in rows, grids or their original positions. `relink.py`
+checks and replaces paths to a moved RSX export library. `animation_layers.py`
+manages additive channels over a base Action through Blender NLA.
 
 ## Run the checks
 
@@ -78,6 +82,56 @@ Run `tests/auto_rig_integration.py` in background Blender, optionally with
 `--background` to check timer completion and Undo in a disposable process.
 Add `--require-auto-links` to the real-model folder check below to require
 animation libraries on every recognized legend model.
+
+Import checks, batch layout, moved export paths and additive layers:
+
+```text
+blender --background --factory-startup --python-exit-code 1 --python tests/import_plan.py
+blender --background --factory-startup --python-exit-code 1 --python tests/relink.py
+blender --background --factory-startup --python-exit-code 1 --python tests/animation_layers.py
+```
+
+Append `-- --release` to verify the extracted current ZIP. These suites use
+temporary synthetic CAST files and disposable Blender data. Import checks cover
+LOD0 selection, partial failures, the 50-model cap, texture hints, varied model
+bounds and collection membership. Relink checks cover preserved scene and
+animation state, missing replacements and changes between review and apply.
+Layer checks exercise evaluated motion, strength, timing, save/reopen, action
+preservation and removal, including unsupported rigs and clips.
+
+Run `tests/foreground_release_tools.py` without `--background`, optionally with
+`-- --release`, for relink, layer strength/removal and reviewed grid-import
+Undo/Redo, plus a native review-popup draw check. It closes only its own
+disposable Blender process and writes an explicit result under `artifacts`.
+
+### 3.13.0 local candidate validation, 2026-10-11
+
+- 125 texture/resolution checks, 18 animation-cache checks and 13 legend-matching
+  checks passed in Python.
+- The extracted ZIP passed 56 workflow, 34 import/preflight/layout, 25 relink,
+  19 automatic rig-link and 15 repeat-index checks on Blender 4.2.2 and 5.2.2.
+  Animation layering ran 29 checks: all passed on 5.2.2; 28 passed and the
+  Action-slot-specific check skipped on 4.2.2.
+- Add-on enable/disable and changed-on-disk reload passed on both versions.
+  Packaged foreground checks passed relink, Add Layer, Adjust Strength,
+  Remove Layers and reviewed batch import Undo/Redo on both versions. The
+  native review popup imported nothing before confirmation.
+- Packaged automatic-link foreground checks passed on 5.2.2, including timer
+  completion, index reuse, Undo/Redo, cancellation, saving, changed selection
+  and removal of the initiating model.
+- Actual native import buttons were checked on 5.2.2. Selecting folders,
+  Check Import and Import Models worked; one Undo removed the whole batch.
+  The final package also passed collection cleanup Undo/Redo and its warnings
+  wrapped within the dialog.
+- A packaged real-export check imported two Wraith skins into a one-column
+  grid, textured all 15 meshes and created exactly two model collections.
+  Existing objects and collections stayed intact; the source exports stayed
+  unchanged. The quick import check took 0.071 seconds in this local run.
+- ZIP: 4,773,783 bytes, 48 files. SHA-256:
+  `f9154a3414e9f06609665e83c3241c57521e8e2d53ae801c969f05d5f829fc96`.
+  Archive integrity passed and every packaged file matches the source.
+  This candidate is local; public and supporter downloads remain 3.9.1 and
+  3.11.0 respectively.
 
 ### 3.12.2 local candidate validation, 2026-10-11
 

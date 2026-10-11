@@ -1,3 +1,29 @@
+# Apex Toolbox 3.13.0: Experimental candidate (local)
+
+Update date: **2026-10-11**
+
+- Import & Texture checks the selected folders or CAST files before importing.
+  Review the usable models, skipped files and nearby texture hints, then click
+  **Import Models**. Missing textures are warnings and do not block a model.
+- Choose **Row**, **Grid** or **Original positions** for batch imports. Grid
+  supports a column count; row and grid spacing uses mesh bounds and a minimum
+  gap. The first model stays in place. **One Collection per Model** keeps each
+  imported model together in the Outliner.
+- **Relink RSX Library** checks saved model, rig, clip, texture and browser paths
+  against a new export location before changing them. It preserves Actions,
+  poses and favourites, and keeps paths whose replacements are missing or do
+  not match. The operation supports Undo.
+- **Animation Layers** puts compatible additive clip channels over a loaded
+  base animation. Set strength and frame offset before adding a layer; adjust
+  a layer's strength afterward. **Remove Animation Layers** restores the base
+  animation. Existing unrelated NLA tracks, constraints or drivers require the
+  normal Blender animation workflow.
+- Automatic legend rig linking and saved animation indexes remain included.
+  Animation Preview, Apply and Revert remain removed.
+- Local only. Supporter downloads remain at 3.11.0; public stable remains 3.9.1.
+
+---
+
 # Apex Toolbox 3.12.2: Experimental candidate (local)
 
 Update date: **2026-10-11**

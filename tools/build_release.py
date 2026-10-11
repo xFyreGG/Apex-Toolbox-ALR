@@ -35,6 +35,8 @@ def build_release():
                     'Apex_toolbox/apex_tex/animations.py', 'Apex_toolbox/apex_tex/animation_names.py',
                     'Apex_toolbox/apex_tex/animation_cache.py',
                     'Apex_toolbox/apex_tex/auto_rigs.py',
+                    'Apex_toolbox/apex_tex/import_plan.py', 'Apex_toolbox/apex_tex/relink.py',
+                    'Apex_toolbox/apex_tex/animation_layers.py',
                     'Apex_toolbox/apex_tex/data/animation_names_en.json']
         for name in required:
             assert name in archive.namelist(), name

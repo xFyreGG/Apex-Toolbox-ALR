@@ -1,4 +1,4 @@
-# Apex Toolbox 3.12.2: experimental workflows
+# Apex Toolbox 3.13.0: experimental workflows
 
 Animation names depend on the available RSX export data. Unknown or conflicting
 names retain their export labels. Test unfamiliar rig and clip variants before
@@ -24,28 +24,44 @@ Export the model from RSX as CAST with material textures enabled. Click
 For model folders, the dialog opens the bookmarked RSX `mdl` directory. Choose
 **Legends**, **Weapons**, or **Misc**, then choose a legend, weapon, or other
 group to see its folders. Select the folders you want there, then click
-**Import Selected Models**. You do not need to open the native file browser or
+**Check Import**. You do not need to open the native file browser or
 enter each model folder. Search narrows the chosen group and can combine words in any order (for example,
 `alter outnoir`). Checked folders stay selected when you switch views. The
 dialog remembers a changed directory.
 If the chosen folder itself contains one model,
-you can import it without ticking a subfolder. For CAST files, click **OK** to
-open the file browser and select one or several files from the same folder.
+you can import it without ticking a subfolder. For CAST files, click **Check
+Import** to open the file browser and select one or several files from the same
+folder. The review shows which models can be imported, which files were skipped
+and any nearby texture hints. Check that list, then click **Import Models**.
+Checking files does not change the scene. Missing textures are warnings; the
+full texture search still runs during import.
 **Prepare Model** applies the standard Apex size/orientation and converts
 eligible unanimated transforms to XYZ Euler. Turn it off to keep export transforms.
 The optional **Texture Folder** overrides the default search beside the CAST file.
 If RSX put each model in its own folder, select them in the `mdl` list
 you want. The tool picks the LOD0 CAST from
 each folder, skips `anims_` folders, and imports at most 50 models per batch.
-Folders with several CAST files but no clear LOD0 are rejected instead of
-guessing which model to use.
+Folders with several CAST files but no clear LOD0 appear in the skipped list.
+Select the intended CAST directly if you need one of those files. Invalid,
+missing, rig-only and animation-only exports are also listed before import.
+Other usable selections remain available. A selection over 50 models must be
+reduced before importing; the batch is not silently truncated.
 The separate size and rotation tools are in **Model → Manual Adjustments**,
 collapsed below Import & Texture for models that need manual preparation.
 
-Each file is imported, prepared and textured separately. With multiple files,
-models are placed side by side along the X axis in filename order. The first
-model stays where CAST imported it; later models are spaced by their mesh bounds,
-centred along Y and aligned at the bottom. Existing scene objects are not moved.
+Each file is imported, prepared and textured separately. **Placement** offers:
+
+- **Row:** side by side along X, in filename order.
+- **Grid:** rows with a chosen **Columns** count. Each column and row makes
+  room for the largest model it contains.
+- **Original positions:** the positions from each export.
+
+For rows and grids, the first model stays where CAST imported it. Other models
+use their mesh bounds, align at the bottom and leave at least **Minimum Gap**
+between them. Row models share a Y centre; grid models share their row's centre.
+Existing scene objects are not moved. **One Collection per Model** puts each
+successful model and its armature in a separate collection. Placement and
+collection choices are remembered in the scene.
 Files that fail to import are skipped without discarding successful models. The
 combined texture report names each file and any import or texture problems.
 Missing textures leave that model available. Importing creates one Undo step
@@ -53,6 +69,25 @@ for the batch. If automatic animation linking finishes afterward, Undo removes
 the links first, then the imported batch.
 Select model CAST exports only; rig and animation CAST exports are reported as
 failed imports. Other formats keep their usual import workflow.
+
+## Relink a moved RSX export library
+
+Use **Model → Manual Adjustments → Relink RSX Library** after moving your exports
+to another drive or folder. Choose **Previous Export Folder** and **New Export
+Folder** at the same level, such as the old and new `exported_files` folders.
+Keep the folder layout below those roots the same.
+
+Click **Check Paths** to review the replacements, then **Relink Verified Files**.
+The check covers saved model sources, linked animation rigs, clip files,
+unpacked file textures and the Toolbox browser folders stored in the blend.
+It checks only referenced files, so it does not crawl the whole library.
+Files outside the previous root, missing replacements and incompatible exports
+keep their existing paths. Packed and generated images do not need relinking.
+
+Relinking preserves the imported scene, Actions, poses, favourites and recent
+clips. It does not reimport models or apply an animation. Blender Undo restores
+the previous references. To locate individual missing texture files after a
+different folder reorganisation, use **Repair Missing Textures** instead.
 
 ## Import one animation CAST
 
@@ -99,7 +134,8 @@ To link a rig manually:
 
 The link belongs to that model and is saved in the `.blend`. The list includes
 individual clips within multi-animation CAST files. **Refresh Animations** reads
-new or replaced exports. Relink if the export folder moves. CAST must be installed
+new or replaced exports. Use **Relink RSX Library** if the export folder moves.
+CAST must be installed
 and enabled to load a clip; linking and browsing do not require it.
 
 Indexing shows progress and works in short batches so Blender can keep responding.
@@ -132,6 +168,28 @@ actions and favourites are kept when history is cleared. Favourites and recents
 are saved in the blend file. Refresh keeps them for uniquely named clips in the
 same file and linked rig export, even when CAST offsets change. Relinking a
 different rig export starts fresh; duplicate clip names are not guessed.
+
+### Add an additive animation layer
+
+Load a normal base clip with **Load Animation**, then select a compatible
+additive clip in the list. Expand **Animation Layers**, set **Strength** and
+**Frame Offset**, then click **Add Animation Layer**. The layer uses only the
+clip's additive channels. It combines their motion with the base animation
+through Blender's NLA; it does not replace the base Action.
+
+Adjust each added layer's **Strength** in the same section. Frame offset is
+relative to the beginning of the base animation. **Remove Animation Layers**
+removes the Toolbox layers and restores the original base Action. Remove the
+layers before loading a different base clip. Adding and removing support Undo;
+the original clips remain reusable.
+
+This tool is for imported armatures with a loaded base animation. A rig with
+unrelated NLA tracks, constraints or drivers needs Blender's NLA workflow.
+Base Actions with custom curve modifiers or linear extrapolation also need the
+normal NLA workflow. Additive translation needs complete X, Y and Z tracks.
+For clips that mix channel types, only additive channels enter the layer.
+Unsupported clips are reported without changing the rig; ordinary loading
+remains available after removing any layers.
 
 ### Included in-game animation names
 

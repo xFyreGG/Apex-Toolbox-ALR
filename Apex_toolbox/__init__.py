@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 12, 2),
+    "version": (3, 13, 0),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -33,6 +33,7 @@ import webbrowser
 import sys
 import platform
 import textwrap
+import json
 from bpy_extras.io_utils import ImportHelper
 
 ##########################################
@@ -77,13 +78,16 @@ from .apex_tex import workflows as apex_workflows
 from .apex_tex import model_files as apex_model_files
 from .apex_tex import animations as apex_animations
 from .apex_tex import auto_rigs as apex_auto_rigs
+from .apex_tex import import_plan as apex_import_plan
+from .apex_tex import relink as apex_relink
+from .apex_tex import animation_layers as apex_layers
 from .apex_tex import attachments as apex_attachments
 from .apex_tex.versions import newer_version
 
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 17
+APEX_TEX_API_VERSION = 18
 
 
 def modules_are_stale():
@@ -283,9 +287,12 @@ def capture_texture_report(context, batch, definition, outcomes):
     save_tool_report(context.scene.my_prefs, 'texture', summary, body)
 
 
-def draw_wrapped(layout, text, context):
+def draw_wrapped(layout, text, context, max_width=None):
     scale = max(1.0, getattr(context.preferences.system, 'ui_scale', 1.0))
-    width = max(18, int((getattr(context.region, 'width', 300) - 40) / (7.5 * scale)))
+    pixels = getattr(context.region, 'width', 300)
+    if max_width is not None:
+        pixels = min(pixels, max_width * scale)
+    width = max(18, int((pixels - 40) / (7.5 * scale)))
     layout = layout.column(align=True)
     for line in textwrap.wrap(text, width=width):
         layout.label(text=line)
@@ -621,6 +628,25 @@ class APEX_PG_animation_library(bpy.types.PropertyGroup):
                               description='Set the scene frame range and playback rate to this clip')
     allow_missing: BoolProperty(name='Allow Missing Bones', default=True,
                                description='Load matching bone tracks even when some animated bones are absent')
+    show_layers: BoolProperty(name='Animation Layers', default=False)
+    layer_influence: FloatProperty(name='Strength', default=1.0, min=0.0, max=1.0)
+    layer_offset: bpy.props.IntProperty(name='Frame Offset', default=0)
+
+
+BATCH_LAYOUT_ITEMS = [
+    ('ROW', 'Row', 'Place models side by side along X'),
+    ('GRID', 'Grid', 'Place models in rows without overlapping'),
+    ('NONE', 'Original positions', 'Keep the positions from each export')]
+
+
+def draw_import_layout(layout, settings):
+    box = layout.box()
+    box.prop(settings, 'placement')
+    if settings.placement == 'GRID':
+        box.prop(settings, 'columns')
+    if settings.placement != 'NONE':
+        box.prop(settings, 'gap')
+    box.prop(settings, 'separate_collections')
 
 
 class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
@@ -628,6 +654,13 @@ class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
     model_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
     animation_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
     auto_link_rigs: BoolProperty(default=True)
+    import_placement: bpy.props.EnumProperty(items=BATCH_LAYOUT_ITEMS, default='ROW')
+    import_columns: bpy.props.IntProperty(default=5, min=1, max=50)
+    import_gap: FloatProperty(default=0.25, min=0.0, max=100.0, subtype='DISTANCE')
+    import_collections: BoolProperty(default=False)
+    relink_old_root: bpy.props.StringProperty(subtype='DIR_PATH')
+    relink_new_root: bpy.props.StringProperty(subtype='DIR_PATH')
+    relink_summary: bpy.props.StringProperty()
     include_model_meshes: BoolProperty(
         name='Include Model Meshes', default=True,
         description='Include meshes parented to a selected armature or empty, and meshes bound to its rig')
@@ -1191,6 +1224,11 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                           description='Apply Apex model size/orientation and XYZ Euler to unanimated transforms')
     auto_link: BoolProperty(name='Auto-Link Animation Rig', default=True,
                             description='Find this legend\'s exported animation rig beside the models or in your last animation folder')
+    placement: bpy.props.EnumProperty(name='Placement', items=BATCH_LAYOUT_ITEMS, default='ROW')
+    columns: bpy.props.IntProperty(name='Columns', default=5, min=1, max=50)
+    gap: FloatProperty(name='Minimum Gap', default=0.25, min=0.0, max=100.0, subtype='DISTANCE')
+    separate_collections: BoolProperty(name='One Collection per Model', default=False)
+    review_before_import: BoolProperty(default=False, options={'HIDDEN', 'SKIP_SAVE'})
     shader: bpy.props.EnumProperty(name='Shader', default='OP1', items=[
         ('OP1', 'Apex Shader', ''), ('OP2', 'Apex Shader+_v3.4', ''), ('OP3', 'S/G-Blender', '')])
     texture_folder: bpy.props.StringProperty(name='Texture Folder', subtype='DIR_PATH',
@@ -1203,6 +1241,10 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
     def invoke(self, context, event):
         self.shader = context.scene.my_prefs.cust_enum2
         self.auto_link = context.scene.my_prefs.auto_link_rigs
+        prefs = context.scene.my_prefs
+        self.placement, self.columns = prefs.import_placement, prefs.import_columns
+        self.gap, self.separate_collections = prefs.import_gap, prefs.import_collections
+        self.review_before_import = True
         self.ui_stage = 'CHOOSE'
         folder = context.scene.my_prefs.model_parent_folder
         if not folder or not os.path.isdir(bpy.path.abspath(folder)):
@@ -1212,7 +1254,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             self.parent_folder = folder
         self.folder_group = 'NONE'
         return context.window_manager.invoke_props_dialog(
-            self, width=540, confirm_text='Import Selected Models')
+            self, width=540, confirm_text='Check Import')
 
     def draw(self, context):
         if self.ui_stage == 'CHOOSE':
@@ -1250,6 +1292,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         self.layout.prop(self, 'prepare')
         self.layout.prop(self, 'auto_link')
         self.layout.prop(self, 'texture_folder')
+        draw_import_layout(self.layout, self)
         if self.ui_stage == 'FILES':
             self.layout.label(text='Select one or more CAST files.', icon='INFO')
 
@@ -1257,6 +1300,9 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         if not require_fresh_modules(self):
             return {'CANCELLED'}
         context.scene.my_prefs.auto_link_rigs = self.auto_link
+        prefs = context.scene.my_prefs
+        prefs.import_placement, prefs.import_columns = self.placement, self.columns
+        prefs.import_gap, prefs.import_collections = self.gap, self.separate_collections
         if self.ui_stage == 'CHOOSE' and self.source_mode == 'FILES':
             self.ui_stage = 'FILES'
             self.files.clear()
@@ -1271,10 +1317,18 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             chosen = [os.path.join(parent, item.name) for item in self.folder_items
                       if item.selected]
             if not chosen:
-                chosen = [parent] if apex_model_files.model_cast(parent) else []
+                try:
+                    chosen = [parent] if apex_model_files.model_cast(parent) else []
+                except (OSError, ValueError) as error:
+                    self.report({'ERROR'}, str(error))
+                    return {'CANCELLED'}
             if not chosen:
                 self.report({'ERROR'}, 'Select at least one model folder from the list.')
                 return {'CANCELLED'}
+            if self.review_before_import and not bpy.app.background:
+                context.scene.my_prefs.model_parent_folder = parent
+                return self.review_selection(context, apex_import_plan.inspect(
+                    folders=chosen, texture_folder=bpy.path.abspath(self.texture_folder) if self.texture_folder else ''))
             try:
                 paths = apex_model_files.batch_model_casts(chosen)
             except (OSError, ValueError) as error:
@@ -1287,6 +1341,10 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                     if self.files else [bpy.path.abspath(self.filepath or directory)])
         folders = [path for path in selected if os.path.isdir(path)]
         paths = [path for path in selected if not os.path.isdir(path)]
+        if self.review_before_import and not bpy.app.background:
+            return self.review_selection(context, apex_import_plan.inspect(
+                folders=folders, files=paths,
+                texture_folder=bpy.path.abspath(self.texture_folder) if self.texture_folder else ''))
         if folders:
             try:
                 paths.extend(apex_model_files.batch_model_casts(folders))
@@ -1295,15 +1353,37 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                 return {'CANCELLED'}
         return self.import_paths(context, paths)
 
+    def review_selection(self, context, plan):
+        if not plan.paths:
+            message = '\n'.join([plan.summary, *plan.issues])
+            context.scene.my_prefs.import_summary = plan.summary
+            save_tool_report(context.scene.my_prefs, 'texture', plan.summary, message)
+            self.report({'ERROR'}, plan.issues[0] if plan.issues else plan.summary)
+            return {'CANCELLED'}
+        bpy.ops.object.apex_review_model_import(
+            'INVOKE_DEFAULT', files=[{'name': path} for path in plan.paths],
+            issues=[{'name': issue} for issue in plan.issues],
+            texture_warnings=[{'name': warning} for warning in plan.texture_warnings],
+            fingerprints_json=json.dumps(plan.fingerprints),
+            summary=plan.summary, shader=self.shader, prepare=self.prepare,
+            auto_link=self.auto_link, texture_folder=self.texture_folder,
+            placement=self.placement, columns=self.columns, gap=self.gap,
+            separate_collections=self.separate_collections)
+        return {'FINISHED'}
+
     def import_paths(self, context, paths):
         paths = list(dict.fromkeys(paths))
         paths = sorted(paths, key=lambda path: os.path.basename(path).casefold())
         if not paths or not all(path.lower().endswith('.cast') for path in paths):
             self.report({'ERROR'}, 'Choose one or more CAST model files.')
             return {'CANCELLED'}
+        if len(paths) > apex_model_files.MAX_BATCH_MODELS:
+            self.report({'ERROR'}, 'Choose at most 50 models per import.')
+            return {'CANCELLED'}
         if len(paths) > 1:
             return self.import_batch(context, paths)
         filepath = paths[0]
+        original_collections = set(bpy.data.collections)
         try:
             created = apex_workflows.import_model(context, filepath, self.prepare, self)
         except Exception as error:
@@ -1330,6 +1410,9 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             prefs.import_summary += 'Model kept; texturing needs attention: %s' % error
             self.report({'WARNING'}, prefs.import_summary)
         # Keep a usable imported model and its Undo step even if textures are missing.
+        apex_import_plan.arrange(context, [created], layout=self.placement, columns=self.columns,
+                                 gap=self.gap, separate_collections=self.separate_collections,
+                                 import_collections=set(bpy.data.collections) - original_collections)
         if self.auto_link:
             start_auto_rig_links(context, created, self)
         return {'FINISHED'}
@@ -1339,6 +1422,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         prefs.cust_enum2 = self.shader
         original_selection = list(context.selected_objects)
         original_active = context.active_object
+        original_collections = set(bpy.data.collections)
         groups = []
         failures = texture_warnings = mesh_count = 0
         report_lines = ['Batch Import & Texture', '']
@@ -1387,11 +1471,14 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             self.report({'ERROR'}, prefs.import_summary)
             return {'CANCELLED'}
 
-        apex_workflows.arrange_models_in_row(context, groups)
+        apex_import_plan.arrange(context, groups, layout=self.placement, columns=self.columns,
+                                 gap=self.gap, separate_collections=self.separate_collections,
+                                 import_collections=set(bpy.data.collections) - original_collections)
         selected = [obj for group in groups for obj in group]
         first_rig = next((obj for obj in groups[0] if obj.type == 'ARMATURE'), groups[0][0])
         apex_workflows.select_objects(context, selected, first_rig)
-        summary = 'Imported %d models in a row (%d meshes).' % (len(groups), mesh_count)
+        placement = {'ROW': 'in a row', 'GRID': 'in a grid', 'NONE': 'at their export positions'}[self.placement]
+        summary = 'Imported %d models %s (%d meshes).' % (len(groups), placement, mesh_count)
         if failures:
             summary += ' %d file%s skipped.' % (failures, '' if failures == 1 else 's')
         if texture_warnings:
@@ -1404,6 +1491,186 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         if self.auto_link:
             start_auto_rig_links(context, selected, self)
         return {'FINISHED'}
+
+
+class APEX_OT_review_model_import(bpy.types.Operator):
+    """Review checked CAST exports before importing any models"""
+    bl_idname = 'object.apex_review_model_import'
+    bl_label = 'Check Model Import'
+    bl_options = {'REGISTER', 'UNDO'}
+    files: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement,
+                                        options={'HIDDEN', 'SKIP_SAVE'})
+    issues: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement,
+                                         options={'HIDDEN', 'SKIP_SAVE'})
+    texture_warnings: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement,
+                                                   options={'HIDDEN', 'SKIP_SAVE'})
+    summary: bpy.props.StringProperty(options={'HIDDEN', 'SKIP_SAVE'})
+    fingerprints_json: bpy.props.StringProperty(options={'HIDDEN', 'SKIP_SAVE'})
+    shader: bpy.props.EnumProperty(name='Shader', default='OP1', items=[
+        ('OP1', 'Apex Shader', ''), ('OP2', 'Apex Shader+_v3.4', ''), ('OP3', 'S/G-Blender', '')])
+    prepare: BoolProperty(default=True)
+    auto_link: BoolProperty(default=True)
+    texture_folder: bpy.props.StringProperty(subtype='DIR_PATH')
+    placement: bpy.props.EnumProperty(name='Placement', items=BATCH_LAYOUT_ITEMS, default='ROW')
+    columns: bpy.props.IntProperty(name='Columns', default=5, min=1, max=50)
+    gap: FloatProperty(name='Minimum Gap', default=0.25, min=0.0, max=100.0, subtype='DISTANCE')
+    separate_collections: BoolProperty(name='One Collection per Model', default=False)
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT' and _active_animation_scan is None
+
+    def invoke(self, context, event):
+        if not self.fingerprints_json:
+            checked = apex_import_plan.inspect(files=[item.name for item in self.files])
+            self.fingerprints_json = json.dumps(checked.fingerprints)
+        return context.window_manager.invoke_props_dialog(self, width=600, confirm_text='Import Models')
+
+    def draw(self, context):
+        layout = self.layout
+        draw_wrapped(layout, self.summary, context, max_width=600)
+        box = layout.box()
+        box.label(text='%d model%s ready' % (len(self.files), '' if len(self.files) == 1 else 's'), icon='CHECKMARK')
+        for item in list(self.files)[:5]:
+            box.label(text=os.path.join(os.path.basename(os.path.dirname(item.name)),
+                                       os.path.basename(item.name)), icon='MESH_DATA')
+        if len(self.files) > 5:
+            box.label(text='And %d more' % (len(self.files) - 5))
+        if self.issues:
+            box = layout.box()
+            box.label(text='Skipped', icon='ERROR')
+            for item in list(self.issues)[:2]:
+                draw_wrapped(box, item.name, context, max_width=600)
+            if len(self.issues) > 2:
+                box.label(text='And %d more issues' % (len(self.issues) - 2))
+        if self.texture_warnings:
+            box = layout.box()
+            box.label(text='Texture check', icon='TEXTURE')
+            for item in list(self.texture_warnings)[:2]:
+                draw_wrapped(box, item.name, context, max_width=600)
+            if len(self.texture_warnings) > 2:
+                box.label(text='And %d more texture warnings' % (len(self.texture_warnings) - 2))
+            draw_wrapped(box, 'Import will also search your texture folders.', context, max_width=600)
+        draw_import_layout(layout, self)
+
+    def execute(self, context):
+        if not require_fresh_modules(self):
+            return {'CANCELLED'}
+        paths = [item.name for item in self.files]
+        checked = apex_import_plan.inspect(
+            files=paths, texture_folder=bpy.path.abspath(self.texture_folder) if self.texture_folder else '')
+        if (set(checked.paths) != set(paths) or checked.issues
+                or (self.fingerprints_json and checked.fingerprints != json.loads(self.fingerprints_json))):
+            self.report({'WARNING'}, 'The exports changed after checking. Open Import & Texture and check them again.')
+            return {'CANCELLED'}
+        result = bpy.ops.object.apex_import_texture(
+            'EXEC_DEFAULT', files=[{'name': path} for path in checked.paths],
+            shader=self.shader, prepare=self.prepare, auto_link=self.auto_link,
+            texture_folder=self.texture_folder, placement=self.placement,
+            columns=self.columns, gap=self.gap, separate_collections=self.separate_collections)
+        if result == {'FINISHED'} and self.issues:
+            prefs = context.scene.my_prefs
+            summary = prefs.import_summary + ' %d issue%s skipped before import.' % (
+                len(self.issues), '' if len(self.issues) == 1 else 's')
+            body = prefs.texture_report.as_string() if prefs.texture_report else prefs.texture_summary
+            save_tool_report(prefs, 'texture', summary, body + '\n\nSkipped before import:\n' +
+                             '\n'.join(item.name for item in self.issues))
+            prefs.import_summary = summary
+        return result
+
+
+class APEX_OT_relink_rsx(bpy.types.Operator):
+    """Find saved RSX paths inside a moved export library"""
+    bl_idname = 'object.apex_relink_rsx'
+    bl_label = 'Relink RSX Library'
+    bl_options = {'REGISTER'}
+    old_root: bpy.props.StringProperty(name='Previous Export Folder', subtype='DIR_PATH')
+    new_root: bpy.props.StringProperty(name='New Export Folder', subtype='DIR_PATH')
+
+    @classmethod
+    def poll(cls, context):
+        return _active_animation_scan is None
+
+    def invoke(self, context, event):
+        prefs = context.scene.my_prefs
+        self.old_root = apex_relink.suggest_old_root(context) or prefs.relink_old_root
+        self.new_root = prefs.relink_new_root
+        return context.window_manager.invoke_props_dialog(self, width=620, confirm_text='Check Paths')
+
+    def draw(self, context):
+        self.layout.prop(self, 'old_root')
+        self.layout.prop(self, 'new_root')
+        draw_wrapped(self.layout, 'Choose the same export folder at its old and new locations. The check covers saved model, animation and texture paths in this blend file.', context, max_width=620)
+
+    def execute(self, context):
+        try:
+            if not require_fresh_modules(self):
+                return {'CANCELLED'}
+            result = bpy.ops.object.apex_apply_rsx_relink('INVOKE_DEFAULT', old_root=self.old_root, new_root=self.new_root)
+            return {'CANCELLED'} if result == {'CANCELLED'} else {'FINISHED'}
+        except Exception as error:
+            self.report({'ERROR'}, str(error))
+            return {'CANCELLED'}
+
+
+class APEX_OT_apply_rsx_relink(bpy.types.Operator):
+    """Apply verified replacements for saved RSX paths"""
+    bl_idname = 'object.apex_apply_rsx_relink'
+    bl_label = 'Review RSX Paths'
+    bl_options = {'REGISTER', 'UNDO'}
+    old_root: bpy.props.StringProperty(subtype='DIR_PATH', options={'HIDDEN'})
+    new_root: bpy.props.StringProperty(subtype='DIR_PATH', options={'HIDDEN'})
+
+    @classmethod
+    def poll(cls, context):
+        return _active_animation_scan is None
+
+    def invoke(self, context, event):
+        try:
+            self._plan = apex_relink.build(context, self.old_root, self.new_root)
+            return context.window_manager.invoke_props_dialog(self, width=660, confirm_text='Relink Verified Files')
+        except Exception as error:
+            self.report({'ERROR'}, str(error))
+            return {'CANCELLED'}
+
+    def draw(self, context):
+        plan = self._plan
+        draw_wrapped(self.layout, plan.summary, context, max_width=660)
+        if plan.changes:
+            box = self.layout.box()
+            for change in plan.changes[:6]:
+                draw_wrapped(box, '%s: %s' % (change.kind, change.label), context, max_width=660)
+            if len(plan.changes) > 6:
+                box.label(text='And %d more paths' % (len(plan.changes) - 6))
+        for title, entries in (('Missing files', plan.missing), ('Warnings', plan.warnings)):
+            if entries:
+                box = self.layout.box()
+                box.label(text=title, icon='ERROR')
+                for message in entries[:2]:
+                    draw_wrapped(box, message, context, max_width=660)
+                if len(entries) > 2:
+                    box.label(text='And %d more' % (len(entries) - 2))
+        draw_wrapped(self.layout, 'Missing files keep their saved paths. Actions, poses and favourites are kept.', context, max_width=660)
+
+    def execute(self, context):
+        try:
+            if not require_fresh_modules(self):
+                return {'CANCELLED'}
+            plan = getattr(self, '_plan', None)
+            # Redo follows Undo, which restores RNA data but not this Python plan.
+            if plan is None or plan.applied:
+                plan = apex_relink.build(context, self.old_root, self.new_root)
+            self._plan = plan
+            message, warning = apex_relink.apply(plan)
+            prefs = context.scene.my_prefs
+            prefs.relink_old_root, prefs.relink_new_root = self.old_root, self.new_root
+            prefs.relink_summary = message
+            self.report({'WARNING'} if warning else {'INFO'}, message)
+            redraw_animation_panels(context)
+            return {'FINISHED'}
+        except Exception as error:
+            self.report({'ERROR'}, str(error))
+            return {'CANCELLED'}
 
 
 _active_animation_scan = None
@@ -1750,7 +2017,7 @@ class APEX_OT_import_animation_cast(bpy.types.Operator, ImportHelper):
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
         return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
-                    and rig and rig.is_editable and rig.data.is_editable)
+                    and rig and rig.is_editable and rig.data.is_editable and not apex_layers.can_remove(rig))
 
     def execute(self, context):
         if not require_fresh_modules(self):
@@ -1869,7 +2136,7 @@ class APEX_OT_remove_animation(bpy.types.Operator):
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
         return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
-                    and rig and rig.is_editable and rig.data.is_editable)
+                    and rig and rig.is_editable and rig.data.is_editable and not apex_layers.can_remove(rig))
 
     def execute(self, context):
         if not require_fresh_modules(self):
@@ -1938,7 +2205,7 @@ class APEX_OT_load_animation(bpy.types.Operator):
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
         return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'} and rig and rig.is_editable
-                    and rig.apex_animation_library.clips)
+                    and rig.apex_animation_library.clips and not apex_layers.can_remove(rig))
 
     def execute(self, context):
         if not require_fresh_modules(self):
@@ -1958,12 +2225,124 @@ class APEX_OT_load_animation(bpy.types.Operator):
             if missing:
                 message += ' Skipped %d missing bones.' % missing
             if item.additive:
-                message += ' Additive clip: blend it with a base action in the NLA Editor.'
+                message += ' To blend this with a base clip, use Add Animation Layer.'
             self.report({'WARNING'} if missing or item.additive else {'INFO'}, message)
             return {'FINISHED'}
         except Exception as error:
             self.report({'ERROR'}, str(error))
             return {'CANCELLED'}
+
+
+class APEX_OT_add_animation_layer(bpy.types.Operator):
+    """Layer the selected additive clip over the model's base animation"""
+    bl_idname = 'object.apex_add_animation_layer'
+    bl_label = 'Add Animation Layer'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        rig = apex_workflows.selected_rig(context)
+        if _active_animation_scan is not None or rig is None or not rig.is_editable:
+            return False
+        library = rig.apex_animation_library
+        return (context.mode in {'OBJECT', 'POSE'} and library.index in apex_animations.visible_clip_indices(library)
+                and apex_layers.can_add(rig, library.clips[library.index]))
+
+    def execute(self, context):
+        if not require_fresh_modules(self):
+            return {'CANCELLED'}
+        rig = apex_workflows.selected_rig(context)
+        library = rig.apex_animation_library
+        try:
+            message = apex_layers.add(context, rig, library.clips[library.index],
+                                      library.layer_influence, library.layer_offset, self)
+            self.report({'INFO'}, message)
+            redraw_animation_panels(context)
+            return {'FINISHED'}
+        except Exception as error:
+            self.report({'ERROR'}, str(error))
+            return {'CANCELLED'}
+
+
+class APEX_OT_remove_animation_layers(bpy.types.Operator):
+    """Remove Toolbox's additive layers and restore the base animation"""
+    bl_idname = 'object.apex_remove_animation_layers'
+    bl_label = 'Remove Animation Layers'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        rig = apex_workflows.selected_rig(context)
+        return (context.mode in {'OBJECT', 'POSE'} and _active_animation_scan is None
+                and rig is not None and rig.is_editable and apex_layers.can_remove(rig))
+
+    def execute(self, context):
+        if not require_fresh_modules(self):
+            return {'CANCELLED'}
+        try:
+            self.report({'INFO'}, apex_layers.remove(context, apex_workflows.selected_rig(context)))
+            redraw_animation_panels(context)
+            return {'FINISHED'}
+        except Exception as error:
+            self.report({'ERROR'}, str(error))
+            return {'CANCELLED'}
+
+
+class APEX_OT_adjust_animation_layer(bpy.types.Operator):
+    """Set the strength of one Toolbox animation layer"""
+    bl_idname = 'object.apex_adjust_animation_layer'
+    bl_label = 'Animation Layer Strength'
+    bl_options = {'REGISTER', 'UNDO'}
+    index: bpy.props.IntProperty(min=0, options={'HIDDEN'})
+    strength: FloatProperty(name='Strength', default=1.0, min=0.0, max=1.0)
+
+    @classmethod
+    def poll(cls, context):
+        rig = apex_workflows.selected_rig(context)
+        return _active_animation_scan is None and rig is not None and rig.is_editable and apex_layers.can_remove(rig)
+
+    def invoke(self, context, event):
+        strips = apex_layers.layers(apex_workflows.selected_rig(context))
+        if self.index >= len(strips):
+            return {'CANCELLED'}
+        self.strength = apex_layers.influence(strips[self.index])
+        return context.window_manager.invoke_props_dialog(self, width=320)
+
+    def execute(self, context):
+        if not require_fresh_modules(self):
+            return {'CANCELLED'}
+        try:
+            apex_layers.set_influence(context, apex_workflows.selected_rig(context), self.index, self.strength)
+            redraw_animation_panels(context)
+            return {'FINISHED'}
+        except Exception as error:
+            self.report({'ERROR'}, str(error))
+            return {'CANCELLED'}
+
+
+def draw_animation_layers(layout, context, rig):
+    library = rig.apex_animation_library
+    box = layout.box()
+    box.prop(library, 'show_layers', emboss=False,
+             icon='TRIA_DOWN' if library.show_layers else 'TRIA_RIGHT')
+    if not library.show_layers:
+        return
+    selected = (library.clips[library.index]
+                if library.index in apex_animations.visible_clip_indices(library) else None)
+    if selected is None or not selected.additive:
+        draw_wrapped(box, 'Load a base animation, then select an additive clip from the list.', context)
+    else:
+        draw_wrapped(box, 'Layer the selected additive clip over the current base animation.', context)
+    box.prop(library, 'layer_influence')
+    box.prop(library, 'layer_offset')
+    box.operator('object.apex_add_animation_layer', icon='NLA')
+    for index, strip in enumerate(apex_layers.layers(rig)):
+        row = box.row(align=True)
+        row.label(text=strip.name)
+        row.operator('object.apex_adjust_animation_layer', text='%.0f%%' % (
+            apex_layers.influence(strip) * 100)).index = index
+    if apex_layers.can_remove(rig):
+        box.operator('object.apex_remove_animation_layers', icon='X')
 
 
 class APEX_UL_animations(bpy.types.UIList):
@@ -4354,6 +4733,10 @@ class APEX_PT_model_adjustments(ApexPanel, bpy.types.Panel):
                         icon='FULLSCREEN_ENTER').cool_effect = 'adjust_model'
         column.operator('object.apex_xyz_euler', text='Use XYZ Euler Rotation',
                         icon='DRIVER_ROTATIONAL_DIFFERENCE')
+        column.separator()
+        column.operator('object.apex_relink_rsx', icon='FILE_REFRESH')
+        if context.scene.my_prefs.relink_summary:
+            draw_wrapped(layout, context.scene.my_prefs.relink_summary, context)
 
 
 class APEX_PT_animations(ApexPanel, bpy.types.Panel):
@@ -4384,6 +4767,9 @@ class APEX_PT_animations(ApexPanel, bpy.types.Panel):
         if library.rig_file:
             row.operator('object.apex_refresh_animations', text='', icon='FILE_REFRESH')
         layout.operator('object.apex_import_animation_cast', text='Import Animation CAST', icon='IMPORT')
+        draw_animation_layers(layout, context, rig)
+        if apex_layers.can_remove(rig):
+            draw_wrapped(layout, 'Remove animation layers before loading another base clip or returning to T-pose.', context)
         if not library.clips:
             if library.summary:
                 draw_wrapped(layout, library.summary, context)
@@ -5586,6 +5972,9 @@ classes = (
         APEX_UL_import_folders,
         APEX_UL_animation_rigs,
         APEX_OT_import_texture,
+        APEX_OT_review_model_import,
+        APEX_OT_relink_rsx,
+        APEX_OT_apply_rsx_relink,
         APEX_OT_auto_link_animation_rig,
         APEX_OT_link_animation_rig,
         APEX_OT_import_animation_cast,
@@ -5595,6 +5984,9 @@ classes = (
         APEX_OT_cancel_animation_scan,
         APEX_OT_finish_animation_scan,
         APEX_OT_load_animation,
+        APEX_OT_add_animation_layer,
+        APEX_OT_remove_animation_layers,
+        APEX_OT_adjust_animation_layer,
         APEX_OT_remove_animation,
         APEX_OT_use_selected_attachment_rigs,
         APEX_OT_pair_item,
