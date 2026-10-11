@@ -139,14 +139,17 @@ class AnimationLayers(unittest.TestCase):
 
     def test_two_different_layers_stack_and_remove_restores_base_slot(self):
         original = self.rotation()
+        self.assertEqual(layers.base_action(self.rig), self.base_action)
         self.add()
         self.add(self.item('hands_two'))
+        self.assertEqual(layers.base_action(self.rig), self.base_action)
         self.assertEqual(len(layers.layers(self.rig)), 2)
         self.assert_quaternion(self.rotation(), original @ original @ original)
         layers.remove(bpy.context, self.rig)
         self.assertFalse(layers.can_remove(self.rig))
         self.assertEqual(len(self.rig.animation_data.nla_tracks), 0)
         self.assertEqual(self.rig.animation_data.action, self.base_action)
+        self.assertEqual(layers.base_action(self.rig), self.base_action)
         self.assertEqual(layers._slot_handle(self.rig.animation_data), self.slot)
         self.assert_quaternion(self.rotation(), original)
 

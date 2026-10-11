@@ -104,6 +104,29 @@ Run `tests/foreground_release_tools.py` without `--background`, optionally with
 Undo/Redo, plus a native review-popup draw check. It closes only its own
 disposable Blender process and writes an explicit result under `artifacts`.
 
+### 3.13.2 interface refinement, 2026-10-11
+
+- 125 Python checks passed. Packaged workflow checks passed all 56 cases on
+  Blender 4.2.2 and 5.2.2. Layering passed all 34 checks on 5.2.2; 33 passed
+  with the expected Action-slot skip on 4.2.2. Existing stack/removal checks
+  now also verify the base Action remains available for the UI to identify.
+- Enable, disable and changed-on-disk reload passed three cycles on both
+  Blender versions. The internal API revision is 19 for the new base-Action
+  lookup used by the animation panel.
+- Packaged foreground checks passed relinking, Add Layer, Adjust Strength,
+  Remove Layers and reviewed batch import Undo/Redo on both versions, plus
+  the native import review popup.
+- Native 5.2.2 visual checks used disposable scenes at the default narrow
+  sidebar width. Checked the main animation browser, grouped options,
+  import dialog, Rigging, Effects and Troubleshooting. With a packaged active
+  layer, the base animation stayed visible, loading was disabled, and the
+  collapsed section's Remove Animation Layers button restored the base.
+  No user project or preferences were saved.
+- ZIP: 4,774,469 bytes, 48 files. SHA-256:
+  `2554ed20e01b0fab5cf5b7d2015bc886a4e28ccc9e1e63c2100349915a60c449`.
+  Archive integrity passed and every packaged file matches the source.
+  This build is local; public and supporter downloads remain 3.9.1 and 3.11.0.
+
 ### 3.13.1 single-frame layer fix, 2026-10-11
 
 - Source and extracted ZIP passed 34 layer checks on Blender 5.2.2; 33 passed

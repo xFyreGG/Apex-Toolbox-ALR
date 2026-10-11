@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 13, 1),
+    "version": (3, 13, 2),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -87,7 +87,7 @@ from .apex_tex.versions import newer_version
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 18
+APEX_TEX_API_VERSION = 19
 
 
 def modules_are_stale():
@@ -641,6 +641,7 @@ BATCH_LAYOUT_ITEMS = [
 
 def draw_import_layout(layout, settings):
     box = layout.box()
+    box.label(text='Layout')
     box.prop(settings, 'placement')
     if settings.placement == 'GRID':
         box.prop(settings, 'columns')
@@ -662,7 +663,7 @@ class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
     relink_new_root: bpy.props.StringProperty(subtype='DIR_PATH')
     relink_summary: bpy.props.StringProperty()
     include_model_meshes: BoolProperty(
-        name='Include Model Meshes', default=True,
+        name='Include Whole Model', default=True,
         description='Include meshes parented to a selected armature or empty, and meshes bound to its rig')
     texture_report: bpy.props.PointerProperty(type=bpy.types.Text)
     texture_summary: bpy.props.StringProperty()
@@ -686,7 +687,7 @@ class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
     ### For Autotex ####
     cust_enum : bpy.props.EnumProperty(
         name = "Shader",
-        description = "Shader for recolor",
+        description = "Shader used when recolouring a model",
         default='OP1',
         items = [('OP1', "Apex Shader", ""),
                  ('OP2', "Apex Shader+_v3.4", ""),
@@ -701,15 +702,15 @@ class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
                                         subtype="DIR_PATH")
                                         
     aut_subf : BoolProperty(
-    name="Search Sub-folders",
-    description="Search the folder above recursively (RSX nests textures under <export>/<model>/)",
+    name="Search Subfolders",
+    description="Also search folders inside the chosen texture folder",
     default = False
     )                                                
     
     ### For Recolor ####    
     cust_enum2 : bpy.props.EnumProperty(
         name = "Shader",
-        description = "Shader for Autotex",
+        description = "Shader used when texturing a model",
         default='OP1',
         items = [('OP1', "Apex Shader", ""),
                  ('OP2', "Apex Shader+_v3.4", ""),
@@ -1267,7 +1268,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                 else:
                     self.layout.prop(self, 'parent_folder')
                 if self.folder_items:
-                    self.layout.label(text='Select folders here; do not open them.', icon='INFO')
+                    self.layout.label(text='Select the models to import.', icon='INFO')
                     self.layout.prop(self, 'folder_category', expand=True)
                     self.layout.prop(self, 'folder_group', text='Show')
                     if self.folder_group != 'NONE':
@@ -1288,10 +1289,14 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                     self.layout.label(text='Choose a model folder or a parent folder.', icon='INFO')
             else:
                 self.layout.label(text='Next, select CAST files in one folder.', icon='INFO')
-        self.layout.prop(self, 'shader')
-        self.layout.prop(self, 'prepare')
-        self.layout.prop(self, 'auto_link')
-        self.layout.prop(self, 'texture_folder')
+        box = self.layout.box()
+        box.label(text='Model Setup')
+        box.prop(self, 'prepare')
+        box.prop(self, 'auto_link')
+        box = self.layout.box()
+        box.label(text='Textures')
+        box.prop(self, 'shader')
+        box.prop(self, 'texture_folder', text='Folder (optional)')
         draw_import_layout(self.layout, self)
         if self.ui_stage == 'FILES':
             self.layout.label(text='Select one or more CAST files.', icon='INFO')
@@ -1392,7 +1397,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         prefs = context.scene.my_prefs
         prefs.cust_enum2 = self.shader
         meshes = [obj for obj in created if obj.type == 'MESH']
-        prefs.import_summary = 'Imported %d meshes. ' % len(meshes)
+        prefs.import_summary = 'Imported %d mesh%s. ' % (len(meshes), '' if len(meshes) == 1 else 'es')
         prefs.texture_summary = ''
         prefs.texture_report = None
         try:
@@ -1456,7 +1461,8 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                 if file_report:
                     report_lines.extend((file_report[1], ''))
                 else:
-                    report_lines.extend(('Imported %d meshes; no texture report.' % len(meshes), ''))
+                    report_lines.extend(('Imported %d mesh%s; no texture report.' % (
+                        len(meshes), '' if len(meshes) == 1 else 'es'), ''))
             except Exception as error:
                 texture_warnings += 1
                 report_lines.extend(('Model kept; texturing needs attention: %s' % error, ''))
@@ -1478,7 +1484,10 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         first_rig = next((obj for obj in groups[0] if obj.type == 'ARMATURE'), groups[0][0])
         apex_workflows.select_objects(context, selected, first_rig)
         placement = {'ROW': 'in a row', 'GRID': 'in a grid', 'NONE': 'at their export positions'}[self.placement]
-        summary = 'Imported %d models %s (%d meshes).' % (len(groups), placement, mesh_count)
+        summary = 'Imported %d model%s' % (len(groups), '' if len(groups) == 1 else 's')
+        if len(groups) > 1:
+            summary += ' ' + placement
+        summary += ' (%d mesh%s).' % (mesh_count, '' if mesh_count == 1 else 'es')
         if failures:
             summary += ' %d file%s skipped.' % (failures, '' if failures == 1 else 's')
         if texture_warnings:
@@ -2029,7 +2038,7 @@ class APEX_OT_import_animation_cast(bpy.types.Operator, ImportHelper):
             if missing:
                 message += ' Skipped %d missing bones.' % missing
             if item.additive:
-                message += ' Additive clip: blend it with a base action in the NLA Editor.'
+                message += ' To layer this clip, load a base animation, then select this clip and use Add Animation Layer.'
             self.report({'WARNING'} if missing or item.additive else {'INFO'}, message)
             redraw_animation_panels(context)
             return {'FINISHED'}
@@ -2225,7 +2234,7 @@ class APEX_OT_load_animation(bpy.types.Operator):
             if missing:
                 message += ' Skipped %d missing bones.' % missing
             if item.additive:
-                message += ' To blend this with a base clip, use Add Animation Layer.'
+                message += ' To layer this clip, load a base animation, then select this clip and use Add Animation Layer.'
             self.report({'WARNING'} if missing or item.additive else {'INFO'}, message)
             return {'FINISHED'}
         except Exception as error:
@@ -2322,27 +2331,44 @@ class APEX_OT_adjust_animation_layer(bpy.types.Operator):
 
 def draw_animation_layers(layout, context, rig):
     library = rig.apex_animation_library
+    strips = apex_layers.layers(rig)
     box = layout.box()
-    box.prop(library, 'show_layers', emboss=False,
+    title = 'Animation Layers' + (' (%d)' % len(strips) if strips else '')
+    box.prop(library, 'show_layers', text=title, emboss=False,
              icon='TRIA_DOWN' if library.show_layers else 'TRIA_RIGHT')
     if not library.show_layers:
+        if strips:
+            box.operator('object.apex_remove_animation_layers', icon='X')
         return
     selected = (library.clips[library.index]
                 if library.index in apex_animations.visible_clip_indices(library) else None)
     if selected is None or not selected.additive:
         draw_wrapped(box, 'Load a base animation, then select an additive clip from the list.', context)
     else:
-        draw_wrapped(box, 'Layer the selected additive clip over the current base animation.', context)
+        draw_wrapped(box, 'Add the selected clip over the base animation.', context)
     box.prop(library, 'layer_influence')
     box.prop(library, 'layer_offset')
     box.operator('object.apex_add_animation_layer', icon='NLA')
-    for index, strip in enumerate(apex_layers.layers(rig)):
+    for index, strip in enumerate(strips):
         row = box.row(align=True)
-        row.label(text=strip.name)
+        # The final token identifies managed strips internally, but is not
+        # useful when choosing a layer's strength.
+        row.label(text=strip.name.rsplit(' ', 1)[0])
         row.operator('object.apex_adjust_animation_layer', text='%.0f%%' % (
             apex_layers.influence(strip) * 100)).index = index
     if apex_layers.can_remove(rig):
         box.operator('object.apex_remove_animation_layers', icon='X')
+
+
+def draw_current_animation(layout, context, rig):
+    action = apex_layers.base_action(rig)
+    if action is None:
+        return
+    library = rig.apex_animation_library
+    playing = next((item for item in library.clips if item.action == action), None)
+    label = apex_animations.clip_label(playing, library) if playing else action.name
+    prefix = 'Base: ' if apex_layers.can_remove(rig) else 'Current: '
+    draw_wrapped(layout, prefix + label, context)
 
 
 class APEX_UL_animations(bpy.types.UIList):
@@ -4699,7 +4725,7 @@ class APEX_PT_main(ApexPanel, bpy.types.Panel):
             layout.operator('object.lgndtranslate_url',
                             text="Update Available: " + lts_ver,
                             icon='IMPORT').link = "update"
-        layout.label(text='Experimental', icon='INFO')
+        layout.label(text='Experimental build', icon='INFO')
 
 
 class APEX_PT_model(ApexPanel, bpy.types.Panel):
@@ -4712,6 +4738,8 @@ class APEX_PT_model(ApexPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.operator('object.apex_import_texture', icon='IMPORT')
+        if context.mode != 'OBJECT':
+            layout.label(text='Switch to Object Mode to import', icon='INFO')
         if context.scene.my_prefs.import_summary:
             draw_wrapped(layout, context.scene.my_prefs.import_summary, context)
 
@@ -4733,17 +4761,12 @@ class APEX_PT_model_adjustments(ApexPanel, bpy.types.Panel):
                         icon='FULLSCREEN_ENTER').cool_effect = 'adjust_model'
         column.operator('object.apex_xyz_euler', text='Use XYZ Euler Rotation',
                         icon='DRIVER_ROTATIONAL_DIFFERENCE')
-        column.separator()
-        column.operator('object.apex_relink_rsx', icon='FILE_REFRESH')
-        if context.scene.my_prefs.relink_summary:
-            draw_wrapped(layout, context.scene.my_prefs.relink_summary, context)
 
 
 class APEX_PT_animations(ApexPanel, bpy.types.Panel):
     bl_label = 'Animations'
     bl_idname = 'APEX_PT_animations'
-    bl_parent_id = 'APEX_PT_rigging'
-    bl_order = 0
+    bl_order = 3
 
     def draw(self, context):
         layout = self.layout
@@ -4767,15 +4790,15 @@ class APEX_PT_animations(ApexPanel, bpy.types.Panel):
         if library.rig_file:
             row.operator('object.apex_refresh_animations', text='', icon='FILE_REFRESH')
         layout.operator('object.apex_import_animation_cast', text='Import Animation CAST', icon='IMPORT')
-        draw_animation_layers(layout, context, rig)
-        if apex_layers.can_remove(rig):
-            draw_wrapped(layout, 'Remove animation layers before loading another base clip or returning to T-pose.', context)
         if not library.clips:
             if library.summary:
                 draw_wrapped(layout, library.summary, context)
             draw_wrapped(layout, 'Link an RSX rig or import one CAST animation.', context)
             layout.operator('object.lgndtranslate_url', text='Export Setup Guide', icon='HELP').link = 'workflow_guide'
+            draw_current_animation(layout, context, rig)
             layout.operator('object.apex_remove_animation', icon='LOOP_BACK')
+            if apex_layers.can_remove(rig):
+                draw_animation_layers(layout, context, rig)
             return
         # Keep actionable scan warnings visible even with the details folded away.
         if 'warning' in library.summary.lower():
@@ -4806,23 +4829,26 @@ class APEX_PT_animations(ApexPanel, bpy.types.Panel):
         row.enabled = library.index in visible
         row.operator('object.apex_load_animation', icon='ACTION')
         layout.operator('object.apex_remove_animation', icon='LOOP_BACK')
-        if rig.animation_data and rig.animation_data.action:
-            playing = next((item for item in library.clips if item.action == rig.animation_data.action), None)
-            draw_wrapped(layout, 'Current: ' + (apex_animations.clip_label(playing, library)
-                         if playing else rig.animation_data.action.name), context)
+        draw_current_animation(layout, context, rig)
+        if apex_layers.can_remove(rig):
+            draw_wrapped(layout, 'Remove layers to load another clip or return to T-pose.', context)
+        draw_animation_layers(layout, context, rig)
         box = layout.box()
         box.prop(library, 'show_name_options', emboss=False,
                  icon='TRIA_DOWN' if library.show_name_options else 'TRIA_RIGHT')
         if library.show_name_options:
+            box.label(text='Playback')
             box.prop(library, 'fit_timeline')
             box.prop(library, 'allow_missing')
             box.separator()
+            box.label(text='Names')
             box.prop(library, 'show_menu_names')
             if library.names_summary:
                 draw_wrapped(box, library.names_summary, context)
-            box.operator('object.apex_builtin_animation_names', text='Reset to Included Names', icon='FILE_REFRESH')
+            box.operator('object.apex_builtin_animation_names', text='Use Included English Names', icon='FILE_REFRESH')
             box.operator('object.apex_import_animation_names', text='Import Names / Language', icon='IMPORT')
             box.separator()
+            box.label(text='Linked Export')
             path_row = box.row()
             path_row.enabled = False
             path_row.prop(library, 'rig_file', text='Rig')
@@ -4836,6 +4862,7 @@ class APEX_PT_materials(ApexPanel, bpy.types.Panel):
     bl_label = "Materials"
     bl_idname = "APEX_PT_materials"
     bl_order = 2
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         pass
@@ -4861,7 +4888,7 @@ class APEX_PT_autotex(ApexPanel, bpy.types.Panel):
         row.use_property_split = False
         row.prop(prefs, 'include_model_meshes')
         layout.prop(prefs, "cust_enum2", text="Shader")
-        layout.prop(prefs, "autotex_folder", text="Texture Folder")
+        layout.prop(prefs, "autotex_folder", text="Folder (optional)")
 
         column = layout.column()
         column.use_property_split = False
@@ -4892,7 +4919,7 @@ class APEX_PT_autotex_search(ApexPanel, bpy.types.Panel):
         layout.use_property_decorate = False
         prefs = context.scene.my_prefs
 
-        layout.prop(prefs, "aut_subf", text="Search Sub-folders")
+        layout.prop(prefs, "aut_subf", text="Search Subfolders")
 
         column = layout.column(align=True)
         column.use_property_split = False
@@ -4950,7 +4977,7 @@ class APEX_PT_environment(ApexPanel, bpy.types.Panel):
 
     bl_label = "Lighting & Scene"
     bl_idname = "APEX_PT_environment"
-    bl_order = 4
+    bl_order = 5
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -4988,23 +5015,11 @@ class APEX_PT_environment(ApexPanel, bpy.types.Panel):
 
 
 class APEX_PT_rigging(ApexPanel, bpy.types.Panel):
-    """Animation browsing and rig helpers"""
+    """Bone display, IK helpers and item pairing"""
 
-    bl_label = "Rigging & Animation"
+    bl_label = "Rigging"
     bl_idname = "APEX_PT_rigging"
-    bl_order = 3
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        pass
-
-
-class APEX_PT_rig_tools(ApexPanel, bpy.types.Panel):
-    """Bone display and IK helpers"""
-    bl_label = 'Rig Tools'
-    bl_idname = 'APEX_PT_rig_tools'
-    bl_parent_id = 'APEX_PT_rigging'
-    bl_order = 1
+    bl_order = 4
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -5133,7 +5148,7 @@ class APEX_PT_effects(ApexPanel, bpy.types.Panel):
 
     bl_label = "Effects"
     bl_idname = "APEX_PT_effects"
-    bl_order = 5
+    bl_order = 6
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -5143,9 +5158,10 @@ class APEX_PT_effects(ApexPanel, bpy.types.Panel):
 class APEX_PT_shadow(ApexPanel, bpy.types.Panel):
     """Turn a legend into a Shadow Squad shadow"""
 
-    bl_label = "Auto Shadow"
+    bl_label = "Shadow Squad"
     bl_idname = "APEX_PT_shadow"
-    bl_parent_id = "APEX_PT_apex_effects"
+    bl_parent_id = "APEX_PT_effects"
+    bl_order = 1
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -5168,9 +5184,10 @@ class APEX_PT_shadow(ApexPanel, bpy.types.Panel):
 class APEX_PT_apex_effects(ApexPanel, bpy.types.Panel):
     """Legend and weapon effects from the Apex Toolbox assets"""
 
-    bl_label = "Apex Effects"
+    bl_label = "Legend & Weapon Effects"
     bl_idname = "APEX_PT_apex_effects"
     bl_parent_id = "APEX_PT_effects"
+    bl_order = 0
     bl_options = {"DEFAULT_CLOSED"}
     
 
@@ -5791,7 +5808,7 @@ class APEX_PT_health(ApexPanel, bpy.types.Panel):
     """Find problems before texturing or rendering"""
     bl_label = 'Troubleshooting'
     bl_idname = 'APEX_PT_health'
-    bl_order = 6
+    bl_order = 7
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -5812,13 +5829,17 @@ class APEX_PT_health(ApexPanel, bpy.types.Panel):
                 box = layout.box()
                 draw_wrapped(box, issue.detail, context)
                 if issue.object:
-                    box.operator('object.apex_select_issues', text='Select This Issue Type',
+                    box.operator('object.apex_select_issues', text='Select Matching Issues',
                                  icon='RESTRICT_SELECT_OFF').code = issue.code
                 layout.operator('object.apex_select_issues', text='Select All Affected Meshes',
                                 icon='RESTRICT_SELECT_OFF').code = ''
             draw_report_actions(layout, 'health')
         else:
             draw_wrapped(layout, 'Check missing textures, materials, UV maps and rig targets.', context)
+        layout.separator()
+        layout.operator('object.apex_relink_rsx', icon='FILE_REFRESH')
+        if prefs.relink_summary:
+            draw_wrapped(layout, prefs.relink_summary, context)
 
 
 class APEX_PT_repair(ApexPanel, bpy.types.Panel):
@@ -5849,7 +5870,7 @@ class APEX_PT_about(ApexPanel, bpy.types.Panel):
 
     bl_label = "About & Help"
     bl_idname = "APEX_PT_about"
-    bl_order = 7
+    bl_order = 8
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -6026,9 +6047,8 @@ classes = (
         APEX_PT_autotex_search,
         APEX_PT_recolour,
         APEX_PT_shader_library,
-        APEX_PT_rigging,
         APEX_PT_animations,
-        APEX_PT_rig_tools,
+        APEX_PT_rigging,
         APEX_PT_attachments,
         APEX_PT_environment,
         APEX_PT_scene_utils,

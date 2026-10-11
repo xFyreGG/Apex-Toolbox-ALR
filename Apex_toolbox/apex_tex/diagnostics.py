@@ -14,7 +14,7 @@ def texture_report(batch, definition, outcomes=None):
         lines.append("%s [%s%s]" % (root.path, root.origin,
                                     "; includes subfolders" if root.recursive else ""))
     if not batch.roots:
-        lines.append("No search folder found. Set Texture Folder in Search Options.")
+        lines.append("No search folder found. Set a folder under Materials > Auto Texture.")
     if batch.index is not None:
         lines.append("%d candidate images indexed." % len(batch.index))
         lines.extend("Search warning: " + warning for warning in batch.index.warnings)

@@ -41,6 +41,15 @@ def can_remove(rig):
     return bool(rig and _state(rig))
 
 
+def base_action(rig):
+    """Current base Action, including while Toolbox layers are active."""
+    if rig is None or rig.animation_data is None:
+        return None
+    state = _state(rig)
+    strip = _record_strip(rig, state.get('base')) if state else None
+    return strip.action if strip else rig.animation_data.action
+
+
 def _validate(rig, first=False):
     if not rig or rig.type != 'ARMATURE' or not rig.is_editable or not rig.data.is_editable:
         raise ValueError('Select a local imported armature first.')

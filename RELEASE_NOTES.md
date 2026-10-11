@@ -1,3 +1,23 @@
+# Apex Toolbox 3.13.2: Experimental candidate (local)
+
+Update date: **2026-10-11**
+
+- Animations has its own main section. The browser and loading controls come
+  first, with optional Animation Layers below them. The base animation stays
+  visible while layers are active, and their removal remains available when
+  the layer controls are folded away.
+- Rigging keeps bone display, IK and item pairing together. Materials starts
+  collapsed; import handles the usual texturing step. Relink RSX Library is
+  under Troubleshooting, alongside texture repair.
+- Import settings are grouped into Model Setup, Textures and Layout. Texture
+  folders are labelled optional, and animation options are grouped into
+  Playback, Names and Linked Export.
+- Shadow Squad is directly under Effects. Labels, shader tooltips and additive
+  instructions have been tidied up; internal layer identifiers are hidden.
+- Local only. Supporter downloads remain at 3.11.0; public stable remains 3.9.1.
+
+---
+
 # Apex Toolbox 3.13.1: Experimental candidate (local)
 
 Update date: **2026-10-11**
