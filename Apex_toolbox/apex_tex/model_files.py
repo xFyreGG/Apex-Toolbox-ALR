@@ -34,6 +34,92 @@ LEGEND_EXPORT_ALIASES = {
 LEGEND_LABELS = {'madmaggie': 'Mad Maggie'}
 
 
+def _export_name(name):
+    """Normalise export names and Blender's duplicate/LOD suffixes."""
+    name = str(name).replace('\\', '/').rsplit('/', 1)[-1].casefold()
+    name = re.sub(r'\.cast$', '', name)
+    name = re.sub(r'\.\d{3,}$', '', name)
+    name = LOD_SUFFIX.sub('', name)
+    name = re.sub(r'[\s-]+', '_', name)
+    return name.replace('mad_maggie', 'madmaggie')
+
+
+def _canonical_legend(name):
+    name = LEGEND_EXPORT_ALIASES.get(name, name)
+    return name if name in LEGEND_NAMES else None
+
+
+def _model_name_legend(name, object_name=False):
+    name = _export_name(name)
+    words = name.split('_')
+    if model_folder_category(name) == 'LEGENDS':
+        return model_folder_group(name)
+    if object_name:
+        # A renamed armature can supply the identity when the export has a
+        # generic filename, but a legend's drone/heirloom is not its model.
+        if len(words) == 1 or (len(words) == 2 and words[1] in {
+                'armature', 'rig', 'skeleton'}):
+            return _canonical_legend(words[0])
+    return None
+
+
+def model_legend(model_filepath, object_names=()):
+    """Identify a legend model without treating its props as character rigs.
+
+    The CAST filename, immediate model folder and imported object names must
+    agree wherever they contain a recognised legend identity. Unknown generic
+    filenames can use an armature renamed to the legend's name. A filename or
+    folder explicitly describing a weapon or legend prop blocks auto linking.
+    """
+    path_parts = str(model_filepath or '').replace('\\', '/').rstrip('/').split('/')
+    source_names = path_parts[-2:]
+    legends = set()
+    for source in source_names:
+        name = _export_name(source)
+        legend = _model_name_legend(name)
+        if legend:
+            legends.add(legend)
+            continue
+        words = name.split('_')
+        if (model_folder_category(name) == 'WEAPONS'
+                or (_canonical_legend(words[0]) and len(words) > 1)):
+            return None
+    for name in object_names:
+        legend = _model_name_legend(name, object_name=True)
+        if legend:
+            legends.add(legend)
+    return next(iter(legends)) if len(legends) == 1 else None
+
+
+def choose_animation_rig(legend, candidates):
+    """Return (CAST path, reason) for one safe matching legend animation rig.
+
+    Candidates use the (folder name, CAST path) pairs from legend_animation_rigs.
+    Prefer an unqualified pilot rig over its named variants. Duplicate paths do
+    not count twice. Multiple equally suitable rigs are ambiguous, and special
+    holo/nova prop rigs are never selected for a legend automatically.
+    """
+    legend = _canonical_legend(_export_name(legend))
+    if legend is None:
+        return None, 'unknown_legend'
+    matches = {}
+    bases = {}
+    for name, filepath in candidates:
+        name = _export_name(name)
+        words = name.split('_')
+        if (len(words) < 3 or words[0] != 'pilot'
+                or _canonical_legend(words[2]) != legend):
+            continue
+        identity = str(filepath).replace('\\', '/').casefold()
+        matches[identity] = str(filepath)
+        if len(words) == 3:
+            bases[identity] = str(filepath)
+    preferred = bases or matches
+    if len(preferred) == 1:
+        return next(iter(preferred.values())), 'matched'
+    return None, 'ambiguous' if preferred else 'no_match'
+
+
 def model_folder_category(name):
     """Sort RSX folder names into three exhaustive, non-overlapping views."""
     words = name.casefold().split('_')

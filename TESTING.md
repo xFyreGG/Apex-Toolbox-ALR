@@ -17,6 +17,8 @@ a disposable rig before assigning them to the selected model.
 `animation_cache.py` stores validated per-file metadata in Blender's user data
 folder. `animation_preview.py` owns temporary preview state and recovers it
 across saving, Undo, Redo and add-on cleanup.
+`auto_rigs.py` discovers matching legend exports and queues animation libraries
+without changing imported models or applying an Action.
 
 ## Run the checks
 
@@ -25,6 +27,7 @@ Pure Python (no Blender dependency):
 ```text
 python Apex_toolbox/apex_tex/tests/run_tests.py
 python tests/animation_cache.py
+python tests/auto_rig_matching.py
 ```
 
 Blender integration, using factory settings and temporary files:
@@ -81,6 +84,32 @@ and repeat indexing against a read-only RSX export, with optional `--output`
 for a JSON result. It samples named emote, banner and finisher clips and checks
 the original action, every bone matrix, object transform and timeline after
 Revert. The script does not copy game files or save a user scene.
+
+### 3.12.1 local candidate validation, 2026-10-11
+
+- 125 existing pure Python checks and 13 new name/alias checks passed.
+- Blender 4.2.2 and 5.2.2 passed 56 existing workflow checks and all 19 new
+  automatic rig-link checks. The extracted ZIP passed the 19 new checks on
+  both versions. The 19 packaged animation-preview checks passed on 5.2.2.
+- Disposable foreground sessions on both Blender versions passed automatic
+  batch linking, link Undo/Redo, cancellation, cancel-on-save, changed selection
+  and removal of the initiating model while other models continued linking.
+- The packaged real-export check imported two Wraith skins, textured all 15
+  meshes, kept the models side by side and linked all 573 clips to each model.
+  No animation was applied. The source exports and user scenes were not modified.
+- The matching checks cover all 28 supported legends, known RSX aliases,
+  base-rig preference and ambiguous/missing rigs. Integration also checks custom
+  paths, incompatible skeletons, changed exports, existing manual links and
+  reuse of one scan across multiple skins. Add-on reload checks passed on 5.2.2.
+- ZIP: 4,757,797 bytes, 46 files. SHA-256:
+  `a885972c549234d87fa30883683c6ed94faf4444ca0ae1bf652aa059857611c2`.
+  This candidate is local; the available downloads remain unchanged.
+
+Run `tests/auto_rig_integration.py` in background Blender, optionally with
+`-- --release` for the ZIP. Run `tests/foreground_auto_rigs.py` without
+`--background` to check timer completion and Undo in a disposable process.
+Add `--require-auto-links` to the real-model folder check below to require
+animation libraries on every recognized legend model.
 
 ### 3.12.0 local candidate validation, 2026-10-11
 

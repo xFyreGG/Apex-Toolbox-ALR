@@ -22,6 +22,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mdl', type=Path, required=True)
 parser.add_argument('--models', nargs='+', required=True)
 parser.add_argument('--release', action='store_true')
+parser.add_argument('--require-auto-links', action='store_true')
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
 
 release = None
@@ -76,6 +77,20 @@ centers = [(low.y + high.y) / 2 for low, high in bounds]
 bottoms = [low.z for low, _ in bounds]
 assert max(centers) - min(centers) < 1e-4, 'Model centres are not aligned'
 assert max(bottoms) - min(bottoms) < 1e-4, 'Model bottoms are not aligned'
+
+if args.require_auto_links:
+    linked = 0
+    for source, objects in groups.items():
+        for rig in (obj for obj in objects if obj.type == 'ARMATURE'):
+            legend = model_files.model_legend(source, (rig.name, rig.data.name))
+            if not legend:
+                continue
+            library = rig.apex_animation_library
+            assert library.rig_file and library.clips, library.summary
+            assert not rig.animation_data or not rig.animation_data.action, 'Auto-link applied an animation'
+            linked += 1
+            print('REAL AUTO-LINK PASSED:', legend, len(library.clips), 'clips,', library.rig_file, flush=True)
+    assert linked, 'No legend models were selected for the automatic link check'
 
 print('REAL MODEL BATCH PASSED:', len(groups), 'models,',
       sum(obj.type == 'MESH' for items in groups.values() for obj in items),

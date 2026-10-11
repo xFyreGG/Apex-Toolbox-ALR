@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 12, 0),
+    "version": (3, 12, 1),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -77,13 +77,14 @@ from .apex_tex import workflows as apex_workflows
 from .apex_tex import model_files as apex_model_files
 from .apex_tex import animations as apex_animations
 from .apex_tex import animation_preview as apex_preview
+from .apex_tex import auto_rigs as apex_auto_rigs
 from .apex_tex import attachments as apex_attachments
 from .apex_tex.versions import newer_version
 
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 15
+APEX_TEX_API_VERSION = 16
 
 
 def modules_are_stale():
@@ -627,6 +628,7 @@ class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
     import_summary: bpy.props.StringProperty()
     model_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
     animation_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
+    auto_link_rigs: BoolProperty(default=True)
     include_model_meshes: BoolProperty(
         name='Include Model Meshes', default=True,
         description='Include meshes parented to a selected armature or empty, and meshes bound to its rig')
@@ -1188,6 +1190,8 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                                      default='DIRECT', options={'HIDDEN', 'SKIP_SAVE'})
     prepare: BoolProperty(name='Prepare Model', default=True,
                           description='Apply Apex model size/orientation and XYZ Euler to unanimated transforms')
+    auto_link: BoolProperty(name='Auto-Link Animation Rig', default=True,
+                            description='Find this legend\'s exported animation rig beside the models or in your last animation folder')
     shader: bpy.props.EnumProperty(name='Shader', default='OP1', items=[
         ('OP1', 'Apex Shader', ''), ('OP2', 'Apex Shader+_v3.4', ''), ('OP3', 'S/G-Blender', '')])
     texture_folder: bpy.props.StringProperty(name='Texture Folder', subtype='DIR_PATH',
@@ -1195,10 +1199,12 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == 'OBJECT'
+        return (context.mode == 'OBJECT' and _active_animation_scan is None
+                and apex_preview.active() is None)
 
     def invoke(self, context, event):
         self.shader = context.scene.my_prefs.cust_enum2
+        self.auto_link = context.scene.my_prefs.auto_link_rigs
         self.ui_stage = 'CHOOSE'
         folder = context.scene.my_prefs.model_parent_folder
         if not folder or not os.path.isdir(bpy.path.abspath(folder)):
@@ -1244,6 +1250,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                 self.layout.label(text='Next, select CAST files in one folder.', icon='INFO')
         self.layout.prop(self, 'shader')
         self.layout.prop(self, 'prepare')
+        self.layout.prop(self, 'auto_link')
         self.layout.prop(self, 'texture_folder')
         if self.ui_stage == 'FILES':
             self.layout.label(text='Select one or more CAST files.', icon='INFO')
@@ -1251,6 +1258,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
     def execute(self, context):
         if not require_fresh_modules(self):
             return {'CANCELLED'}
+        context.scene.my_prefs.auto_link_rigs = self.auto_link
         if self.ui_stage == 'CHOOSE' and self.source_mode == 'FILES':
             self.ui_stage = 'FILES'
             self.files.clear()
@@ -1324,6 +1332,8 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             prefs.import_summary += 'Model kept; texturing needs attention: %s' % error
             self.report({'WARNING'}, prefs.import_summary)
         # Keep a usable imported model and its Undo step even if textures are missing.
+        if self.auto_link:
+            start_auto_rig_links(context, created, self)
         return {'FINISHED'}
 
     def import_batch(self, context, paths):
@@ -1393,6 +1403,8 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         save_tool_report(prefs, 'texture', prefs.import_summary, '\n'.join(report_lines))
         self.report({'WARNING'} if failures or texture_warnings else {'INFO'},
                     prefs.import_summary)
+        if self.auto_link:
+            start_auto_rig_links(context, selected, self)
         return {'FINISHED'}
 
 
@@ -1428,7 +1440,7 @@ def advance_animation_scan():
     if scan is None:
         return None
     try:
-        if not scan.rig.is_editable:
+        if not getattr(scan.job, 'is_batch', False) and not scan.rig.is_editable:
             raise ValueError('The target rig is no longer editable.')
         done = scan.job.step()
     except Exception as error:
@@ -1444,8 +1456,11 @@ def advance_animation_scan():
             region = next((region for region in area.regions if region.type == 'WINDOW'), None)
             with bpy.context.temp_override(window=windows[0], area=area, region=region):
                 is_names = isinstance(scan.job, apex_animations.AnimationNamesScan)
+                is_batch = getattr(scan.job, 'is_batch', False)
                 if bpy.ops.object.apex_finish_animation_scan() == {'FINISHED'}:
-                    bpy.ops.ed.undo_push(message='Import In-Game Names' if is_names else 'Link Animation Library')
+                    message = ('Auto-Link Animation Libraries' if is_batch else
+                               'Import In-Game Names' if is_names else 'Link Animation Library')
+                    bpy.ops.ed.undo_push(message=message)
         else:
             cancel_animation_scan()
         return None
@@ -1477,6 +1492,64 @@ class APEX_OT_finish_animation_scan(bpy.types.Operator):
         finally:
             cancel_animation_scan()
             redraw_animation_panels(context)
+
+
+def start_auto_rig_links(context, objects, operator):
+    """Queue legend libraries without changing selection or loading an Action."""
+    global _active_animation_scan
+    if _active_animation_scan is not None or apex_preview.active() is not None:
+        operator.report({'WARNING'}, 'Finish the current animation scan or preview before auto-linking.')
+        return {'CANCELLED'}
+    job = None
+    try:
+        rigs = [obj for obj in objects if obj.type == 'ARMATURE' and obj.is_editable]
+        targets, notices = apex_auto_rigs.plan(context, rigs)
+        if not targets:
+            if notices:
+                operator.report({'INFO'}, notices[0])
+            redraw_animation_panels(context)
+            return {'CANCELLED'}
+        rig, filepath = targets[0]
+        if bpy.app.background or context.window is None:
+            job = apex_auto_rigs.BatchScan(rig, filepath, targets=targets)
+            while not job.step():
+                pass
+            message, warning = job.commit(rig)
+            operator.report({'WARNING'} if warning else {'INFO'}, message)
+        else:
+            _active_animation_scan = ActiveAnimationScan(
+                rig, filepath, apex_auto_rigs.BatchScan, targets=targets)
+            bpy.app.timers.register(advance_animation_scan, first_interval=0.02)
+            operator.report({'INFO'}, 'Auto-linking animation rigs for %d model%s.' % (
+                len(targets), '' if len(targets) == 1 else 's'))
+        redraw_animation_panels(context)
+        return {'FINISHED'}
+    except Exception as error:
+        cancel_animation_scan()
+        operator.report({'WARNING'}, 'Models kept; animation auto-linking could not finish: %s' % error)
+        return {'CANCELLED'}
+    finally:
+        if job is not None:
+            job.close()
+
+
+class APEX_OT_auto_link_animation_rig(bpy.types.Operator):
+    """Find the selected legend's exported animation rig"""
+    bl_idname = 'object.apex_auto_link_animation_rig'
+    bl_label = 'Auto-Link Animation Rig'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        rig = apex_workflows.selected_rig(context)
+        return (context.mode in {'OBJECT', 'POSE'} and rig is not None and rig.is_editable
+                and not rig.apex_animation_library.rig_file
+                and _active_animation_scan is None and apex_preview.active() is None)
+
+    def execute(self, context):
+        if not require_fresh_modules(self):
+            return {'CANCELLED'}
+        return start_auto_rig_links(context, [apex_workflows.selected_rig(context)], self)
 
 
 class AnimationScanOperator:
@@ -4393,12 +4466,16 @@ class APEX_PT_animations(ApexPanel, bpy.types.Panel):
         library = rig.apex_animation_library
         layout.label(text=rig.name, icon='ARMATURE_DATA')
         row = layout.row(align=True)
+        if not library.rig_file:
+            row.operator('object.apex_auto_link_animation_rig', text='Auto-Link', icon='LINKED')
         row.operator('object.apex_link_animation_rig',
                      text='Change Rig' if library.rig_file else 'Link Animation Rig', icon='LINKED')
         if library.rig_file:
             row.operator('object.apex_refresh_animations', text='', icon='FILE_REFRESH')
         layout.operator('object.apex_import_animation_cast', text='Import Animation CAST', icon='IMPORT')
         if not library.clips:
+            if library.summary:
+                draw_wrapped(layout, library.summary, context)
             draw_wrapped(layout, 'Link an RSX rig or import one CAST animation.', context)
             layout.operator('object.lgndtranslate_url', text='Export Setup Guide', icon='HELP').link = 'workflow_guide'
             layout.operator('object.apex_remove_animation', icon='LOOP_BACK')
@@ -5599,6 +5676,7 @@ classes = (
         APEX_UL_import_folders,
         APEX_UL_animation_rigs,
         APEX_OT_import_texture,
+        APEX_OT_auto_link_animation_rig,
         APEX_OT_link_animation_rig,
         APEX_OT_import_animation_cast,
         APEX_OT_import_animation_names,
@@ -5693,7 +5771,8 @@ def register():
     bpy.types.Scene.apex_attachment_item = bpy.props.PointerProperty(
         name='Item Rig', type=bpy.types.Object, poll=attachment_armature_poll)
     bpy.types.Scene.apex_attachment_bone = bpy.props.StringProperty(name='Other Bone')
-    for handlers in (bpy.app.handlers.load_pre, bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
+    for handlers in (bpy.app.handlers.save_pre, bpy.app.handlers.load_pre,
+                     bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
         handlers.append(cancel_animation_scan)
     for handlers in (bpy.app.handlers.save_pre, bpy.app.handlers.load_pre,
                      bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
@@ -5715,7 +5794,8 @@ def unregister():
                      bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
         if apex_preview.cancel_preview in handlers:
             handlers.remove(apex_preview.cancel_preview)
-    for handlers in (bpy.app.handlers.load_pre, bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
+    for handlers in (bpy.app.handlers.save_pre, bpy.app.handlers.load_pre,
+                     bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
         if cancel_animation_scan in handlers:
             handlers.remove(cancel_animation_scan)
     del bpy.types.Object.apex_animation_library

@@ -8,9 +8,10 @@ Apex Toolbox is a Blender add-on for working with Apex Legends models exported t
 
 To try 3.11.0, link an active Patreon membership to your ALR account, then choose **Experimental** on Creator Tools. Install the ZIP through Blender's **Install from Disk**; it replaces an older Apex Toolbox installation. The add-on contains no Apex models, textures or animations. Export your own files with RSX. The add-on source is included in the ZIP; the [3.9.1 tag](https://github.com/xFyreGG/Apex-Toolbox-ALR/tree/v3.9.1) remains the source for the public release.
 
-Local development is on **3.12.0 experimental**, adding temporary animation
+Local development is on **3.12.1 experimental**, adding temporary animation
 previews with Apply/Revert and a persistent animation index for faster repeat
-links. This candidate is not uploaded yet. The available supporter build is
+links. Import & Texture also finds and links matching legend animation rigs
+automatically. This candidate is not uploaded yet. The available supporter build is
 still 3.11.0.
 
 ## Install the public release

@@ -9,10 +9,10 @@ All supporter tiers retain early access. Release 3.11.0 publicly when the
 maintainer decides the preview has had enough exposure and the stable website
 update is ready.
 
-Development has now moved to **3.12.0 experimental**, adding animation previews
-and a saved animation index. That candidate is local and does not change this
+Development has now moved to **3.12.1 experimental**, adding animation previews
+and a saved animation index, plus automatic legend rig linking. That candidate is local and does not change this
 3.11.0 public release plan. Use the 3.11.0 source at commit `0431a99` when
-preparing its public release; the current development checkout contains 3.12.0.
+preparing its public release; the current development checkout contains 3.12.1.
 
 The local 3.11.0 ZIP passed the source, packaged add-on, real RSX export,
 installation, animation and render checks recorded in `TESTING.md` on

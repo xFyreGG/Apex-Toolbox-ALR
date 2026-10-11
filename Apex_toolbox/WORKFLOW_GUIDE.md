@@ -1,4 +1,4 @@
-# Apex Toolbox 3.12.0: experimental workflows
+# Apex Toolbox 3.12.1: experimental workflows
 
 Animation names depend on the available RSX export data. Unknown or conflicting
 names retain their export labels. Test unfamiliar rig and clip variants before
@@ -48,7 +48,9 @@ model stays where CAST imported it; later models are spaced by their mesh bounds
 centred along Y and aligned at the bottom. Existing scene objects are not moved.
 Files that fail to import are skipped without discarding successful models. The
 combined texture report names each file and any import or texture problems.
-Missing textures leave that model available. One Undo step removes the batch.
+Missing textures leave that model available. Importing creates one Undo step
+for the batch. If automatic animation linking finishes afterward, Undo removes
+the links first, then the imported batch.
 Select model CAST exports only; rig and animation CAST exports are reported as
 failed imports. Other formats keep their usual import workflow.
 
@@ -64,6 +66,25 @@ rig is linked or refreshed. Bone compatibility and the **Allow Missing Bones**
 option work the same way as loading from a linked rig.
 
 ## Link a legend's animation rig
+
+**Auto-Link Animation Rig** is enabled in Import & Texture by default. After
+importing one or several legends, Toolbox identifies each legend from its
+export name and indexes the matching rig in the background. No animation is
+applied and the models stay in place. The option is remembered in the scene.
+
+The search starts in the `animrig` folder beside the model's `mdl` directory,
+then checks the animation folder you last used and RSX folders in Blender's
+bookmarks/recent history. Keep the rig CAST beside its `anims_<rig name>` folder.
+Toolbox supports known export aliases such as `holo` for Mirage, `nova` for
+Horizon and `overdrive` for Axle. A unique base pilot rig wins over named variants.
+If multiple rigs remain possible, none is guessed. Weapons and props are skipped.
+
+For a model already in the scene, select it and click **Animations → Auto-Link**.
+If no match is found or the skeleton is incompatible, use **Link Animation Rig**
+to choose an export manually. Existing rig links are kept. Cancel Indexing,
+saving, changing files or Undo stops unfinished linking and keeps the models.
+
+To link a rig manually:
 
 1. In RSX, choose **CAST** for animation rig and animation sequence exports,
    enable **Export Rig Sequences**, and export the legend's rig.

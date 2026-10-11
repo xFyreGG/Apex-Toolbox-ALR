@@ -1,3 +1,23 @@
+# Apex Toolbox 3.12.1: Experimental candidate (local)
+
+Update date: **2026-10-11**
+
+- Import & Texture now links each legend's matching animation rig automatically,
+  including batch imports. The option is enabled by default and remembered in
+  the scene. Linking makes the animation list available without applying a clip.
+- Searches the model export's sibling `animrig` folder first, then the last
+  animation folder used and Blender's RSX bookmarks/recent folders. No fixed
+  export path is required.
+- Known RSX legend aliases are supported. Base pilot rigs take precedence over
+  variants; ambiguous matches, weapons, props and incompatible skeletons are
+  skipped. Existing manual links are kept.
+- Auto-Link is also available for an already imported model. Indexing runs in
+  short batches and shares the scan between skins using the same rig. Cancel,
+  saving or Undo stops unfinished linking and keeps the imported models.
+- Local only. Supporter downloads remain at 3.11.0; public stable remains 3.9.1.
+
+---
+
 # Apex Toolbox 3.12.0: Experimental candidate (local)
 
 Update date: **2026-10-11**
