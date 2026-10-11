@@ -8,7 +8,7 @@ import time
 
 import bpy
 
-from . import animation_names, cast_index, workflows
+from . import animation_cache, animation_names, cast_index, workflows
 
 
 def bone_names(rig):
@@ -118,22 +118,34 @@ class IncrementalScan:
             self.cancelled = True
 
 
+def index_cache_root():
+    """User data survives add-on reinstalls; an unavailable cache is optional."""
+    try:
+        return bpy.utils.user_resource('DATAFILES', path='Apex Toolbox/animation-index', create=True) or None
+    except (OSError, RuntimeError):
+        return None
+
+
 class LibraryScan(IncrementalScan):
     """Cooperative scan: no total deadline and no Blender changes until commit.
 
     Only lightweight clip metadata survives each file. Closing the generator
     releases open directory/file handles, including a partially parsed CAST.
     """
-    def __init__(self, rig, filepath):
+    def __init__(self, rig, filepath, force=False):
         self.path = Path(bpy.path.abspath(filepath)).resolve()
         self.bones = bone_names(rig)
         self.entries, self.warnings = [], []
         self.status = 'Checking the exported rig…'
         self.done = False
         self.cancelled = False
+        self.force = force
+        self.cache_hits = 0
+        self.source_stamps = {}
         self._steps = self._scan()
 
     def _scan(self):
+        self.source_stamps[self.path] = animation_cache.file_fingerprint(self.path)
         for roots in cast_index.iter_cast(self.path):
             yield
         bones = {node.properties.get('n', '').casefold()
@@ -148,6 +160,7 @@ class LibraryScan(IncrementalScan):
         if not folder.is_dir():
             raise ValueError('No anims_%s folder beside the rig. In RSX enable Export Rig Sequences, '
                              'choose CAST for animations, and export the rig again.' % self.path.stem)
+        index_cache = animation_cache.Index(self.path, index_cache_root(), force=self.force)
         files = []
         for entry in cast_index.iter_animation_files(folder):
             if isinstance(entry, Path):
@@ -157,27 +170,52 @@ class LibraryScan(IncrementalScan):
             self.status = 'Finding animation files: %d found…' % len(files)
             yield
         for index, path in enumerate(sorted(files)):
+            self.source_stamps[path] = animation_cache.file_fingerprint(path)
             self.status = 'Reading file %d of %d · %d animations found' % (index + 1, len(files), len(self.entries))
+            cached = index_cache.lookup(path)
+            if cached is not None:
+                values, warnings = cached
+                # A single CAST can contain thousands of clips. Keep cached
+                # rebuilds cooperative too, rather than freezing the sidebar.
+                for value in values:
+                    self.entries.append(Clip(**value))
+                    yield
+                self.warnings.extend(warnings)
+                self.cache_hits += 1
+                yield
+                continue
+            entries, warnings = [], []
             try:
                 for roots in cast_index.iter_cast(path):
                     yield
                 for node in cast_index.nodes_of(roots, b'anim'):
-                    self.entries.append(clip_from_node(path, node))
+                    entries.append(clip_from_node(path, node))
                     yield
                 del roots
             except (OSError, ValueError, UnicodeError) as error:
-                self.warnings.append('%s: %s' % (path, error))
+                warnings.append('%s: %s' % (path, error))
+            self.entries.extend(entries)
+            self.warnings.extend(warnings)
+            index_cache.record(path, entries, warnings)
             yield
         if not self.entries:
             detail = self.warnings[0] if self.warnings else 'Choose CAST as the animation sequence export format in RSX.'
             raise ValueError('No CAST animations found. ' + detail)
+        index_cache.finish()
 
     def commit(self, rig):
         if not self.done or self.cancelled:
             raise ValueError('Finish indexing before replacing the animation library.')
         if not rig.is_editable or bone_names(rig) != self.bones:
             raise ValueError('The selected rig changed during indexing. Link it again.')
-        return replace_library(rig, self.path, self.entries, self.warnings)
+        if any(animation_cache.file_fingerprint(path) != stamp
+               for path, stamp in self.source_stamps.items()):
+            raise ValueError('An export changed during indexing. Link the rig again after RSX finishes exporting.')
+        message, warning = replace_library(rig, self.path, self.entries, self.warnings)
+        if self.cache_hits:
+            message += ' Reused the saved index for %d unchanged file(s).' % self.cache_hits
+            rig.apex_animation_library.summary = message
+        return message, warning
 
 
 def library_identity(library):
@@ -289,7 +327,7 @@ def import_single_clip(context, rig, filepath, operator=None):
             pass
     try:
         missing = load_clip(context, rig, item, library.fit_timeline,
-                            library.allow_missing, operator)
+                            library.allow_missing, operator, expected_clip=clip)
     except Exception:
         if added:
             library.clips.remove(len(library.clips) - 1)
@@ -431,19 +469,27 @@ def remove_animation(context, rig):
     context.view_layer.update()
 
 
-def load_clip(context, rig, item, fit_timeline=True, allow_missing=False, operator=None):
+def load_clip(context, rig, item, fit_timeline=True, allow_missing=False, operator=None,
+              record_history=True, expected_clip=None):
     validate_target(rig)
     importer, decoder, rna = workflows.cast_modules()
     path = Path(bpy.path.abspath(item.filepath)).resolve()
+    source_stamp = animation_cache.file_fingerprint(path)
     roots = cast_index.read_cast(path)
     node = next((n for n in cast_index.nodes_of(roots, b'anim') if n.offset == item.offset), None)
     if node is None:
         raise ValueError('This export changed. Refresh the linked rig before loading.')
+    current = clip_from_node(path, node)
+    expected = expected_clip or item
+    if (current.name != expected.name or (expected.guid and current.guid != expected.guid)
+            or (expected.sequence_hash and current.sequence_hash != expected.sequence_hash)):
+        raise ValueError('This export changed. Refresh the linked rig before loading.')
     if node.byte_size > 64 * 1024 * 1024:
         raise ValueError('This animation exceeds the 64 MB clip limit. Use the CAST importer directly.')
     missing = validate_clip(node, rig, allow_missing)
-    stat = path.stat()
-    stamp = '%s:%s:%s' % (stat.st_mtime_ns, stat.st_size, rig_signature(rig))
+    if source_stamp is None or animation_cache.file_fingerprint(path) != source_stamp:
+        raise ValueError('This export changed while reading it. Try again after RSX finishes exporting.')
+    stamp = '%s:%s' % (source_stamp, rig_signature(rig))
     action = item.action if item.stamp == stamp else None
     selected, active = list(context.selected_objects), context.active_object
     original_mode = context.mode
@@ -492,6 +538,8 @@ def load_clip(context, rig, item, fit_timeline=True, allow_missing=False, operat
             action.use_fake_user = True
             action['apex_clip_fps'] = float(node.properties['fr'])
             action['apex_clip_source'] = str(path)
+        if animation_cache.file_fingerprint(path) != source_stamp:
+            raise ValueError('This export changed during import. Try again after RSX finishes exporting.')
     except Exception:
         if temp and temp.mode != 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -554,5 +602,6 @@ def load_clip(context, rig, item, fit_timeline=True, allow_missing=False, operat
     else:
         rig.rotation_euler = (0.0, 0.0, 0.0)
     context.view_layer.update()
-    record_recent(library, item)
+    if record_history:
+        record_recent(library, item)
     return len(missing)

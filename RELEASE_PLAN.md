@@ -9,6 +9,11 @@ All supporter tiers retain early access. Release 3.11.0 publicly when the
 maintainer decides the preview has had enough exposure and the stable website
 update is ready.
 
+Development has now moved to **3.12.0 experimental**, adding animation previews
+and a saved animation index. That candidate is local and does not change this
+3.11.0 public release plan. Use the 3.11.0 source at commit `0431a99` when
+preparing its public release; the current development checkout contains 3.12.0.
+
 The local 3.11.0 ZIP passed the source, packaged add-on, real RSX export,
 installation, animation and render checks recorded in `TESTING.md` on
 10 October 2026. The maintainer also reported that the installed build works
@@ -51,10 +56,10 @@ as intended in their Blender setup. The R2 listing reports the expected
    The ZIP must contain the add-on only, with no game exports or private files.
 5. Prepare and review the website's stable picker entry for 3.11.0. It must
    display the selected version's features and metadata, link to the GitHub
-   release, and keep older public releases available. The current 3.10.21
-   supporter build must not be presented as newer than stable 3.11.0. At the
-   public launch, show that no newer experimental build is available until
-   one is published.
+   release, and keep older public releases available. Older supporter builds
+   must not be presented as newer than stable 3.11.0. If a newer experimental
+   build has been published by then, keep it available to supporters; otherwise
+   show that no newer experimental build is available.
 
 The automated and real-export checks in `TESTING.md` already passed. Repeat
 them only after a code or package change, or to investigate a specific failure.
@@ -72,7 +77,7 @@ published version's ZIP.
   No raw RSX exports or private files are included.
 - The website update is ready to publish alongside the GitHub release.
   Stable 3.11.0 is public, older stable builds remain selectable, and the
-  experimental area accurately explains that no newer build is available.
+  experimental area accurately reflects whether a newer build is available.
 
 There is no external tester requirement. Record any issue with the Blender and
 Toolbox versions, RSX folder layout, steps to repeat it, expected and actual
@@ -80,7 +85,9 @@ results, and the console error. Keep raw game exports out of the public repo.
 
 ## Publication sequence
 
-1. After the awareness window, confirm the release source commit and run
+1. After the awareness window, prepare the release from the matching 3.11.0
+   source checkout (starting at `0431a99`, not the newer development checkout),
+   confirm the release source commit and run
    `py -3 tools/verify_release.py`
    against `dist/Apex-Toolbox-ALR-3.11.0.zip`. Record its SHA-256. Publish the
    exact tested source and ZIP on GitHub as `v3.11.0`, using the prepared

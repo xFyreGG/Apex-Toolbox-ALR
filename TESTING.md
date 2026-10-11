@@ -14,6 +14,9 @@ Package reload order and its API version are checked when the add-on is reloaded
 buffers. `workflows.py` adapts the installed CAST importer and isolates imported
 models. `animations.py` indexes RSX sequence folders and builds Actions against
 a disposable rig before assigning them to the selected model.
+`animation_cache.py` stores validated per-file metadata in Blender's user data
+folder. `animation_preview.py` owns temporary preview state and recovers it
+across saving, Undo, Redo and add-on cleanup.
 
 ## Run the checks
 
@@ -21,6 +24,7 @@ Pure Python (no Blender dependency):
 
 ```text
 python Apex_toolbox/apex_tex/tests/run_tests.py
+python tests/animation_cache.py
 ```
 
 Blender integration, using factory settings and temporary files:
@@ -55,6 +59,46 @@ uses the actual installed importer. It verifies material isolation, failure
 cleanup, compatibility checks, cached actions, timing, selection, Object/Pose
 Mode, saved links, save/reopen and missing-importer handling. No game files or
 user scenes are used. `tests/workflow_ui.py` provides a disposable UI fixture.
+
+Animation preview and repeat-index checks, also with synthetic exports:
+
+```text
+blender --background --factory-startup --python-exit-code 1 --python tests/animation_preview.py
+blender --background --factory-startup --python-exit-code 1 --python tests/animation_index_scan.py
+blender --factory-startup --python-exit-code 1 --python tests/foreground_animation_preview.py
+```
+
+Append `-- --release` to check the extracted current ZIP. Preview checks cover
+exact original action/slot, pose, object transforms and fractional timeline
+restoration, failure rollback, saving, copied rigs and unrelated Undo snapshots.
+The foreground fixture models the UI's post-operator Undo push and quits its
+own process. Index checks count parser calls, verify per-file invalidation,
+forced Refresh, interrupted scans, saved browser state and source replacement
+with a preserved file size and timestamp. The cache uses temporary test storage.
+
+`tests/real_animation_preview.py -- --rig <rig.cast> --release` checks previews
+and repeat indexing against a read-only RSX export, with optional `--output`
+for a JSON result. It samples named emote, banner and finisher clips and checks
+the original action, every bone matrix, object transform and timeline after
+Revert. The script does not copy game files or save a user scene.
+
+### 3.12.0 local candidate validation, 2026-10-11
+
+- 125 existing pure Python checks and 18 cache checks passed.
+- In Blender 4.2.2 and 5.2.2, the source and extracted ZIP passed 56 workflow
+  checks, 19 preview checks (one slot-specific check skips on 4.2) and 15 index
+  checks. Package registration and add-on reload checks passed on both versions.
+- Foreground tests passed preview switching, Revert, Apply, exact Undo/Redo,
+  previous Action retention and recovery after unrelated edits. Native buttons
+  were also checked for Preview, Apply and Undo in Blender 5.2.2.
+- The packaged real Wraith check passed on both versions: 573 clips, all 573
+  sequence parses skipped on repeat, no warnings or missing bones in the three
+  sampled clips. First/repeat scan times observed were 9.63/0.40 seconds on 4.2
+  and 8.31/0.39 seconds on 5.2. These are local measurements, not a speed guarantee.
+- ZIP: 4,752,207 bytes, 45 files. SHA-256:
+  `ab362dbef91ee924c6ee9960e4671e25ccbc747cc794274e2475c84d856bfb11`.
+  This candidate is local; the website still offers 3.11.0 to supporters and
+  3.9.1 as the public stable release.
 
 For a read-only check with exported game files, run `tests/real_single_animation.py`
 with `-- --rig <rig.cast> --clip <anims_rig/sequence.cast>`. Add `--release`

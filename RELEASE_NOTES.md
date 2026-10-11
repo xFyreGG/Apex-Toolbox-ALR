@@ -1,3 +1,23 @@
+# Apex Toolbox 3.12.0: Experimental candidate (local)
+
+Update date: **2026-10-11**
+
+- Preview a selected animation, scrub it, then Apply or Revert. Trying several
+  clips keeps one original baseline. Revert restores the action, pose,
+  orientation and timeline; Apply adds only the accepted clip to Recent.
+- Saving, changing files, Undo and disabling Toolbox cancel temporary previews.
+  Undo and Redo also recover previews captured by unrelated Blender edits.
+- Repeat animation links reuse a saved file index in Blender's user data
+  directory. Changed exports are reread; Refresh always performs a full scan.
+  Cached indexes contain metadata only and are optional if storage is unavailable.
+- Changed exports cannot silently substitute another animation at an old
+  offset. Exports modified during indexing are rejected without replacing the
+  previous library.
+- This is a local experimental candidate. Supporter downloads remain at
+  3.11.0 and the public stable download remains at 3.9.1.
+
+---
+
 # Apex Toolbox 3.11.0: Supporter preview of the next stable release
 
 Update date: **2026-10-10**

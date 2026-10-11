@@ -24,15 +24,15 @@ Modules
 #: leaves submodules already in ``sys.modules`` alone, so installing a new
 #: version over a running old one used to leave a new caller talking to an old
 #: ``autotex.run``.  Bump this whenever the signatures the add-on calls change.
-API_VERSION = 14
+API_VERSION = 15
 
 #: Reload order: dependencies before the modules that import them.
 RELOAD_ORDER = (
     "roles", "naming", "paths", "roots", "shaders", "resolver", "graph",
-    "autotex", "diagnostics", "health", "versions", "cast_index", "model_files", "workflows", "animation_names", "animations", "attachments",
+    "autotex", "diagnostics", "health", "versions", "cast_index", "model_files", "workflows", "animation_names", "animation_cache", "animations", "animation_preview", "attachments",
 )
 
 __all__ = [
     "roles", "naming", "paths", "roots", "resolver", "graph", "shaders",
-    "autotex", "diagnostics", "health", "versions", "cast_index", "model_files", "workflows", "animation_names", "animations", "attachments", "API_VERSION", "RELOAD_ORDER",
+    "autotex", "diagnostics", "health", "versions", "cast_index", "model_files", "workflows", "animation_names", "animation_cache", "animations", "animation_preview", "attachments", "API_VERSION", "RELOAD_ORDER",
 ]

@@ -1,4 +1,4 @@
-# Apex Toolbox 3.11.0: daily workflows
+# Apex Toolbox 3.12.0: experimental workflows
 
 Animation names depend on the available RSX export data. Unknown or conflicting
 names retain their export labels. Test unfamiliar rig and clip variants before
@@ -86,6 +86,29 @@ It searches the complete companion folder, including nested folders, without a
 ten-second deadline or a file-count/depth cutoff. **Cancel Indexing**
 keeps the previous list and cached actions. Invalid/unreadable files and linked
 folders are reported as warnings. Refresh an older incomplete list to rescan it.
+
+Repeat links reuse a saved index for unchanged animation files. New, replaced
+and removed exports are detected on the next link. The index stays in Blender's
+user data folder, outside the add-on, so reinstalling Toolbox does not clear it.
+**Refresh Animations** always rereads every file. An unavailable or damaged
+index falls back to a normal scan. The index contains clip details, not animation
+keyframes; previewing or loading still checks the selected CAST file.
+
+### Preview before applying
+
+Select a clip and click **Preview**. Scrub the **Frame** field or the timeline
+to inspect it. Select another clip and click Preview again to try it instead.
+**Apply** keeps the clip currently being previewed and adds it to Recent, even
+if another row is selected. **Revert** restores the original action, bone pose,
+armature rotation, frame range, playback rate and current frame from before
+the first preview. Load Animation still applies a clip immediately.
+
+Only one model can be previewed at a time. Apply or Revert before importing,
+refreshing, changing names or editing favourites. Saving, opening another file,
+Undo or disabling Toolbox cancels an uncommitted preview. Undo after Apply
+restores the scene from before previewing. Loaded preview Actions stay cached
+for reuse; Revert does not delete them. Additive clips still need a base action
+to show their intended pose.
 
 **Category** filters use words in the exported animation names: Gladcard / Banner,
 Emote, Lobby, Finishers (including execution/execute), and Movement. Text search
