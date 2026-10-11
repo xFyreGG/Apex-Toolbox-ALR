@@ -1,3 +1,17 @@
+# Apex Toolbox 3.13.1: Experimental candidate (local)
+
+Update date: **2026-10-11**
+
+- Single-frame additive poses now stay active over the base animation. They
+  start at the chosen frame offset and keep applying afterward. Previously,
+  they stopped after one frame and appeared to have no effect later in a clip.
+- Animated additive layers still play for their original duration. Strength
+  controls and removal work the same for both types of layer.
+- After updating, remove and re-add existing single-frame layers to apply the fix.
+- Local only. Supporter downloads remain at 3.11.0; public stable remains 3.9.1.
+
+---
+
 # Apex Toolbox 3.13.0: Experimental candidate (local)
 
 Update date: **2026-10-11**

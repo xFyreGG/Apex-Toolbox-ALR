@@ -104,6 +104,26 @@ Run `tests/foreground_release_tools.py` without `--background`, optionally with
 Undo/Redo, plus a native review-popup draw check. It closes only its own
 disposable Blender process and writes an explicit result under `artifacts`.
 
+### 3.13.1 single-frame layer fix, 2026-10-11
+
+- Source and extracted ZIP passed 34 layer checks on Blender 5.2.2; 33 passed
+  and the Action-slot-specific check skipped on 4.2.2. Five new regressions
+  cover true single-key additive poses over a long base, strength, positive
+  offset, preserved root motion, save/reopen and removal. Animated clips still
+  end at their original duration.
+- The packaged build was checked against Sparrow's actual Cool Cats animated
+  gladcard, four single-frame crouch aim poses and two animated fire clips.
+  Held poses affect frames 0, 68 and 100; zero strength restores the base,
+  half strength works, and a frame-25 offset has no effect before frame 25.
+  Removing the layers restores the original Action and pose. Source exports
+  stayed unchanged.
+- Packaged foreground checks passed Add Layer, Adjust Strength and Remove
+  Layers Undo/Redo on 5.2.2, along with relink and reviewed batch import checks.
+- ZIP: 4,774,071 bytes, 48 files. SHA-256:
+  `d21977aea148a74985dc485c8fd4a62aba38c43987ff430ab94ac9a2300f3408`.
+  Archive integrity passed and every packaged file matches the source.
+  This fix is local; public and supporter downloads remain 3.9.1 and 3.11.0.
+
 ### 3.13.0 local candidate validation, 2026-10-11
 
 - 125 texture/resolution checks, 18 animation-cache checks and 13 legend-matching

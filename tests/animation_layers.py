@@ -61,9 +61,9 @@ class AnimationLayers(unittest.TestCase):
         return next(item for item in self.library.clips if item.name == name)
 
     def add(self, item=None, **kwargs):
-        return layers.add(bpy.context, self.rig, item or self.hands, **kwargs)
+        return layers.add(bpy.context, self.rig, item or self.item('hands'), **kwargs)
 
-    def custom_clip(self, name, tracks):
+    def custom_clip(self, name, tracks, frames=(0, 10)):
         path = self.folder / (name + '.cast')
         doc = self.cast.Cast()
         anim = doc.CreateRoot().CreateAnimation()
@@ -73,7 +73,7 @@ class AnimationLayers(unittest.TestCase):
             curve = anim.CreateCurve()
             curve.SetNodeName('root')
             curve.SetKeyPropertyName(prop)
-            curve.SetKeyFrameBuffer([0, 10])
+            curve.SetKeyFrameBuffer(list(frames[prop] if isinstance(frames, dict) else frames))
             if prop == 'rq':
                 curve.SetVec4KeyValueBuffer(values)
             else:
@@ -86,6 +86,22 @@ class AnimationLayers(unittest.TestCase):
         for prop in ('name', 'filepath', 'offset', 'guid', 'sequence_hash', 'fps', 'additive'):
             setattr(item, prop, getattr(clip, prop))
         return item
+
+    def load_long_base(self):
+        base = self.custom_clip('long_base', [
+            ('rq', 'relative', [(0, 0, 0, 1), (0, 0, 0.38268343, 0.92387953)]),
+            ('tx', 'relative', (0.0, 5.0)),
+        ], frames=(0, 100))
+        animations.load_clip(bpy.context, self.rig, base)
+        self.base_action = self.rig.animation_data.action
+
+    def static_pose(self, name='crouch_offset'):
+        return self.custom_clip(name, [
+            ('rq', 'additive', [(0, 0, 0.38268343, 0.92387953)]),
+            # This animated, normal channel must be excluded from the layer
+            # and from deciding whether its additive delta is a held pose.
+            ('tx', 'relative', (100.0, 200.0)),
+        ], frames={'rq': (0,), 'tx': (0, 100)})
 
     def rotation(self, name='root'):
         return self.rig.pose.bones[name].rotation_quaternion.copy()
@@ -232,6 +248,94 @@ class AnimationLayers(unittest.TestCase):
         self.assertAlmostEqual(strip.scale, 60 / self.hands.fps, places=5)
         self.assertEqual(strip.extrapolation, 'NOTHING')
         self.assertEqual(scene.render.fps, 60)
+
+    def test_single_frame_pose_holds_through_a_long_base_and_preserves_root_motion(self):
+        self.load_long_base()
+        pose = self.static_pose()
+        scene = bpy.context.scene
+        expected = {}
+        for frame in (0, 35, 68, 100, 150):
+            scene.frame_set(frame)
+            expected[frame] = self.rotation(), self.rig.pose.bones['root'].location.copy()
+        self.add(pose)
+        strip = layers.layers(self.rig)[0]
+        self.assertEqual(strip.extrapolation, 'HOLD_FORWARD')
+        self.assertEqual(tuple(strip.action.curve_frame_range), (0, 0))
+        delta = Quaternion((0.92387953, 0, 0, 0.38268343))
+        for frame, (rotation, location) in expected.items():
+            scene.frame_set(frame)
+            self.assert_quaternion(self.rotation(), rotation @ delta)
+            self.assertLess((self.rig.pose.bones['root'].location - location).length, 1e-5)
+        layers.remove(bpy.context, self.rig)
+        self.assertEqual(self.rig.animation_data.action, self.base_action)
+        self.assert_quaternion(self.rotation(), expected[150][0])
+
+    def test_single_frame_pose_strength_evaluates_zero_half_and_full_at_a_late_frame(self):
+        self.load_long_base()
+        bpy.context.scene.frame_set(68)
+        original = self.rotation()
+        self.add(self.static_pose(), influence=0)
+        self.assert_quaternion(self.rotation(), original)
+        delta = Quaternion((0.92387953, 0, 0, 0.38268343))
+        for strength in (0.5, 1.0, 0.0):
+            layers.set_influence(bpy.context, self.rig, 0, strength)
+            self.assert_quaternion(self.rotation(), original @ Quaternion().slerp(delta, strength))
+        layers.remove(bpy.context, self.rig)
+        self.assert_quaternion(self.rotation(), original)
+
+    def test_single_frame_pose_does_not_affect_frames_before_its_positive_offset(self):
+        self.load_long_base()
+        pose = self.static_pose()
+        scene = bpy.context.scene
+        expected = {}
+        for frame in (0, 19, 20, 68, 100):
+            scene.frame_set(frame)
+            expected[frame] = self.rotation()
+        self.add(pose, frame_offset=20)
+        delta = Quaternion((0.92387953, 0, 0, 0.38268343))
+        for frame, rotation in expected.items():
+            scene.frame_set(frame)
+            self.assert_quaternion(self.rotation(), rotation if frame < 20 else rotation @ delta)
+
+    def test_single_frame_pose_hold_strength_and_removal_survive_save_and_reload(self):
+        self.load_long_base()
+        bpy.context.scene.frame_set(68)
+        base_rotation = self.rotation()
+        self.add(self.static_pose(), influence=0.5, frame_offset=20)
+        layered_rotation = self.rotation()
+        name = self.rig.name
+        path = self.folder / 'held-pose.blend'
+        bpy.ops.wm.save_as_mainfile(filepath=str(path))
+        bpy.ops.wm.open_mainfile(filepath=str(path))
+        self.rig = bpy.data.objects[name]
+        self.library = self.rig.apex_animation_library
+        strip = layers.layers(self.rig)[0]
+        self.assertEqual(strip.extrapolation, 'HOLD_FORWARD')
+        self.assertAlmostEqual(strip.frame_start, 20)
+        self.assertEqual(tuple(strip.action.curve_frame_range), (0, 0))
+        self.assertAlmostEqual(layers.influence(strip), 0.5)
+        self.assert_quaternion(self.rotation(), layered_rotation)
+        layers.set_influence(bpy.context, self.rig, 0, 0)
+        self.assert_quaternion(self.rotation(), base_rotation)
+        layers.set_influence(bpy.context, self.rig, 0, 0.5)
+        self.assert_quaternion(self.rotation(), layered_rotation)
+        layers.remove(bpy.context, self.rig)
+        self.assert_quaternion(self.rotation(), base_rotation)
+
+    def test_animated_additive_clip_still_ends_at_its_original_duration(self):
+        self.load_long_base()
+        scene = bpy.context.scene
+        expected = {}
+        for frame in (5, 68):
+            scene.frame_set(frame)
+            expected[frame] = self.rotation()
+        self.add()
+        strip = layers.layers(self.rig)[0]
+        self.assertEqual(strip.extrapolation, 'NOTHING')
+        scene.frame_set(5)
+        self.assertGreater(self.rotation().rotation_difference(expected[5]).angle, 0.1)
+        scene.frame_set(68)
+        self.assert_quaternion(self.rotation(), expected[68])
 
     def test_missing_bones_enabled_imports_only_matching_additive_tracks(self):
         self.library.allow_missing = True

@@ -177,6 +177,10 @@ additive clip in the list. Expand **Animation Layers**, set **Strength** and
 clip's additive channels. It combines their motion with the base animation
 through Blender's NLA; it does not replace the base Action.
 
+Single-frame additive poses stay active from their frame offset onward.
+Animated layers play for the clip's duration. A crouch aim pose may only adjust
+the upper body or aim direction; it does not necessarily make the whole model crouch.
+
 Adjust each added layer's **Strength** in the same section. Frame offset is
 relative to the beginning of the base animation. **Remove Animation Layers**
 removes the Toolbox layers and restores the original base Action. Remove the

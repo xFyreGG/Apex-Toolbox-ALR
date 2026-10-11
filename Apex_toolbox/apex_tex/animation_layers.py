@@ -314,9 +314,15 @@ def add(context, rig, item, influence=1.0, frame_offset=0, operator=None):
         created_tracks.append(track)
         track.name = 'ALR Additive ' + token
         fps = context.scene.render.fps / context.scene.render.fps_base
+        # Aim and crouch offsets are often single-frame poses. Keep their
+        # additive delta active after the offset instead of dropping it after
+        # one frame. Inspect the filtered action: normal root-motion tracks in
+        # the source clip must not make an otherwise static pose look animated.
+        first_frame, last_frame = getattr(action, 'curve_frame_range', action.frame_range)
+        extrapolation = 'HOLD_FORWARD' if first_frame == last_frame else 'NOTHING'
         layer_strip = _strip(track, item.name + ' ' + token, action, slot,
                              base_strip.frame_start + frame_offset, 'COMBINE', influence,
-                             'NOTHING', fps / float(cached.get('apex_clip_fps', item.fps)))
+                             extrapolation, fps / float(cached.get('apex_clip_fps', item.fps)))
         state['layers'][token] = _record(track, layer_strip, action, source)
         data.action = None
         data.use_nla = True
