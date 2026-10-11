@@ -33,7 +33,7 @@ def build_release():
                     'Apex_toolbox/apex_tex/cast_index.py', 'Apex_toolbox/apex_tex/workflows.py',
                     'Apex_toolbox/apex_tex/model_files.py',
                     'Apex_toolbox/apex_tex/animations.py', 'Apex_toolbox/apex_tex/animation_names.py',
-                    'Apex_toolbox/apex_tex/animation_cache.py', 'Apex_toolbox/apex_tex/animation_preview.py',
+                    'Apex_toolbox/apex_tex/animation_cache.py',
                     'Apex_toolbox/apex_tex/auto_rigs.py',
                     'Apex_toolbox/apex_tex/data/animation_names_en.json']
         for name in required:

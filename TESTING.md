@@ -15,8 +15,7 @@ buffers. `workflows.py` adapts the installed CAST importer and isolates imported
 models. `animations.py` indexes RSX sequence folders and builds Actions against
 a disposable rig before assigning them to the selected model.
 `animation_cache.py` stores validated per-file metadata in Blender's user data
-folder. `animation_preview.py` owns temporary preview state and recovers it
-across saving, Undo, Redo and add-on cleanup.
+folder.
 `auto_rigs.py` discovers matching legend exports and queues animation libraries
 without changing imported models or applying an Action.
 
@@ -63,27 +62,39 @@ cleanup, compatibility checks, cached actions, timing, selection, Object/Pose
 Mode, saved links, save/reopen and missing-importer handling. No game files or
 user scenes are used. `tests/workflow_ui.py` provides a disposable UI fixture.
 
-Animation preview and repeat-index checks, also with synthetic exports:
+Repeat-index checks, also with synthetic exports:
 
 ```text
-blender --background --factory-startup --python-exit-code 1 --python tests/animation_preview.py
 blender --background --factory-startup --python-exit-code 1 --python tests/animation_index_scan.py
-blender --factory-startup --python-exit-code 1 --python tests/foreground_animation_preview.py
 ```
 
-Append `-- --release` to check the extracted current ZIP. Preview checks cover
-exact original action/slot, pose, object transforms and fractional timeline
-restoration, failure rollback, saving, copied rigs and unrelated Undo snapshots.
-The foreground fixture models the UI's post-operator Undo push and quits its
-own process. Index checks count parser calls, verify per-file invalidation,
+Append `-- --release` to check the extracted current ZIP. Index checks count
+parser calls, verify per-file invalidation,
 forced Refresh, interrupted scans, saved browser state and source replacement
 with a preserved file size and timestamp. The cache uses temporary test storage.
 
-`tests/real_animation_preview.py -- --rig <rig.cast> --release` checks previews
-and repeat indexing against a read-only RSX export, with optional `--output`
-for a JSON result. It samples named emote, banner and finisher clips and checks
-the original action, every bone matrix, object transform and timeline after
-Revert. The script does not copy game files or save a user scene.
+Run `tests/auto_rig_integration.py` in background Blender, optionally with
+`-- --release` for the ZIP. Run `tests/foreground_auto_rigs.py` without
+`--background` to check timer completion and Undo in a disposable process.
+Add `--require-auto-links` to the real-model folder check below to require
+animation libraries on every recognized legend model.
+
+### 3.12.2 local candidate validation, 2026-10-11
+
+Temporary animation Preview, Apply and Revert have been removed. The active
+checks above cover animation loading, repeat indexing and automatic rig linking.
+
+- 125 pure Python checks passed. All 56 existing workflow checks passed in
+  Blender 4.2.2 and 5.2.2, including loading, changing and removing animations,
+  saved browser state and missing-bone handling.
+- The extracted ZIP passed 19 automatic rig-link and 15 repeat-index checks
+  on both Blender versions. Add-on enable/disable/reload passed on 5.2.2.
+- The packaged foreground auto-link check passed on 5.2.2, including batch
+  completion, Undo/Redo, cancellation, saving and changing the selected model.
+- ZIP: 4,753,642 bytes, 45 files. SHA-256:
+  `dcf967b278d5de9d8dfbc484b005f1594027bcb8b27226260d399606aae00e9b`.
+  The archive matches the current source and no longer contains the preview
+  module. This candidate is local; public and supporter downloads are unchanged.
 
 ### 3.12.1 local candidate validation, 2026-10-11
 
@@ -104,12 +115,6 @@ Revert. The script does not copy game files or save a user scene.
 - ZIP: 4,757,797 bytes, 46 files. SHA-256:
   `a885972c549234d87fa30883683c6ed94faf4444ca0ae1bf652aa059857611c2`.
   This candidate is local; the available downloads remain unchanged.
-
-Run `tests/auto_rig_integration.py` in background Blender, optionally with
-`-- --release` for the ZIP. Run `tests/foreground_auto_rigs.py` without
-`--background` to check timer completion and Undo in a disposable process.
-Add `--require-auto-links` to the real-model folder check below to require
-animation libraries on every recognized legend model.
 
 ### 3.12.0 local candidate validation, 2026-10-11
 

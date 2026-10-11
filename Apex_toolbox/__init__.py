@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 12, 1),
+    "version": (3, 12, 2),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -76,7 +76,6 @@ from .apex_tex import naming as apex_naming
 from .apex_tex import workflows as apex_workflows
 from .apex_tex import model_files as apex_model_files
 from .apex_tex import animations as apex_animations
-from .apex_tex import animation_preview as apex_preview
 from .apex_tex import auto_rigs as apex_auto_rigs
 from .apex_tex import attachments as apex_attachments
 from .apex_tex.versions import newer_version
@@ -84,7 +83,7 @@ from .apex_tex.versions import newer_version
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 16
+APEX_TEX_API_VERSION = 17
 
 
 def modules_are_stale():
@@ -1199,8 +1198,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
 
     @classmethod
     def poll(cls, context):
-        return (context.mode == 'OBJECT' and _active_animation_scan is None
-                and apex_preview.active() is None)
+        return (context.mode == 'OBJECT' and _active_animation_scan is None)
 
     def invoke(self, context, event):
         self.shader = context.scene.my_prefs.cust_enum2
@@ -1497,8 +1495,8 @@ class APEX_OT_finish_animation_scan(bpy.types.Operator):
 def start_auto_rig_links(context, objects, operator):
     """Queue legend libraries without changing selection or loading an Action."""
     global _active_animation_scan
-    if _active_animation_scan is not None or apex_preview.active() is not None:
-        operator.report({'WARNING'}, 'Finish the current animation scan or preview before auto-linking.')
+    if _active_animation_scan is not None:
+        operator.report({'WARNING'}, 'Finish the current animation scan before auto-linking.')
         return {'CANCELLED'}
     job = None
     try:
@@ -1544,7 +1542,7 @@ class APEX_OT_auto_link_animation_rig(bpy.types.Operator):
         rig = apex_workflows.selected_rig(context)
         return (context.mode in {'OBJECT', 'POSE'} and rig is not None and rig.is_editable
                 and not rig.apex_animation_library.rig_file
-                and _active_animation_scan is None and apex_preview.active() is None)
+                and _active_animation_scan is None)
 
     def execute(self, context):
         if not require_fresh_modules(self):
@@ -1555,9 +1553,6 @@ class APEX_OT_auto_link_animation_rig(bpy.types.Operator):
 class AnimationScanOperator:
     def start_scan(self, context, filepath, job_type=apex_animations.LibraryScan, **options):
         global _active_animation_scan
-        if apex_preview.active() is not None:
-            self.report({'WARNING'}, 'Apply or revert the animation preview first.')
-            return {'CANCELLED'}
         if not require_fresh_modules(self):
             return {'CANCELLED'}
         rig = apex_workflows.selected_rig(context)
@@ -1669,7 +1664,7 @@ class APEX_OT_link_animation_rig(AnimationScanOperator, bpy.types.Operator, Impo
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return (not _active_animation_scan and not apex_preview.active() and context.mode in {'OBJECT', 'POSE'}
+        return (not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
                 and rig is not None and rig.is_editable)
 
     def invoke(self, context, event):
@@ -1754,7 +1749,7 @@ class APEX_OT_import_animation_cast(bpy.types.Operator, ImportHelper):
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return bool(not _active_animation_scan and not apex_preview.active() and context.mode in {'OBJECT', 'POSE'}
+        return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
                     and rig and rig.is_editable and rig.data.is_editable)
 
     def execute(self, context):
@@ -1785,7 +1780,7 @@ class APEX_OT_refresh_animations(AnimationScanOperator, bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return bool(not _active_animation_scan and not apex_preview.active() and context.mode in {'OBJECT', 'POSE'}
+        return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
                     and rig and rig.is_editable and rig.apex_animation_library.rig_file)
 
     def execute(self, context):
@@ -1822,7 +1817,7 @@ class APEX_OT_import_animation_names(AnimationScanOperator, bpy.types.Operator, 
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return bool(not _active_animation_scan and not apex_preview.active() and rig and rig.is_editable and rig.apex_animation_library.clips)
+        return bool(not _active_animation_scan and rig and rig.is_editable and rig.apex_animation_library.clips)
 
     def invoke(self, context, event):
         library = apex_workflows.selected_rig(context).apex_animation_library
@@ -1849,7 +1844,7 @@ class APEX_OT_builtin_animation_names(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return bool(not _active_animation_scan and not apex_preview.active() and rig and rig.is_editable and rig.apex_animation_library.clips)
+        return bool(not _active_animation_scan and rig and rig.is_editable and rig.apex_animation_library.clips)
 
     def execute(self, context):
         if not require_fresh_modules(self):
@@ -1873,7 +1868,7 @@ class APEX_OT_remove_animation(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return bool(not _active_animation_scan and not apex_preview.active() and context.mode in {'OBJECT', 'POSE'}
+        return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
                     and rig and rig.is_editable and rig.data.is_editable)
 
     def execute(self, context):
@@ -1898,7 +1893,7 @@ class APEX_OT_favourite_animation(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return bool(not _active_animation_scan and not apex_preview.active() and rig and rig.is_editable and rig.apex_animation_library.clips)
+        return bool(not _active_animation_scan and rig and rig.is_editable and rig.apex_animation_library.clips)
 
     def execute(self, context):
         if not require_fresh_modules(self):
@@ -1922,7 +1917,7 @@ class APEX_OT_clear_recent_animations(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return bool(not _active_animation_scan and not apex_preview.active() and rig and rig.is_editable
+        return bool(not _active_animation_scan and rig and rig.is_editable
                     and any(item.recent_order for item in rig.apex_animation_library.clips))
 
     def execute(self, context):
@@ -1942,7 +1937,7 @@ class APEX_OT_load_animation(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         rig = apex_workflows.selected_rig(context)
-        return bool(not _active_animation_scan and not apex_preview.active() and context.mode in {'OBJECT', 'POSE'} and rig and rig.is_editable
+        return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'} and rig and rig.is_editable
                     and rig.apex_animation_library.clips)
 
     def execute(self, context):
@@ -1969,80 +1964,6 @@ class APEX_OT_load_animation(bpy.types.Operator):
         except Exception as error:
             self.report({'ERROR'}, str(error))
             return {'CANCELLED'}
-
-
-class APEX_OT_preview_animation(bpy.types.Operator):
-    """Try the selected animation, then Apply it or Revert to the original pose and timeline"""
-    bl_idname = 'object.apex_preview_animation'
-    bl_label = 'Preview Animation'
-
-    @classmethod
-    def poll(cls, context):
-        rig = apex_workflows.selected_rig(context)
-        preview = apex_preview.active()
-        return bool(not _active_animation_scan and context.mode in {'OBJECT', 'POSE'}
-                    and rig and rig.is_editable and rig.apex_animation_library.clips
-                    and (preview is None or apex_preview.active(rig)))
-
-    def execute(self, context):
-        if not require_fresh_modules(self):
-            return {'CANCELLED'}
-        rig = apex_workflows.selected_rig(context)
-        library = rig.apex_animation_library
-        if library.index not in apex_animations.visible_clip_indices(library):
-            self.report({'WARNING'}, 'Select an animation from the filtered list first.')
-            return {'CANCELLED'}
-        item = library.clips[library.index]
-        try:
-            missing = apex_preview.start(context, rig, item, self)
-            message = 'Previewing %s. Apply to keep it or Revert to restore your scene.' % apex_preview.active().label
-            if missing:
-                message += ' Skipped %d missing bones.' % missing
-            if item.additive:
-                message += ' Additive clip: needs a base action for its intended pose.'
-            self.report({'WARNING'} if missing or item.additive else {'INFO'}, message)
-            redraw_animation_panels(context)
-            return {'FINISHED'}
-        except Exception as error:
-            self.report({'ERROR'}, str(error))
-            return {'CANCELLED'}
-
-
-class APEX_OT_apply_animation_preview(bpy.types.Operator):
-    """Keep the previewed clip and add it to Recent; Undo restores the scene before previewing"""
-    bl_idname = 'object.apex_apply_animation_preview'
-    bl_label = 'Apply Preview'
-    bl_options = {'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        return apex_preview.active() is not None
-
-    def execute(self, context):
-        try:
-            label = apex_preview.apply(context, undo_baseline=True)
-            self.report({'INFO'}, 'Applied %s.' % label)
-            redraw_animation_panels(context)
-            return {'FINISHED'}
-        except Exception as error:
-            self.report({'ERROR'}, str(error))
-            return {'CANCELLED'}
-
-
-class APEX_OT_revert_animation_preview(bpy.types.Operator):
-    """Restore the animation, pose, orientation and timeline from before the first preview"""
-    bl_idname = 'object.apex_revert_animation_preview'
-    bl_label = 'Revert Preview'
-
-    @classmethod
-    def poll(cls, context):
-        return apex_preview.active() is not None
-
-    def execute(self, context):
-        apex_preview.revert(context)
-        self.report({'INFO'}, 'Original animation, pose and timeline restored.')
-        redraw_animation_panels(context)
-        return {'FINISHED'}
 
 
 class APEX_UL_animations(bpy.types.UIList):
@@ -4444,16 +4365,6 @@ class APEX_PT_animations(ApexPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.use_property_decorate = False
-        preview = apex_preview.active()
-        if preview is not None:
-            box = layout.box()
-            draw_wrapped(box, 'Preview: ' + preview.label, context)
-            draw_wrapped(box, 'Scrub the timeline, then Apply or Revert.', context)
-            if apex_preview.in_scene(context):
-                box.prop(context.scene, 'frame_current', text='Frame')
-            row = box.row(align=True)
-            row.operator('object.apex_apply_animation_preview', text='Apply', icon='CHECKMARK')
-            row.operator('object.apex_revert_animation_preview', text='Revert', icon='LOOP_BACK')
         if _active_animation_scan is not None:
             box = layout.box()
             draw_wrapped(box, 'Indexing: ' + _active_animation_scan.job.path.stem, context)
@@ -4508,7 +4419,6 @@ class APEX_PT_animations(ApexPanel, bpy.types.Panel):
         row.scale_y = 1.25
         row.enabled = library.index in visible
         row.operator('object.apex_load_animation', icon='ACTION')
-        row.operator('object.apex_preview_animation', text='Preview', icon='PLAY')
         layout.operator('object.apex_remove_animation', icon='LOOP_BACK')
         if rig.animation_data and rig.animation_data.action:
             playing = next((item for item in library.clips if item.action == rig.animation_data.action), None)
@@ -5685,9 +5595,6 @@ classes = (
         APEX_OT_cancel_animation_scan,
         APEX_OT_finish_animation_scan,
         APEX_OT_load_animation,
-        APEX_OT_preview_animation,
-        APEX_OT_apply_animation_preview,
-        APEX_OT_revert_animation_preview,
         APEX_OT_remove_animation,
         APEX_OT_use_selected_attachment_rigs,
         APEX_OT_pair_item,
@@ -5774,26 +5681,12 @@ def register():
     for handlers in (bpy.app.handlers.save_pre, bpy.app.handlers.load_pre,
                      bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
         handlers.append(cancel_animation_scan)
-    for handlers in (bpy.app.handlers.save_pre, bpy.app.handlers.load_pre,
-                     bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
-        handlers.append(apex_preview.cancel_preview)
-    for handlers in (bpy.app.handlers.undo_post, bpy.app.handlers.redo_post, bpy.app.handlers.load_post):
-        handlers.append(apex_preview.recover_preview_snapshots)
     for name in _SCENE_TOGGLES:
         setattr(Scene, name, BoolProperty(default=False))
 
 
 def unregister():
     cancel_animation_scan()
-    apex_preview.revert(bpy.context)
-    apex_preview.recover_preview_snapshots()
-    for handlers in (bpy.app.handlers.undo_post, bpy.app.handlers.redo_post, bpy.app.handlers.load_post):
-        if apex_preview.recover_preview_snapshots in handlers:
-            handlers.remove(apex_preview.recover_preview_snapshots)
-    for handlers in (bpy.app.handlers.save_pre, bpy.app.handlers.load_pre,
-                     bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
-        if apex_preview.cancel_preview in handlers:
-            handlers.remove(apex_preview.cancel_preview)
     for handlers in (bpy.app.handlers.save_pre, bpy.app.handlers.load_pre,
                      bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
         if cancel_animation_scan in handlers:

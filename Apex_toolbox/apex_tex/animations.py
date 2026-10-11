@@ -470,7 +470,7 @@ def remove_animation(context, rig):
 
 
 def load_clip(context, rig, item, fit_timeline=True, allow_missing=False, operator=None,
-              record_history=True, expected_clip=None):
+              expected_clip=None):
     validate_target(rig)
     importer, decoder, rna = workflows.cast_modules()
     path = Path(bpy.path.abspath(item.filepath)).resolve()
@@ -602,6 +602,5 @@ def load_clip(context, rig, item, fit_timeline=True, allow_missing=False, operat
     else:
         rig.rotation_euler = (0.0, 0.0, 0.0)
     context.view_layer.update()
-    if record_history:
-        record_recent(library, item)
+    record_recent(library, item)
     return len(missing)

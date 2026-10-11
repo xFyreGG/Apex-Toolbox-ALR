@@ -1,3 +1,14 @@
+# Apex Toolbox 3.12.2: Experimental candidate (local)
+
+Update date: **2026-10-11**
+
+- Removed temporary animation Preview, Apply and Revert. Select a clip and use
+  **Load Animation** to apply it; Blender Undo restores the previous animation.
+- Faster repeat indexing and automatic legend rig linking remain available.
+- Local only. Supporter downloads remain at 3.11.0; public stable remains 3.9.1.
+
+---
+
 # Apex Toolbox 3.12.1: Experimental candidate (local)
 
 Update date: **2026-10-11**
