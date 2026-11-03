@@ -293,6 +293,18 @@ def skip_surface_opacity(material, image):
     return stem.casefold() in _SURFACE_OPACITY_EXCEPTIONS
 
 
+def known_opaque_albedo(image):
+    """Verified opaque surfaces whose exported alpha is not a cutout mask."""
+    if image is None:
+        return False
+    path = image.filepath_raw or image.filepath or image.name
+    stem = os.path.splitext(path.replace('\\', '/').rsplit('/', 1)[-1])[0].casefold()
+    return stem in {
+        'bloodhound_lgnd_v23_christmas_head_col',
+        'bloodhound_lgnd_v23_christmas_head_albedotexture',
+    }
+
+
 def fragmented_albedo_alpha(image):
     """Reject only sparse, isolated specks, never infer intent from alpha alone.
 
@@ -536,12 +548,14 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
                         and not material.get('apex_force_albedo_alpha', False)
                         and not any(word in material.name.casefold()
                                     for word in ('hair', 'lash', 'fur', 'lace'))
-                        and fragmented_albedo_alpha(node.image)):
+                        and (known_opaque_albedo(node.image) or fragmented_albedo_alpha(node.image))):
                     group_node.inputs[socket_name].default_value = 1.0
-                    alpha_note = ('Albedo alpha left disconnected: sparse isolated specks. '
+                    reason = ('known opaque Bloodhound Christmas head surface' if known_opaque_albedo(node.image)
+                              else 'sparse isolated specks')
+                    alpha_note = ('Albedo alpha left disconnected: ' + reason + '. '
                                   'Set material custom property apex_force_albedo_alpha '
                                   'to True and retexture to override.')
-                    node.label = role + ' (fragmented alpha ignored)'
+                    node.label = role + ' (surface alpha ignored)'
                     continue
                 tree.links.new(group_node.inputs[socket_name],
                                node.outputs["Alpha"])

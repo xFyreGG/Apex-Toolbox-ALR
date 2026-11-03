@@ -1,3 +1,9 @@
+# Apex Toolbox 3.14.7: Experimental candidate (local)
+
+- Ignore the non-cutout albedo alpha in Bloodhound Christmas head textures, supporting both RSX `_col` and `_albedoTexture` names. This removes the fuzzy holes around the mask markings.
+- Other skins, fur, explicit opacity maps and the existing force-alpha override remain unchanged. This is a verified texture exception, not a broader alpha heuristic.
+- Run Texture Model after installing to repair existing imports.
+
 # Apex Toolbox 3.14.6: Experimental candidate (local)
 
 - Fix bright eyelash-card outlines in Apex Shader+ by applying transparency once after the diffuse and specular shaders are combined. The same correction applies to Shader+ albedo alpha and eyeshadow masks.

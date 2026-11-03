@@ -791,6 +791,30 @@ class BlenderIntegration(unittest.TestCase):
             image.pixels.foreach_set(pixels.ravel())
             self.assertFalse(shaders.fragmented_albedo_alpha(image), mask)
 
+    def test_bloodhound_head_alpha_exception_keeps_other_masks(self):
+        image = bpy.data.images.new('head', width=8, height=8, alpha=True)
+        mask = bpy.data.images.new('mask', width=8, height=8, alpha=True)
+        mat = bpy.data.materials.new('renamed_head')
+        for definition in shaders.SHADER_DEFS.values():
+            addon.append_apex_node_group(definition.group_name)
+            for suffix in ('col', 'albedoTexture'):
+                image.filepath_raw = '//bloodhound_lgnd_v23_christmas_head_' + suffix + '.png'
+                for repeat in range(2):
+                    shaders.build_material(mat, definition, {R.ALBEDO: image})
+                    group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                    self.assertFalse(shaders.surface_opacity_socket(mat, group, definition).is_linked)
+                    self.assertIn('known opaque Bloodhound', mat['apex_alpha_note'])
+                mat['apex_force_albedo_alpha'] = True
+                shaders.build_material(mat, definition, {R.ALBEDO: image})
+                group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                self.assertTrue(shaders.surface_opacity_socket(mat, group, definition).is_linked)
+                del mat['apex_force_albedo_alpha']
+                shaders.build_material(mat, definition, {R.ALBEDO: image, R.OPACITY: mask})
+                group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                self.assertEqual(shaders.surface_opacity_socket(mat, group, definition).links[0].from_node.image, mask)
+            image.filepath_raw = '//bloodhound_lgnd_v23_christmas_gear_col.png'
+            self.assertFalse(shaders.known_opaque_albedo(image))
+
     def test_wattson_surface_opacity_exception_is_scoped_and_repeatable(self):
         image = bpy.data.images.new('surface_mask', width=8, height=8, alpha=True)
         mat = bpy.data.materials.new('renamed_material')

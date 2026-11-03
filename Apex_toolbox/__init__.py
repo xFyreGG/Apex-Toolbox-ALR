@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 14, 6),
+    "version": (3, 14, 7),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -87,7 +87,7 @@ from .apex_tex.versions import newer_version
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 22
+APEX_TEX_API_VERSION = 23
 
 
 def modules_are_stale():

@@ -649,3 +649,10 @@ test fixtures, private paths or other workspace artifacts are included.
 - 57 packaged workflow checks pass on Blender 5.2.2; 125 pure texture tests pass.
 - Reproduced the Wraith outurbanb eyelash-card glow using a separate copy of the affected live scene. Hiding the lash mesh removed the patch; reloading its texture or disabling specular did not. Applying alpha once after combining Shader+ lobes removes the patch while preserving the lashes.
 - Rendered before/after in Cycles using the scene lighting and view. Original shared shader groups and source images were unchanged. Build remains local.
+
+## 3.14.7 Bloodhound head alpha
+
+- Actual 1024 x 1024 Christmas head albedo has 4.632% non-opaque pixels and 1,442 components, outside the sparse-speck heuristic. A scoped texture exception avoids changing global thresholds.
+- Cycles before/after renders of the actual CAST export confirm the fuzzy mask holes disappear.
+- 50 integration checks pass on Blender 4.2.2 and 5.2.2, including both texture naming conventions, repeat builds, force-alpha override, unrelated maps and explicit opacity precedence.
+- 57 packaged workflow checks pass on Blender 5.2.2.
