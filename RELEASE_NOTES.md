@@ -1,6 +1,6 @@
-# Apex Toolbox 3.10.0: Stable release candidate
+# Apex Toolbox 3.10.0: Public stable release
 
-Validated and prepared for stable release on 3 November 2026. Not yet published.
+Released 3 November 2026.
 
 This release brings the model and animation workflows developed since 3.9.1
 into one stable package, with the material fixes from 3.14.7.
