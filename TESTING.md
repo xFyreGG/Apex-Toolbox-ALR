@@ -618,3 +618,12 @@ test fixtures, private paths or other workspace artifacts are included.
 - Scoped exception matches exact suit/gear opacity texture filenames; retained nodes allow manual use. Added regression coverage for all three shaders, repeated rebuilds, forced opacity override, renamed materials and an unrelated Wattson texture remaining connected.
 - Blender integration: 45 tests passed on Blender 4.2.2 and 5.2.2, including previous Ash alpha regression. Packaged ZIP workflow suite: 56 tests passed on 5.2.2.
 - Evidence: artifacts/wattson-inspection.log, wattson-render.log, wattson-before.png, wattson-fixed.png and 3.14.2 test logs.
+
+### 3.14.3 local cornea fix, 2026-11-03
+
+- Inspected supplied wraith_base_eyecornea textures: 32x32 albedo has RGB zero and alpha one throughout; 512x512 normal has RG variation, blue zero and alpha one.
+- Added a recognised-eyecornea-only transparent/Fresnel reflection shader with reconstructed packed RG normals. Black albedo retained for role discovery, not applied as tint. This approximates a thin clear surface rather than the complete game shader.
+- Actual Wattson model using this cornea: before/after Cycles close-ups confirm visible irises/whites instead of black shells. Eevee render also verified. Evidence: artifacts/cornea-before.png, cornea-fixed.png, cornea-eevee-fixed.png and corresponding logs.
+- 46 Blender integration tests passed on both 4.2.2 and 5.2.2, including repeated cornea rebuilds through all three shader choices, retained texture roles, missing-normal fallback, and ordinary eye materials excluded.
+- Pure Python suite: 125 passed. Packaged ZIP workflow suite: 56 passed on 5.2.2.
+- No user scenes, source textures, or installed add-on files modified. Candidate remains local.

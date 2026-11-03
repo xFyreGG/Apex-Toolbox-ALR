@@ -1,3 +1,10 @@
+# Apex Toolbox 3.14.3: Experimental candidate (local)
+
+- Recognised eyecornea materials now use a clear reflective surface instead of treating their black placeholder albedo as an opaque tint. The eye underneath remains visible.
+- Reconstruct the missing blue channel of Apex packed RG cornea normals. Use a neutral normal when the texture is absent.
+- Keep albedo and normal bindings discoverable through repeated Auto Texture, Recolour and shader changes. Other eye/head materials retain their existing shaders.
+- This is a thin-surface approximation, not a recreation of the game's eye shader. Existing models need Auto Texture rerun after installation.
+
 # Apex Toolbox 3.14.2: Experimental candidate (local)
 
 - Correct Wattson onesie suit and gear materials: their opacityMultiply maps no longer remove solid details such as straps, zipper, gloves and knee equipment.

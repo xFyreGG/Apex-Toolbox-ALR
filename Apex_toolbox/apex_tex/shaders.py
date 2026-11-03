@@ -12,6 +12,7 @@ previous release looks identical after this update.
 
 import bpy
 import os
+import re
 
 from . import roles as R
 
@@ -135,14 +136,96 @@ SHADER_DEFS = {
     ),
 }
 
+CORNEA_DEF = ShaderDef(
+    'CORNEA', 'ALR Cornea',
+    {R.ALBEDO: 'Albedo Map', R.NORMAL: 'Normal Map'}, {},
+)
+
+
+def is_cornea(material, images):
+    names = [material.name]
+    albedo = images.get(R.ALBEDO)
+    if albedo is not None:
+        names.append(albedo.filepath_raw or albedo.filepath or albedo.name)
+    return any(re.search(r'(?:^|_)eyecornea(?:_|$)',
+                         os.path.splitext(name.replace('\\', '/').rsplit('/', 1)[-1])[0].casefold())
+               for name in names)
+
+
+def ensure_cornea_group():
+    """Thin clear eye surface, with Fresnel reflections and packed RG normals.
+
+    Black albedo is a game placeholder, not a black tint. Retain its input for
+    role discovery/recolour but do not use it to darken the eye underneath.
+    """
+    existing = bpy.data.node_groups.get(CORNEA_DEF.group_name)
+    if existing is not None:
+        return existing
+    group = bpy.data.node_groups.new(CORNEA_DEF.group_name, 'ShaderNodeTree')
+    try:
+        for name, kind in [('Albedo Map', 'NodeSocketColor'), ('Normal Map', 'NodeSocketColor')]:
+            socket = group.interface.new_socket(name=name, in_out='INPUT', socket_type=kind)
+            socket.default_value = (0.5, 0.5, 0.0, 1.0) if name == 'Normal Map' else (0, 0, 0, 1)
+        group.interface.new_socket(name='BSDF', in_out='OUTPUT', socket_type='NodeSocketShader')
+        nodes, links = group.nodes, group.links
+        source = nodes.new('NodeGroupInput')
+        output = nodes.new('NodeGroupOutput')
+        separate = nodes.new('ShaderNodeSeparateXYZ')
+        links.new(source.outputs['Normal Map'], separate.inputs[0])
+
+        def math_node(operation, a, b=None):
+            node = nodes.new('ShaderNodeMath')
+            node.operation = operation
+            for i, value in enumerate((a, b)):
+                if value is None:
+                    continue
+                if isinstance(value, (int, float)):
+                    node.inputs[i].default_value = value
+                else:
+                    links.new(value, node.inputs[i])
+            return node.outputs[0]
+
+        x = math_node('SUBTRACT', math_node('MULTIPLY', separate.outputs['X'], 2), 1)
+        y = math_node('SUBTRACT', math_node('MULTIPLY', separate.outputs['Y'], 2), 1)
+        squared = math_node('ADD', math_node('MULTIPLY', x, x), math_node('MULTIPLY', y, y))
+        z = math_node('SQRT', math_node('MAXIMUM', math_node('SUBTRACT', 1, squared), 0))
+        packed_z = math_node('ADD', math_node('MULTIPLY', z, 0.5), 0.5)
+        combine = nodes.new('ShaderNodeCombineXYZ')
+        links.new(separate.outputs['X'], combine.inputs['X'])
+        links.new(separate.outputs['Y'], combine.inputs['Y'])
+        links.new(packed_z, combine.inputs['Z'])
+        normal = nodes.new('ShaderNodeNormalMap')
+        links.new(combine.outputs[0], normal.inputs['Color'])
+        transparent = nodes.new('ShaderNodeBsdfTransparent')
+        reflection = nodes.new('ShaderNodeBsdfGlossy')
+        reflection.inputs['Color'].default_value = (1, 1, 1, 1)
+        reflection.inputs['Roughness'].default_value = 0.05
+        links.new(normal.outputs['Normal'], reflection.inputs['Normal'])
+        fresnel = nodes.new('ShaderNodeFresnel')
+        fresnel.inputs['IOR'].default_value = 1.376
+        links.new(normal.outputs['Normal'], fresnel.inputs['Normal'])
+        mix = nodes.new('ShaderNodeMixShader')
+        links.new(fresnel.outputs[0], mix.inputs[0])
+        links.new(transparent.outputs[0], mix.inputs[1])
+        links.new(reflection.outputs[0], mix.inputs[2])
+        links.new(mix.outputs[0], output.inputs[0])
+        # Keep the generated graph readable when inspected in the node editor.
+        for i, node in enumerate(nodes):
+            node.location = ((i % 5) * 210, -(i // 5) * 180)
+        return group
+    except Exception:
+        bpy.data.node_groups.remove(group)
+        raise
+
+
 #: Node group names Auto_tex recognises as "already an Apex Toolbox material".
-KNOWN_GROUP_NAMES = frozenset(d.group_name for d in SHADER_DEFS.values())
+KNOWN_GROUP_NAMES = frozenset(d.group_name for d in (*SHADER_DEFS.values(), CORNEA_DEF))
 
 
 def socket_role_map():
     """``group name -> {socket name: role}`` for re-reading our own materials."""
     mapping = {}
-    for definition in SHADER_DEFS.values():
+    for definition in (*SHADER_DEFS.values(), CORNEA_DEF):
         mapping[definition.group_name] = {
             name: role for role, name in definition.sockets.items()}
     return mapping
@@ -267,6 +350,10 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
     built successfully, so a failure part way through leaves the imported
     material usable.
     """
+    cornea = is_cornea(material, images)
+    if cornea:
+        ensure_cornea_group()
+        definition = CORNEA_DEF
     group_tree = bpy.data.node_groups.get(definition.group_name)
     if group_tree is None:
         raise RuntimeError(
@@ -289,7 +376,8 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
 
     created = []
     texture_nodes = {}
-    alpha_note = ""
+    alpha_note = ("Clear cornea shader: black placeholder albedo retained but not used as a surface tint."
+                  if cornea else "")
     skip_opacity = skip_surface_opacity(material, images.get(R.OPACITY))
 
     try:

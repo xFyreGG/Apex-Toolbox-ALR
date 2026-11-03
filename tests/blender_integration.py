@@ -753,6 +753,36 @@ class BlenderIntegration(unittest.TestCase):
             self.assertTrue(group.inputs[definition.sockets[R.OPACITY]].is_linked)
             self.assertEqual(mat['apex_alpha_note'], '')
 
+    def test_cornea_is_clear_and_retains_roles_across_rebuilds(self):
+        albedo = bpy.data.images.new('eye_placeholder', width=32, height=32, alpha=True)
+        albedo.filepath_raw = '//wraith_base_eyecornea_albedoTexture.png'
+        normal = bpy.data.images.new('eye_normal', width=32, height=32)
+        mat = bpy.data.materials.new('renamed_eye_surface')
+        images = {R.ALBEDO: albedo, R.NORMAL: normal}
+        for definition in shaders.SHADER_DEFS.values():
+            for repeat in range(2):
+                shaders.build_material(mat, definition, images)
+                group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                self.assertEqual(group.node_tree.name, 'ALR Cornea')
+                self.assertEqual(len([n for n in mat.node_tree.nodes if n.type == 'GROUP']), 1)
+                info = graph.inspect_material(mat)
+                self.assertEqual(info.roles, {R.ALBEDO, R.NORMAL})
+                self.assertTrue(group.inputs['Normal Map'].is_linked)
+                self.assertTrue(any(n.type == 'BSDF_TRANSPARENT' for n in group.node_tree.nodes))
+                self.assertTrue(any(n.type == 'FRESNEL' for n in group.node_tree.nodes))
+                self.assertTrue(any(getattr(n, 'operation', '') == 'SQRT' for n in group.node_tree.nodes))
+                source = next(n for n in group.node_tree.nodes if n.type == 'GROUP_INPUT')
+                self.assertFalse(source.outputs['Albedo Map'].is_linked)
+                self.assertIn('Clear cornea', mat['apex_alpha_note'])
+        albedo.filepath_raw = '//wraith_base_eye_albedoTexture.png'
+        self.assertFalse(shaders.is_cornea(mat, images))
+        mat.name = 'wraith_base_eyecornea.001'
+        self.assertTrue(shaders.is_cornea(mat, images))
+        # A cornea without a normal texture uses a neutral tangent normal.
+        shaders.build_material(mat, definition, {R.ALBEDO: albedo})
+        group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+        self.assertEqual(tuple(group.inputs['Normal Map'].default_value), (0.5, 0.5, 0, 1))
+
     def test_wireframe_repeat_and_removal(self):
         obj = make_mesh()
         select(obj)
