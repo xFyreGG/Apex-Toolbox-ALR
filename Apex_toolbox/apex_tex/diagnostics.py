@@ -26,6 +26,10 @@ def texture_report(batch, definition, outcomes=None):
         lines.extend(["", material.name, "  Source: " + info.source_label])
         if material.name in outcomes:
             lines.append("  " + outcomes[material.name])
+            if outcomes[material.name] == "Textured successfully.":
+                note = getattr(material, 'get', lambda *_: '')('apex_alpha_note', '')
+                if note:
+                    lines.append("  " + note)
         if not getattr(material, "is_editable", True):
             lines.append("  Read-only linked material: make it local before applying.")
         for line in resolver.format_report(material.name, info.source_label, results,

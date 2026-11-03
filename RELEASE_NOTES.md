@@ -1,3 +1,9 @@
+# Apex Toolbox 3.14.1: Experimental candidate (local)
+
+- Auto Texture and Recolour now skip sparse, fragmented albedo alpha that causes tiny holes on opaque surfaces, including the reported Ash head texture. Explicit opacity maps and scatter alpha retain their existing wiring.
+- Hair, lash, fur and lace materials are exempt. The texture report explains skipped alpha. For intentional speckled cutouts, add the material custom property `apex_force_albedo_alpha` set to True and retexture.
+- This is a conservative heuristic, not game material metadata. Images outside 65,536 to 4,194,304 pixels are left unchanged.
+
 # Apex Toolbox 3.14.0: Experimental candidate (local)
 
 Update date: **2026-11-03**

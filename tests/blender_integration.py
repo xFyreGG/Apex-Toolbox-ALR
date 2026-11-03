@@ -686,6 +686,48 @@ class BlenderIntegration(unittest.TestCase):
             self.assertIn(name, bpy.data.objects)
 
 
+    def test_fragmented_alpha_detection_and_shader_wiring(self):
+        import numpy as np
+        image = bpy.data.images.new('speckled_albedo', width=512, height=512, alpha=True)
+        image.alpha_mode = 'CHANNEL_PACKED'
+        pixels = np.ones((512, 512, 4), dtype=np.float32)
+        pixels[16:496:16, 16:496:16, 3] = 0.0
+        image.pixels.foreach_set(pixels.ravel())
+        self.assertTrue(shaders.fragmented_albedo_alpha(image))
+        mat = bpy.data.materials.new('metal_head')
+        for key, definition in shaders.SHADER_DEFS.items():
+            image.pixels.foreach_set(pixels.ravel())
+            addon.append_apex_node_group(definition.group_name)
+            shaders.build_material(mat, definition, {R.ALBEDO: image})
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            socket = group.inputs[definition.alpha_sockets[R.ALBEDO]]
+            self.assertFalse(socket.is_linked)
+            self.assertEqual(socket.default_value, 1.0)
+            self.assertIn('specks', mat['apex_alpha_note'])
+            mat['apex_force_albedo_alpha'] = True
+            shaders.build_material(mat, definition, {R.ALBEDO: image})
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            self.assertTrue(group.inputs[definition.alpha_sockets[R.ALBEDO]].is_linked)
+            self.assertEqual(mat['apex_alpha_note'], '')
+            del mat['apex_force_albedo_alpha']
+            shaders.build_material(mat, definition, {R.ALBEDO: image, R.OPACITY: image})
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            self.assertEqual(group.inputs[definition.sockets[R.OPACITY]].links[0].from_socket.name, 'Color')
+        mat.name = 'eyelash'
+        shaders.build_material(mat, definition, {R.ALBEDO: image})
+        self.assertEqual(mat['apex_alpha_note'], '')
+        # Coherent hole with the same coverage, hair-like mask, opaque and soft alpha.
+        for mask in ('hole', 'hair', 'opaque', 'soft'):
+            pixels[:] = 1.0
+            if mask == 'hole':
+                pixels[10:40, 10:40, 3] = 0.0
+            elif mask == 'hair':
+                pixels[:, ::2, 3] = 0.0
+            elif mask == 'soft':
+                pixels[:, :, 3] = 0.5
+            image.pixels.foreach_set(pixels.ravel())
+            self.assertFalse(shaders.fragmented_albedo_alpha(image), mask)
+
     def test_wireframe_repeat_and_removal(self):
         obj = make_mesh()
         select(obj)

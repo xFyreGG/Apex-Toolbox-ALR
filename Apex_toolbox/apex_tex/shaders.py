@@ -192,6 +192,51 @@ def apply_colorspace(image, role):
         pass
 
 
+def fragmented_albedo_alpha(image):
+    """Reject only sparse, isolated specks, never infer intent from alpha alone.
+
+    Bound memory and traversal cost. Unknown/large images keep their alpha.
+    No cache: generated images and reloaded files must be checked afresh.
+    """
+    import numpy as np
+    width, height = image.size
+    total = width * height
+    if image.channels != 4 or not 65536 <= total <= 4194304:
+        return False
+    pixels = np.empty(total * 4, dtype=np.float32)
+    image.pixels.foreach_get(pixels)
+    alpha = pixels[3::4]
+    if not np.isfinite(alpha).all():
+        return False
+    indices = np.flatnonzero(alpha < 0.99)
+    if not 32 <= len(indices) <= total * 0.01:
+        return False
+    remaining = set(indices.tolist())
+    components = 0
+    # Large coherent cutouts, including narrow strands, retain transparency.
+    limit = max(16, int(total * 0.00015))
+    while remaining:
+        pending = [remaining.pop()]
+        count = 0
+        components += 1
+        while pending:
+            index = pending.pop()
+            count += 1
+            if count > limit:
+                return False
+            x = index % width
+            neighbours = [index - width, index + width]
+            if x:
+                neighbours.extend((index - 1, index - width - 1, index + width - 1))
+            if x + 1 < width:
+                neighbours.extend((index + 1, index - width + 1, index + width + 1))
+            for neighbour in neighbours:
+                if neighbour in remaining:
+                    remaining.remove(neighbour)
+                    pending.append(neighbour)
+    return components >= 32
+
+
 def build_material(material, definition, images, log=None, plug_alpha=True):
     """Rebuild ``material`` around ``definition`` using ``images``.
 
@@ -226,6 +271,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
 
     created = []
     texture_nodes = {}
+    alpha_note = ""
 
     try:
         for role, image in sorted(images.items(),
@@ -268,6 +314,17 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
             for role, socket_name in definition.alpha_sockets.items():
                 node = texture_nodes.get(role)
                 if node is None or socket_name not in group_node.inputs:
+                    continue
+                if (role == R.ALBEDO and images.get(R.OPACITY) is None
+                        and not material.get('apex_force_albedo_alpha', False)
+                        and not any(word in material.name.casefold()
+                                    for word in ('hair', 'lash', 'fur', 'lace'))
+                        and fragmented_albedo_alpha(node.image)):
+                    group_node.inputs[socket_name].default_value = 1.0
+                    alpha_note = ('Albedo alpha left disconnected: sparse isolated specks. '
+                                  'Set material custom property apex_force_albedo_alpha '
+                                  'to True and retexture to override.')
+                    node.label = role + ' (fragmented alpha ignored)'
                     continue
                 tree.links.new(group_node.inputs[socket_name],
                                node.outputs["Alpha"])
@@ -343,6 +400,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
         node.name = _legacy_node_name(role)
     output_node.is_active_output = True
     tree.nodes.active = group_node
+    material['apex_alpha_note'] = alpha_note
 
     # ``blend_method`` disappeared in Blender 4.3 (EEVEE Next); setting it is
     # best effort so Auto_tex keeps working on both sides of that change.
@@ -352,4 +410,6 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
         pass
     if log is not None:
         log("rebuilt with %d texture node(s)" % len(texture_nodes))
+        if alpha_note:
+            log(alpha_note)
     return texture_nodes

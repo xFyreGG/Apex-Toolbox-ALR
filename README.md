@@ -8,7 +8,7 @@ Apex Toolbox is a Blender add-on for working with Apex Legends models exported t
 
 To try 3.11.0, link an active Patreon membership to your ALR account, then choose **Experimental** on Creator Tools. Install the ZIP through Blender's **Install from Disk**; it replaces an older Apex Toolbox installation. The add-on contains no Apex models, textures or animations. Export your own files with RSX. The add-on source is included in the ZIP; the [3.9.1 tag](https://github.com/xFyreGG/Apex-Toolbox-ALR/tree/v3.9.1) remains the source for the public release.
 
-Local development is on **3.14.0 experimental**. Model, Animate, Scene and Tools tabs organize the sidebar, with the asset-folder control at the top. Import proceeds directly from model selection. Texturing and automatic rig linking can be disabled for a quick model-only import.
+Local development is on **3.14.1 experimental**. Model, Animate, Scene and Tools tabs organize the sidebar, with the asset-folder control at the top. Import proceeds directly from model selection. Texturing and automatic rig linking can be disabled for a quick model-only import.
 
 This candidate adds transparency connection checks, an opacity toggle, automatic hair cavity multiplication and paired-item rotation correction. Hair detection uses material names containing `hair`, and requires the relevant texture maps. Transparency checks report connections and pixel values; they do not infer whether the game intended a texture as opacity.
 

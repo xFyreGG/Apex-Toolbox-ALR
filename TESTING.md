@@ -600,3 +600,13 @@ The 3.11.0 ZIP contains 43 files, is **4,750,445 bytes**, and has SHA-256
 `b56eeb7aa513a265c2fb63255210f17e5d5a559becd3d822f83ec441086e3762`.
 Every entry matches its add-on source file byte for byte. No local RSX exports,
 test fixtures, private paths or other workspace artifacts are included.
+
+### 3.14.1 local alpha fix, 2026-11-03
+
+- Original Gl2imm/Apex-Toolbox alpha wiring reviewed. It connects albedo alpha without inspecting pixels; the historical Shader+ socket mismatch silently skipped that connection. We retain correct socket names.
+- Blender integration: 44 tests passed on both 4.2.2 and 5.2.2. Includes fragmented alpha, coherent cutouts, hair-like masks, opaque/soft alpha, explicit opacity maps and forced alpha across all three shaders.
+- Pure Python suite: 125 tests passed.
+- Actual Ash opbundle head albedo checked in Blender 5.2.2: automatic rejection confirmed and alpha disconnected for all three shaders. Initial image load/read plus detection took approximately 0.26 seconds in this run.
+- Heuristic intentionally retains alpha for unknown/large images and exempt hair/lash/fur/lace materials. Intentional sparse cutouts can use the material custom property `apex_force_albedo_alpha = True`. No claim of universal game-material classification.
+- No source textures or user scenes modified. Existing scene materials need Auto Texture rerun. No rendered visual comparison performed for this candidate.
+- Packaged ZIP workflow suite: 56 tests passed on Blender 5.2.2.
