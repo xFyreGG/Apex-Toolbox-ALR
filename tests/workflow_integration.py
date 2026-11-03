@@ -582,6 +582,46 @@ class WorkflowIntegration(unittest.TestCase):
         self.assertEqual(len(library.clips), 3)
         self.assertEqual(library.rig_file, str(self.rig_path))
 
+    def test_animation_row_single_double_and_filtered_clicks(self):
+        library = self.link()
+        event = SimpleNamespace(type='LEFTMOUSE', mouse_x=100, mouse_y=100)
+        operator = SimpleNamespace(index=2, report=lambda *args: None)
+        addon._animation_row_click = None
+        threshold = bpy.context.preferences.inputs.mouse_double_click_time / 1000.0
+        def click(at, index=2, kind='LEFTMOUSE'):
+            operator.index = index
+            event.type = kind
+            with patch('time.monotonic', return_value=at):
+                return addon.APEX_OT_animation_row.invoke(operator, bpy.context, event)
+        self.assertEqual(click(10), {'FINISHED'})
+        self.assertEqual(library.index, 2)
+        self.assertFalse(self.rig.animation_data and self.rig.animation_data.action)
+        self.assertEqual(click(10 + threshold / 2), {'FINISHED'})
+        action = self.rig.animation_data.action
+        self.assertEqual(action.name, 'run')
+        self.assertIsNone(addon._animation_row_click)
+        # Two different rows never load; slow clicks only select.
+        click(20, 0)
+        click(20 + threshold / 2, 1)
+        self.assertEqual(self.rig.animation_data.action, action)
+        click(30, 0)
+        click(31, 0)
+        self.assertEqual(self.rig.animation_data.action, action)
+        # Keyboard activation selects without accidentally completing a click.
+        click(40, 0)
+        click(40 + threshold / 2, 0, 'RET')
+        self.assertEqual(self.rig.animation_data.action, action)
+        self.assertIsNone(addon._animation_row_click)
+        library.filter_text = 'run'
+        self.assertEqual(click(50, 0), {'CANCELLED'})
+        self.assertEqual(library.index, 2)
+        library.filter_text = ''
+        # A large cursor movement is not a double click.
+        click(60, 0)
+        event.mouse_x = 200
+        click(60 + threshold / 2, 0)
+        self.assertEqual(self.rig.animation_data.action, action)
+
     def test_animation_switch_and_cache_preserve_actions(self):
         library = self.link()
         previous = bpy.data.actions.new('My existing pose')

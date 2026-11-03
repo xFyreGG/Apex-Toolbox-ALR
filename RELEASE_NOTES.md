@@ -1,3 +1,9 @@
+# Apex Toolbox 3.14.4: Experimental candidate (local)
+
+- Double-click an animation name to load it. A single click selects it; the Load Animation button remains available.
+- Uses Blender's double-click timing preference. Clicks must target the same clip, and filtering, favourites or changing rows cannot complete an old click pair.
+- Uses the existing animation loader, including missing-bone options, timeline fitting, active-layer restrictions and undo.
+
 # Apex Toolbox 3.14.3: Experimental candidate (local)
 
 - Recognised eyecornea materials now use a clear reflective surface instead of treating their black placeholder albedo as an opaque tint. The eye underneath remains visible.

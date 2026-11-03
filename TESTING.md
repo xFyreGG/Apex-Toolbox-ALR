@@ -627,3 +627,11 @@ test fixtures, private paths or other workspace artifacts are included.
 - 46 Blender integration tests passed on both 4.2.2 and 5.2.2, including repeated cornea rebuilds through all three shader choices, retained texture roles, missing-normal fallback, and ordinary eye materials excluded.
 - Pure Python suite: 125 passed. Packaged ZIP workflow suite: 56 passed on 5.2.2.
 - No user scenes, source textures, or installed add-on files modified. Candidate remains local.
+
+### 3.14.4 local animation double click, 2026-11-03
+
+- Added animation-name click operator using Blender mouse_double_click_time. Single click selects, matching second click loads via existing loader with explicit undo push.
+- Regression exercises real CAST animation loading: single/double clicks, two different rows, slow clicks, keyboard activation, filtered-out clips and cursor movement.
+- Packaged ZIP workflow suite: 57 tests passed on both Blender 4.2.2 and 5.2.2.
+- Native Blender 5.2.2 isolated UI fixture verified single click leaves action empty, double click loads run, and Ctrl+Z restores no action and original timeline. No user scene or preferences changed; owned test process closed.
+- Existing Load Animation button, favourite star and layer restrictions retained. Click state resets on filters, favourites and add-on disable.

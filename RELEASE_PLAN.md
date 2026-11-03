@@ -9,15 +9,15 @@ All supporter tiers retain early access. Release 3.11.0 publicly when the
 maintainer decides the preview has had enough exposure and the stable website
 update is ready.
 
-Development has now moved to **3.14.3 experimental**, adding import checks,
+Development has now moved to **3.14.4 experimental**, adding import checks,
 batch grid placement, separate model collections, export-library relinking and
 additive animation layers. Saved animation indexes and automatic legend rig
 linking remain included; temporary animation previews remain removed. This
 candidate is local and does not change this
 3.11.0 public release plan. Use the 3.11.0 source at commit `0431a99` when
-preparing its public release; the current development checkout contains 3.14.3.
+preparing its public release; the current development checkout contains 3.14.4.
 
-Before offering 3.14.3 to supporters, finish the checks recorded in `TESTING.md`,
+Before offering 3.14.4 to supporters, finish the checks recorded in `TESTING.md`,
 including the exact ZIP on Blender 4.2.2 and 5.2.2. Check the import review,
 row/grid placement, moved export paths and additive layer removal in a disposable
 foreground scene. Then upload that ZIP to a new versioned R2 key and update its

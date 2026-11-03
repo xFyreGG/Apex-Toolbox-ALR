@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 14, 3),
+    "version": (3, 14, 4),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -592,6 +592,8 @@ class APEX_PG_animation_clip(bpy.types.PropertyGroup):
 
 
 def animation_filter_changed(library, context):
+    global _animation_row_click
+    _animation_row_click = None
     apex_animations.ensure_visible_selection(library)
 
 
@@ -2192,6 +2194,8 @@ class APEX_OT_favourite_animation(bpy.types.Operator):
         return bool(not _active_animation_scan and rig and rig.is_editable and rig.apex_animation_library.clips)
 
     def execute(self, context):
+        global _animation_row_click
+        _animation_row_click = None
         if not require_fresh_modules(self):
             return {'CANCELLED'}
         library = apex_workflows.selected_rig(context).apex_animation_library
@@ -2391,12 +2395,72 @@ def draw_current_animation(layout, context, rig):
     draw_wrapped(layout, prefix + label, context)
 
 
+_animation_row_click = None
+
+
+class APEX_OT_animation_row(bpy.types.Operator):
+    """Select this animation; double-click its name to load it"""
+    bl_idname = 'object.apex_animation_row'
+    bl_label = 'Select Animation'
+    bl_options = {'INTERNAL'}
+    index: bpy.props.IntProperty(min=0, options={'SKIP_SAVE'})
+
+    @classmethod
+    def poll(cls, context):
+        rig = apex_workflows.selected_rig(context)
+        return bool(not _active_animation_scan and rig and rig.is_editable
+                    and rig.apex_animation_library.clips)
+
+    def execute(self, context):
+        global _animation_row_click
+        _animation_row_click = None
+        library = apex_workflows.selected_rig(context).apex_animation_library
+        if self.index not in apex_animations.visible_clip_indices(library):
+            return {'CANCELLED'}
+        library.index = self.index
+        redraw_animation_panels(context)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        global _animation_row_click
+        import time
+        rig = apex_workflows.selected_rig(context)
+        library = rig.apex_animation_library
+        if self.index not in apex_animations.visible_clip_indices(library):
+            _animation_row_click = None
+            return {'CANCELLED'}
+        previous = _animation_row_click
+        was_selected = library.index == self.index
+        result = APEX_OT_animation_row.execute(self, context)
+        if event.type != 'LEFTMOUSE':
+            return result
+        item = library.clips[self.index]
+        key = (context.window.as_pointer() if context.window else 0,
+               context.area.as_pointer() if context.area else 0,
+               rig.as_pointer(), self.index, item.filepath, item.offset, item.name,
+               library.filter_text, library.category, library.browse_mode)
+        now = time.monotonic()
+        position = (event.mouse_x, event.mouse_y)
+        threshold = context.preferences.inputs.mouse_double_click_time / 1000.0
+        if (previous and previous[0] == key and was_selected
+                and 0 <= now - previous[1] <= threshold
+                and sum((a - b) ** 2 for a, b in zip(position, previous[2])) <= 25):
+            if bpy.ops.object.apex_load_animation.poll():
+                return bpy.ops.object.apex_load_animation('EXEC_DEFAULT', True)
+            self.report({'WARNING'}, 'Cannot load this animation now. Remove animation layers first if present.')
+            return {'CANCELLED'}
+        _animation_row_click = (key, now, position)
+        return result
+
+
 class APEX_UL_animations(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row(align=True)
         row.operator('object.apex_favourite_animation', text='', emboss=False,
                      icon='SOLO_ON' if item.favourite else 'SOLO_OFF').index = index
-        row.label(text=apex_animations.clip_label(item, data), icon='ACTION')
+        row.operator_context = 'INVOKE_DEFAULT'
+        row.operator('object.apex_animation_row', text=apex_animations.clip_label(item, data),
+                     icon='ACTION', emboss=False).index = index
         if item.additive:
             layout.label(text='Additive')
 
@@ -6153,6 +6217,7 @@ classes = (
         APEX_OT_check_transparency,
         APEX_OT_favourite_animation,
         APEX_OT_clear_recent_animations,
+        APEX_OT_animation_row,
         APEX_UL_animations,
         APEX_OT_report,
         APEX_OT_xyz_euler,
@@ -6238,6 +6303,8 @@ def register():
 
 
 def unregister():
+    global _animation_row_click
+    _animation_row_click = None
     cancel_animation_scan()
     for handlers in (bpy.app.handlers.save_pre, bpy.app.handlers.load_pre,
                      bpy.app.handlers.undo_pre, bpy.app.handlers.redo_pre):
