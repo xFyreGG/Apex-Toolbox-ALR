@@ -3,10 +3,10 @@ import hashlib
 from pathlib import Path
 import zipfile
 
-from build_release import ADDON, ROOT, release_version
+from build_release import ADDON, ROOT, release_label
 
 
-version = '.'.join(map(str, release_version()))
+version = release_label()
 archive_path = ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version)
 expected = {
     path.relative_to(ROOT).as_posix(): path

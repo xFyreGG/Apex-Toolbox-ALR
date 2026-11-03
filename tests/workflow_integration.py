@@ -24,10 +24,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'tests'))
 if '--release' in sys.argv:
     sys.path.insert(0, str(ROOT / 'tools'))
-    from build_release import release_version
+    from build_release import release_version, release_label
     release_directory = tempfile.TemporaryDirectory()
     atexit.register(release_directory.cleanup)
-    version = '.'.join(map(str, release_version()))
+    version = release_label()
     with zipfile.ZipFile(ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version)) as archive:
         archive.extractall(release_directory.name)
     sys.path.insert(0, release_directory.name)

@@ -23,6 +23,21 @@ successful imports in rows, grids or their original positions. `relink.py`
 checks and replaces paths to a moved RSX export library. `animation_layers.py`
 manages additive channels over a base Action through Blender NLA.
 
+## 3.10.0 numbering transition, 3 November 2026
+
+The unpublished 3.15.0 candidate below is superseded by stable candidate 3.10.0.
+Only the version label and workflow-guide title changed inside the add-on ZIP.
+The 624 earlier checks remain the functional baseline. Clean package smoke,
+57 packaged workflow tests and isolated ZIP installation passed again on both
+Blender 4.2.2 and 5.2.2 under the final 3.10.0 identity.
+Three release-naming tests verify stable labels, numbered betas and invalid suffixes.
+Logs: `artifacts/numbering-3.10.0/`.
+
+Current package: `dist/Apex-Toolbox-ALR-3.10.0.zip`, **4,782,398 bytes**, 48 files.
+SHA-256: `36dc03d4438b406a05d48ab8f8ebd7f24bfdfb47d33d630089de8cd794f32d88`.
+This is not the old experimental 3.10.0 ZIP. See VERSIONING.md.
+The 3.15.0 record below is retained as historical evidence, not a release target.
+
 ## 3.15.0 stable readiness, 3 November 2026
 
 Status: local package ready for publication approval. No known release blocker

@@ -1,5 +1,6 @@
 """Build the installable Lite ZIP from source, excluding caches and tests."""
 import ast
+import re
 from pathlib import Path
 import zipfile
 
@@ -16,8 +17,19 @@ def release_version():
     return tuple(info['version'])
 
 
+def release_label():
+    tree = ast.parse((ADDON / '__init__.py').read_text(encoding='utf-8'))
+    suffix = next((ast.literal_eval(node.value) for node in tree.body
+                   if isinstance(node, ast.Assign) and any(
+                       isinstance(target, ast.Name) and target.id == 'RELEASE_SUFFIX'
+                       for target in node.targets)), '')
+    if not isinstance(suffix, str) or (suffix and not re.fullmatch(r'-beta\.[1-9]\d*', suffix)):
+        raise ValueError('RELEASE_SUFFIX must be empty or -beta.N with N >= 1')
+    return '.'.join(map(str, release_version())) + suffix
+
+
 def build_release():
-    version = '.'.join(map(str, release_version()))
+    version = release_label()
     output = ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version)
     output.parent.mkdir(exist_ok=True)
     with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:

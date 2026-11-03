@@ -1,4 +1,4 @@
-# Apex Toolbox 3.15.0 workflow guide
+# Apex Toolbox 3.10.0 workflow guide
 
 Animation names depend on the available RSX export data. Unknown or conflicting
 names retain their export labels. Test unfamiliar rig and clip variants before

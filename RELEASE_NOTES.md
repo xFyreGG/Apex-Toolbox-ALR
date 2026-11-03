@@ -1,4 +1,4 @@
-# Apex Toolbox 3.15.0: Stable release candidate
+# Apex Toolbox 3.10.0: Stable release candidate
 
 Validated and prepared for stable release on 3 November 2026. Not yet published.
 

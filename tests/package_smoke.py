@@ -8,10 +8,10 @@ import bpy
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
-from build_release import release_version
+from build_release import release_version, release_label
 
 expected_version = release_version()
-version_label = '.'.join(map(str, expected_version))
+version_label = release_label()
 archive_path = ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version_label)
 
 with tempfile.TemporaryDirectory() as directory:

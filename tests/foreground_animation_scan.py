@@ -21,7 +21,9 @@ if '--release' in sys.argv:
                 if isinstance(node, ast.Assign)
                 and any(isinstance(target, ast.Name) and target.id == 'bl_info'
                         for target in node.targets))
-    version = '.'.join(map(str, info['version']))
+    sys.path.insert(0, str(ROOT / 'tools'))
+    from build_release import release_label
+    version = release_label()
     release = tempfile.TemporaryDirectory()
     with zipfile.ZipFile(ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version)) as archive:
         archive.extractall(release.name)

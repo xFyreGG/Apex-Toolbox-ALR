@@ -1,9 +1,11 @@
-# Apex Toolbox 3.15.0 stable release plan
+# Apex Toolbox 3.10.0 stable release plan
 
-3.15.0 consolidates the model, animation and material work through 3.14.7.
+3.10.0 consolidates the model, animation and material work through 3.14.7.
 It is being prepared locally for stable release. Preparation does not publish
 anything or change the website. Keep existing downloads available until the
 maintainer authorizes publication.
+
+See [VERSIONING.md](VERSIONING.md) for the one-time numbering reset and future beta labels.
 
 ## Release gates
 
@@ -21,12 +23,12 @@ maintainer authorizes publication.
 
 ## Publication, after maintainer approval
 
-1. Publish the tested source and exact ZIP as GitHub release v3.15.0, with the
+1. Publish the tested source and exact ZIP as GitHub release v3.10.0, with the
    consolidated notes in RELEASE_NOTES.md. Do not rebuild after recording its hash.
-2. Add 3.15.0 to the website stable picker and make it the default. Keep older
+2. Add 3.10.0 to the website stable picker and make it the default. Keep older
    public releases selectable. Update selected-version features, compatibility
    and file size together. Stable downloads use GitHub.
-3. Update the public README to describe 3.15.0 as available only once the release
+3. Update the public README to describe 3.10.0 as available only once the release
    exists. Remove the old 3.11.0 early-access promotion. Older experimental builds
    must not be advertised as newer than stable. Future experimental builds remain
    on R2 behind the gate for all supporter tiers.

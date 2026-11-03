@@ -8,10 +8,10 @@ import bpy
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
-from build_release import release_version
+from build_release import release_version, release_label
 
 assert os.environ.get('BLENDER_USER_SCRIPTS'), 'Use an isolated user scripts folder'
-version = '.'.join(map(str, release_version()))
+version = release_label()
 archive = ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version)
 assert archive.is_file(), archive
 assert bpy.ops.preferences.addon_install(filepath=str(archive), overwrite=True) == {'FINISHED'}
