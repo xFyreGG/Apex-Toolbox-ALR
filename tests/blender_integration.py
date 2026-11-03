@@ -728,6 +728,31 @@ class BlenderIntegration(unittest.TestCase):
             image.pixels.foreach_set(pixels.ravel())
             self.assertFalse(shaders.fragmented_albedo_alpha(image), mask)
 
+    def test_wattson_surface_opacity_exception_is_scoped_and_repeatable(self):
+        image = bpy.data.images.new('surface_mask', width=8, height=8, alpha=True)
+        mat = bpy.data.materials.new('renamed_material')
+        for definition in shaders.SHADER_DEFS.values():
+            addon.append_apex_node_group(definition.group_name)
+            for part in ('suit', 'gear'):
+                image.filepath_raw = '//wattson_lgnd_v24_onesie_' + part + '_opacityMultiplyTexture.png'
+                for repeat in range(2):
+                    shaders.build_material(mat, definition, {R.OPACITY: image})
+                    group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                    socket = group.inputs[definition.sockets[R.OPACITY]]
+                    self.assertFalse(socket.is_linked)
+                    self.assertEqual(socket.default_value, 1.0)
+                    self.assertIn('known Wattson', mat['apex_alpha_note'])
+                mat['apex_force_opacity_map'] = True
+                shaders.build_material(mat, definition, {R.OPACITY: image})
+                group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                self.assertTrue(group.inputs[definition.sockets[R.OPACITY]].is_linked)
+                del mat['apex_force_opacity_map']
+            image.filepath_raw = '//wattson_other_skin_opacityMultiplyTexture.png'
+            shaders.build_material(mat, definition, {R.OPACITY: image})
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            self.assertTrue(group.inputs[definition.sockets[R.OPACITY]].is_linked)
+            self.assertEqual(mat['apex_alpha_note'], '')
+
     def test_wireframe_repeat_and_removal(self):
         obj = make_mesh()
         select(obj)

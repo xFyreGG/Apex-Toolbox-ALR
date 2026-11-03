@@ -11,6 +11,7 @@ previous release looks identical after this update.
 """
 
 import bpy
+import os
 
 from . import roles as R
 
@@ -192,6 +193,23 @@ def apply_colorspace(image, role):
         pass
 
 
+# These masks cover solid harness/cuff/zipper and equipment surfaces, not
+# transparency in our surface shaders. Match the exported texture, not a broad
+# legend/material substring, so unrelated Wattson skins keep their cutouts.
+_SURFACE_OPACITY_EXCEPTIONS = frozenset({
+    'wattson_lgnd_v24_onesie_suit_opacitymultiplytexture',
+    'wattson_lgnd_v24_onesie_gear_opacitymultiplytexture',
+})
+
+
+def skip_surface_opacity(material, image):
+    if image is None or material.get('apex_force_opacity_map', False):
+        return False
+    path = image.filepath_raw or image.filepath or image.name
+    stem = os.path.splitext(path.replace('\\', '/').rsplit('/', 1)[-1])[0]
+    return stem.casefold() in _SURFACE_OPACITY_EXCEPTIONS
+
+
 def fragmented_albedo_alpha(image):
     """Reject only sparse, isolated specks, never infer intent from alpha alone.
 
@@ -272,6 +290,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
     created = []
     texture_nodes = {}
     alpha_note = ""
+    skip_opacity = skip_surface_opacity(material, images.get(R.OPACITY))
 
     try:
         for role, image in sorted(images.items(),
@@ -315,7 +334,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
                 node = texture_nodes.get(role)
                 if node is None or socket_name not in group_node.inputs:
                     continue
-                if (role == R.ALBEDO and images.get(R.OPACITY) is None
+                if (role == R.ALBEDO and (images.get(R.OPACITY) is None or skip_opacity)
                         and not material.get('apex_force_albedo_alpha', False)
                         and not any(word in material.name.casefold()
                                     for word in ('hair', 'lash', 'fur', 'lace'))
@@ -331,6 +350,17 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
 
         for role, node in texture_nodes.items():
             if role == R.OPACITY and not plug_alpha:
+                continue
+            if role == R.OPACITY and skip_opacity:
+                node.label = role + ' (surface mask, not transparency)'
+                note = ('Opacity map left disconnected: known Wattson onesie surface mask '
+                        'removes solid parts. Set material custom property '
+                        'apex_force_opacity_map to True and retexture to override.')
+                alpha_note = (alpha_note + ' ' + note).strip()
+                # Keep albedo alpha if present, otherwise use an opaque surface.
+                socket = group_node.inputs.get(definition.sockets.get(R.OPACITY, ''))
+                if socket is not None and not socket.is_linked:
+                    socket.default_value = 1.0
                 continue
             socket_name = definition.sockets.get(role)
             needs_invert = False

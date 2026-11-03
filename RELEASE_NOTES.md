@@ -1,3 +1,10 @@
+# Apex Toolbox 3.14.2: Experimental candidate (local)
+
+- Correct Wattson onesie suit and gear materials: their opacityMultiply maps no longer remove solid details such as straps, zipper, gloves and knee equipment.
+- This is a targeted exception for the two inspected texture names, not a new global opacity heuristic. Other opacity maps and hair transparency retain their existing behavior.
+- The maps remain in the material, and the texture report explains why they were disconnected. To force one back on, set the material custom property `apex_force_opacity_map` to True and retexture.
+- Existing models need Auto Texture rerun after installation. Source textures are unchanged.
+
 # Apex Toolbox 3.14.1: Experimental candidate (local)
 
 - Auto Texture and Recolour now skip sparse, fragmented albedo alpha that causes tiny holes on opaque surfaces, including the reported Ash head texture. Explicit opacity maps and scatter alpha retain their existing wiring.

@@ -610,3 +610,11 @@ test fixtures, private paths or other workspace artifacts are included.
 - Heuristic intentionally retains alpha for unknown/large images and exempt hair/lash/fur/lace materials. Intentional sparse cutouts can use the material custom property `apex_force_albedo_alpha = True`. No claim of universal game-material classification.
 - No source textures or user scenes modified. Existing scene materials need Auto Texture rerun. No rendered visual comparison performed for this candidate.
 - Packaged ZIP workflow suite: 56 tests passed on Blender 5.2.2.
+
+### 3.14.2 local Wattson opacity fix, 2026-11-03
+
+- Inspected actual Wattson v24 onesie LOD0 CAST, imported material bindings, suit/gear opacity images and suit albedo. Opacity images have opaque alpha channels and black RGB masks over solid details.
+- Before/after Cycles renders using Apex Shader+ confirm restoration of zipper, straps, gloves and knee equipment. Generated only isolated diagnostic scenes; source assets and user scenes unchanged.
+- Scoped exception matches exact suit/gear opacity texture filenames; retained nodes allow manual use. Added regression coverage for all three shaders, repeated rebuilds, forced opacity override, renamed materials and an unrelated Wattson texture remaining connected.
+- Blender integration: 45 tests passed on Blender 4.2.2 and 5.2.2, including previous Ash alpha regression. Packaged ZIP workflow suite: 56 tests passed on 5.2.2.
+- Evidence: artifacts/wattson-inspection.log, wattson-render.log, wattson-before.png, wattson-fixed.png and 3.14.2 test logs.
