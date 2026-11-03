@@ -1,22 +1,33 @@
 # Apex Toolbox
 
-Apex Toolbox is a Blender add-on for working with Apex Legends models exported through RSX and CAST. It helps with model scale, texturing, materials, rigging and scene setup.
+A Blender add-on for Apex Legends models exported through RSX and CAST.
 
-**Public release: 3.9.1.** [Download the installable ZIP](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.9.1). This version supports Blender 4.0 or newer and was checked with Blender 4.2. It includes automatic RSX/CAST texturing, Apex shaders, recolour and toon tools, rig helpers, lighting and effects. Version 3.9.1 adds scene health checks, missing-texture repair, texturing reports and XYZ Euler rotation conversion.
+**Public stable: 3.10.0.** [Download the ZIP](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.10.0) or choose an older public version on [Creator Tools](https://apexlegendsrenders.com/creator-tools). Tested in Blender 4.2.2 and 5.2.2.
 
-**Early access: 3.11.0.** The tested build is available to all ALR supporter tiers through [Creator Tools](https://apexlegendsrenders.com/creator-tools). It adds Import & Texture for one or several RSX model folders, with models placed side by side. You can browse model exports by legend, weapon or group, find animation rigs by legend, search named animation clips, import a single animation CAST, and pair items to a character rig. We checked the build in Blender 4.2.2 and 5.2.2. These tools are **not in the public 3.9.1 ZIP**. Public 3.11.0 is being held to give early access time before the stable release.
+## What's included
 
-To try 3.11.0, link an active Patreon membership to your ALR account, then choose **Experimental** on Creator Tools. Install the ZIP through Blender's **Install from Disk**; it replaces an older Apex Toolbox installation. The add-on contains no Apex models, textures or animations. Export your own files with RSX. The add-on source is included in the ZIP; the [3.9.1 tag](https://github.com/xFyreGG/Apex-Toolbox-ALR/tree/v3.9.1) remains the source for the public release.
+- Import one or several model folders, filter by legend or weapon, and arrange models in a row or grid.
+- Link matching animation rigs automatically, browse named clips, double-click to load, or import an individual animation CAST.
+- Add optional animation layers, pair items to hands or weapons, and correct their rotation.
+- Texture models, repair moved export paths and inspect scene problems.
+- Use Model, Animate, Scene and Tools tabs, tidy shader graphs and optional manual hair fixes.
+- Material fixes cover eyelash transparency, clear corneas and verified opaque-surface alpha issues.
 
-## Install the public release
+## Install or update
 
-1. Download `Apex-Toolbox-ALR-3.9.1.zip` from the [3.9.1 release](https://github.com/xFyreGG/Apex-Toolbox-ALR/releases/tag/v3.9.1). Keep the ZIP intact.
-2. In Blender, open **Edit → Preferences → Add-ons → Install from Disk**, select the ZIP, and enable **Apex Toolbox**.
-3. Open the 3D View sidebar and select **Apex Tools**.
+1. Download `Apex-Toolbox-ALR-3.10.0.zip` and keep it intact.
+2. In Blender, open **Edit → Preferences → Add-ons → Install from Disk**, select the ZIP and enable **Apex Toolbox**. Restart Blender after replacing an older installation.
+3. Install the [CAST importer](https://github.com/dtzxporter/cast), export your models and material textures with RSX, then use **Apex Tools → Model → Import & Texture**.
 
-For RSX exports, install the [CAST Blender importer](https://github.com/dtzxporter/cast). Export the model as CAST with material textures, then import it into Blender. In Apex Tools, use **Model → Set Correct Model Size** and **Materials → Auto Texture → Texture Model**. Texture discovery usually finds the RSX export automatically; if it does not, set **Texture Folder** under Search Options.
+Existing models can be retextured to apply the material fixes. Save a copy first if you have edited their shader nodes. The ZIP contains no game models, textures or animations; export your own files.
 
-See the [RSX compatibility notes](Apex_toolbox/RSX_COMPATIBILITY.md) for export settings. The [workflow guide](Apex_toolbox/WORKFLOW_GUIDE.md) and [release notes](RELEASE_NOTES.md) cover the code in this branch. Current early-access setup steps and version details are on [Creator Tools](https://apexlegendsrenders.com/creator-tools).
+See the [workflow guide](Apex_toolbox/WORKFLOW_GUIDE.md), [RSX compatibility notes](Apex_toolbox/RSX_COMPATIBILITY.md) and [release notes](RELEASE_NOTES.md).
+
+## Early access
+
+The previous experimental features are now included in public 3.10.0. There is no newer experimental download currently available. Future early-access builds will use labels such as **3.11.0-beta.1** and remain available to all ALR supporter tiers through Creator Tools.
+
+Older experimental versions used development numbers such as 3.11.0 and 3.14.7. They predate this stable release despite the higher numbers. Install 3.10.0 manually when moving from those builds. Historical versions and reports retain their original identifiers. See [version numbering](VERSIONING.md).
 
 ## Credits and licence
 

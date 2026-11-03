@@ -2,6 +2,26 @@
                                                       Version History:
                                             ####################################
 
+v3.10.13 Experimental Changes (2026-10-08):
+	- Opens the bookmarked mdl folder list directly for multi-selection.
+	- Fixed folder refresh when Blender adds a trailing directory separator.
+	- Uses an Import Selected Models confirmation instead of the file browser Accept action.
+
+v3.10.12 Experimental Changes (2026-10-08):
+	- Keep the folder list at the RSX mdl root, even when Blender opens a highlighted model folder.
+	- Remember the selected mdl directory for future imports.
+
+v3.10.11 Experimental Changes (2026-10-08):
+	- Added a folder selection dialog to choose individual models from an RSX parent folder.
+	- File importing remains available from the same Import & Texture button.
+
+v3.10.10 Experimental Changes (2026-10-08):
+	- Combined file and folder selection under one Import & Texture button.
+
+v3.10.9 Experimental Changes (2026-10-08):
+	- Added Import Model Folders for batches whose CASTs are in separate RSX folders.
+	- Chooses each folder's LOD0 model and skips animation folders.
+
 v3.10.8 Experimental Changes (2026-10-08):
 	- Import & Texture accepts multiple model CAST files from one folder.
 	- Places the imported models side by side using their mesh bounds.

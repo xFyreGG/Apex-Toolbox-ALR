@@ -5,6 +5,7 @@ fixtures are generated with CAST's own writer in a temporary directory.
 """
 import importlib
 from pathlib import Path
+from types import SimpleNamespace
 import sys
 import tempfile
 import atexit
@@ -23,17 +24,17 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'tests'))
 if '--release' in sys.argv:
     sys.path.insert(0, str(ROOT / 'tools'))
-    from build_release import release_version
+    from build_release import release_version, release_label
     release_directory = tempfile.TemporaryDirectory()
     atexit.register(release_directory.cleanup)
-    version = '.'.join(map(str, release_version()))
+    version = release_label()
     with zipfile.ZipFile(ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version)) as archive:
         archive.extractall(release_directory.name)
     sys.path.insert(0, release_directory.name)
 import Apex_toolbox as addon
 if '--release' in sys.argv:
     assert Path(addon.__file__).is_relative_to(release_directory.name)
-from Apex_toolbox.apex_tex import animations, animation_names, cast_index, workflows
+from Apex_toolbox.apex_tex import animations, animation_names, cast_index, workflows, model_files
 from blender_integration import make_rig, make_mesh, select, snapshot, assert_matrix_close
 
 
@@ -218,6 +219,184 @@ class WorkflowIntegration(unittest.TestCase):
         for name in groups:
             self.assertIn(name, report)
 
+    def test_import_model_folders_uses_one_lod0_per_folder(self):
+        parent = self.folder / 'exports'
+        parent.mkdir()
+        for name in ('alpha', 'beta'):
+            folder = parent / name
+            folder.mkdir()
+            model_file(self.cast, folder / (name + '_LOD0.cast'))
+            model_file(self.cast, folder / (name + '_LOD1.cast'))
+        (parent / 'anims_alpha').mkdir()
+        model_file(self.cast, parent / 'anims_alpha' / 'idle.cast', mesh=False)
+        paths = model_files.batch_model_casts([parent])
+        self.assertEqual([Path(path).name for path in paths],
+                         ['alpha_LOD0.cast', 'beta_LOD0.cast'])
+        self.assertEqual(bpy.ops.object.apex_import_texture(directory=str(parent)),
+                         {'FINISHED'})
+        imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
+                    if 'apex_source_model' in obj}
+        self.assertEqual(imported, {'alpha_LOD0.cast', 'beta_LOD0.cast'})
+        self.assertIn('Imported 2 models', bpy.context.scene.my_prefs.import_summary)
+
+    def test_import_model_folders_accepts_selected_siblings(self):
+        for name in ('alpha', 'beta', 'gamma'):
+            folder = self.folder / name
+            folder.mkdir()
+            model_file(self.cast, folder / (name + '_LOD0.cast'))
+        self.assertEqual(bpy.ops.object.apex_import_texture(
+            directory=str(self.folder), files=[{'name': 'alpha'}, {'name': 'gamma'}]),
+            {'FINISHED'})
+        imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
+                    if 'apex_source_model' in obj}
+        self.assertEqual(imported, {'alpha_LOD0.cast', 'gamma_LOD0.cast'})
+
+    def test_folder_dialog_imports_only_checked_models(self):
+        for name in ('alpha', 'beta', 'gamma'):
+            folder = self.folder / name
+            folder.mkdir()
+            model_file(self.cast, folder / (name + '_LOD0.cast'))
+        chosen = [{'name': name, 'selected': name in {'alpha', 'gamma'}}
+                  for name in ('alpha', 'beta', 'gamma')]
+        self.assertEqual(bpy.ops.object.apex_import_texture(
+            ui_stage='CHOOSE', source_mode='FOLDERS', parent_folder=str(self.folder),
+            folder_items=chosen), {'FINISHED'})
+        imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
+                    if 'apex_source_model' in obj}
+        self.assertEqual(imported, {'alpha_LOD0.cast', 'gamma_LOD0.cast'})
+
+    def test_folder_dialog_returns_to_mdl_after_browser_opens_child(self):
+        mdl = self.folder / 'mdl'
+        mdl.mkdir()
+        for name in ('alpha', 'beta'):
+            outer = mdl / name
+            inner = outer / name
+            inner.mkdir(parents=True)
+            model_file(self.cast, inner / (name + '_LOD0.cast'))
+        self.assertEqual(model_files.model_root(mdl / 'alpha'), mdl)
+        self.assertEqual(bpy.ops.object.apex_import_texture(
+            ui_stage='CHOOSE', source_mode='FOLDERS',
+            parent_folder=str(mdl / 'alpha'),
+            folder_items=[{'name': 'beta', 'selected': True}]), {'FINISHED'})
+        imported = {Path(obj['apex_source_model']).name for obj in bpy.context.selected_objects
+                    if 'apex_source_model' in obj}
+        self.assertEqual(imported, {'beta_LOD0.cast'})
+        self.assertEqual(bpy.context.scene.my_prefs.model_parent_folder, str(mdl))
+
+    def test_folder_list_populates_when_blender_adds_trailing_separator(self):
+        mdl = self.folder / 'mdl'
+        mdl.mkdir()
+        for name in ('alpha', 'beta'):
+            (mdl / name).mkdir()
+
+        class FolderItems(list):
+            def add(self):
+                item = SimpleNamespace(name='', selected=False)
+                self.append(item)
+                return item
+
+        state = SimpleNamespace(parent_folder=str(mdl) + '\\', folder_items=FolderItems())
+        addon.refresh_import_folders(state, bpy.context)
+        self.assertEqual([item.name for item in state.folder_items], ['alpha', 'beta'])
+
+    def test_model_picker_categories_and_search_keep_selection(self):
+        names = ['alter_lgnd_v23_outnoir_w', 'pilot_medium_bangalore',
+                 'wraith_kunai_rt01_w', 'r301_base_w', 'district_wall_01',
+                 'lifeline_drone']
+        self.assertEqual([model_files.model_folder_category(name) for name in names],
+                         ['LEGENDS', 'LEGENDS', 'WEAPONS', 'WEAPONS', 'MISC', 'MISC'])
+        self.assertEqual(model_files.model_folder_category('horizon_cluttered_desk_base_w'), 'MISC')
+        self.assertEqual(model_files.model_folder_category('valkyrie_heirloom_v22_base_w'), 'WEAPONS')
+        self.assertEqual(model_files.model_folder_category('pilot_medium_dummie'), 'MISC')
+        self.assertEqual([model_files.model_folder_group(name) for name in names],
+                         ['alter', 'bangalore', 'kunai', 'r301', 'district_wall', 'lifeline'])
+        self.assertEqual(model_files.model_folder_group('pilot_medium_stim'), 'octane')
+        self.assertEqual(model_files.model_folder_group('pilot_medium_overdrive'), 'axle')
+        self.assertEqual(model_files.model_folder_group('overdrive_lgnd_v25_assassin_w'), 'axle')
+        self.assertEqual(model_files.model_folder_group('nova_v20_dark_w'), 'horizon')
+        self.assertEqual(model_files.model_folder_group('w_r99_s07_reactive'), 'r99')
+        self.assertEqual(model_files.model_group_options(names, 'LEGENDS'),
+                         [('alter', 'Alter', 1), ('bangalore', 'Bangalore', 1)])
+        state = SimpleNamespace(folder_items=[SimpleNamespace(name=name, selected=(index in {0, 2}))
+                                              for index, name in enumerate(names)],
+                                folder_search='OUTNOIR alter', folder_category='LEGENDS',
+                                folder_group='alter')
+        ui = type('ListStub', (), {'bitflag_filter_item': 1})()
+        flags, _ = addon.APEX_UL_import_folders.filter_items(
+            ui, bpy.context, state, 'folder_items')
+        self.assertEqual(flags, [1, 0, 0, 0, 0, 0])
+        state.folder_search = ''
+        flags, _ = addon.APEX_UL_import_folders.filter_items(
+            ui, bpy.context, state, 'folder_items')
+        self.assertEqual(flags, [1, 0, 0, 0, 0, 0])
+        state.folder_group = 'bangalore'
+        flags, _ = addon.APEX_UL_import_folders.filter_items(
+            ui, bpy.context, state, 'folder_items')
+        self.assertEqual(flags, [0, 1, 0, 0, 0, 0])
+        state.folder_category = 'WEAPONS'
+        state.folder_group = 'r301'
+        flags, _ = addon.APEX_UL_import_folders.filter_items(
+            ui, bpy.context, state, 'folder_items')
+        self.assertEqual(flags, [0, 0, 0, 1, 0, 0])
+        state.folder_group = 'NONE'
+        flags, _ = addon.APEX_UL_import_folders.filter_items(
+            ui, bpy.context, state, 'folder_items')
+        self.assertEqual(flags, [0] * len(names))
+        self.assertTrue(state.folder_items[0].selected)
+
+    def test_current_legend_roster_has_picker_groups(self):
+        # Official EA character roster checked on 2026-10-10.
+        roster = {
+            'alter', 'ash', 'axle', 'ballistic', 'bangalore', 'bloodhound',
+            'catalyst', 'caustic', 'conduit', 'crypto', 'fuse', 'gibraltar',
+            'horizon', 'lifeline', 'loba', 'madmaggie', 'mirage', 'newcastle',
+            'octane', 'pathfinder', 'rampart', 'revenant', 'seer', 'sparrow',
+            'valkyrie', 'vantage', 'wattson', 'wraith',
+        }
+        self.assertEqual(model_files.LEGEND_NAMES, roster)
+        folders = [name + '_lgnd_v99_test_w' for name in roster]
+        folders.extend(('pilot_medium_holo', 'pilot_medium_nova',
+                        'pilot_medium_stim', 'pilot_medium_overdrive',
+                        'pilot_medium_dummie'))
+        options = model_files.model_group_options(folders, 'LEGENDS')
+        self.assertEqual({group for group, _, _ in options}, roster)
+        self.assertEqual(model_files.model_folder_category('pilot_medium_dummie'), 'MISC')
+
+    def test_mdl_bookmark_opens_parent_model_list(self):
+        mdl = self.folder / 'mdl'
+        mdl.mkdir()
+        for name in ('alpha', 'beta'):
+            (mdl / name).mkdir()
+        bookmarks = self.folder / 'bookmarks.txt'
+        bookmarks.write_text('[Bookmarks]\n' + str(mdl) + '\\\n', encoding='utf-8')
+        self.assertEqual(model_files.bookmarked_mdl(bookmarks), str(mdl))
+
+        class FolderItems(list):
+            def add(self):
+                item = SimpleNamespace(name='', selected=False)
+                self.append(item)
+                return item
+
+        state = SimpleNamespace(parent_folder=str(mdl) + '\\', folder_items=FolderItems())
+        addon.refresh_import_folders(state, bpy.context)
+        self.assertEqual([item.name for item in state.folder_items], ['alpha', 'beta'])
+
+    def test_import_model_folders_rejects_ambiguous_and_large_batches(self):
+        ambiguous = self.folder / 'ambiguous'
+        ambiguous.mkdir()
+        (ambiguous / 'first.cast').touch()
+        (ambiguous / 'second.cast').touch()
+        with self.assertRaisesRegex(ValueError, 'no unique LOD0'):
+            model_files.batch_model_casts([ambiguous])
+        parent = self.folder / 'many'
+        parent.mkdir()
+        for index in range(3):
+            folder = parent / str(index)
+            folder.mkdir()
+            (folder / 'model_LOD0.cast').touch()
+        with self.assertRaisesRegex(ValueError, 'More than 2 models'):
+            model_files.batch_model_casts([parent], limit=2)
+
     def test_batch_import_keeps_successful_models_when_one_file_fails(self):
         second = self.folder / 'second.cast'
         model_file(self.cast, second)
@@ -251,6 +430,149 @@ class WorkflowIntegration(unittest.TestCase):
         other = make_rig()
         self.assertFalse(other.apex_animation_library.clips)
 
+    def test_import_single_animation_without_linked_rig(self):
+        library = self.rig.apex_animation_library
+        self.assertFalse(library.rig_file)
+        self.assertEqual(bpy.ops.object.apex_import_animation_cast(
+            filepath=str(self.anim_folder / 'idle.cast')), {'FINISHED'})
+        self.assertEqual(len(library.clips), 1)
+        self.assertTrue(library.clips[0].external)
+        self.assertEqual(library.clips[0].name, 'idle')
+        self.assertIs(library.clips[0].action, self.rig.animation_data.action)
+        self.assertEqual(bpy.ops.object.apex_import_animation_cast(
+            filepath=str(self.anim_folder / 'idle.cast')), {'FINISHED'})
+        self.assertEqual(len(library.clips), 1)
+        self.assertEqual(bpy.ops.object.apex_remove_animation(), {'FINISHED'})
+        self.assertEqual(bpy.ops.object.apex_load_animation(), {'FINISHED'})
+
+    def test_import_animation_failure_keeps_action_and_list(self):
+        library = self.link()
+        self.assertEqual(bpy.ops.object.apex_load_animation(), {'FINISHED'})
+        action = self.rig.animation_data.action
+        before = [(item.filepath, item.offset) for item in library.clips]
+        multiple = self.folder / 'multiple.cast'
+        animation_file(self.cast, multiple, names=('first', 'second'))
+        with self.assertRaisesRegex(RuntimeError, 'one animation sequence'):
+            bpy.ops.object.apex_import_animation_cast(filepath=str(multiple))
+        unmatched = self.folder / 'unmatched.cast'
+        animation_file(self.cast, unmatched, names=('wrong',), missing=True)
+        library.allow_missing = False
+        with self.assertRaisesRegex(RuntimeError, 'animated bones are missing'):
+            bpy.ops.object.apex_import_animation_cast(filepath=str(unmatched))
+        self.assertEqual([(item.filepath, item.offset) for item in library.clips], before)
+        self.assertIs(self.rig.animation_data.action, action)
+
+    def test_single_animation_uses_missing_bones_default(self):
+        path = self.folder / 'partial.cast'
+        animation_file(self.cast, path, missing=True)
+        self.assertTrue(self.rig.apex_animation_library.allow_missing)
+        import_animation = self.importer.importAnimationNode
+        imported_bones = []
+
+        def inspect_import(options, node, source, rig):
+            imported_bones.extend(curve.NodeName() for curve in node.Curves())
+            return import_animation(options, node, source, rig)
+
+        with patch.object(self.importer, 'importAnimationNode', side_effect=inspect_import):
+            self.assertEqual(bpy.ops.object.apex_import_animation_cast(filepath=str(path)), {'FINISHED'})
+        self.assertEqual(set(imported_bones), {'root'})
+        self.assertIsNotNone(self.rig.animation_data.action)
+
+    def test_imported_animation_survives_rig_refresh(self):
+        library = self.link()
+        standalone = self.folder / 'standalone.cast'
+        animation_file(self.cast, standalone, names=('extra',))
+        self.assertEqual(bpy.ops.object.apex_import_animation_cast(filepath=str(standalone)), {'FINISHED'})
+        self.assertEqual(len(library.clips), 4)
+        animations.link_library(self.rig, str(self.rig_path))
+        self.assertEqual(len(library.clips), 4)
+        self.assertTrue(library.clips[-1].external)
+        self.assertEqual(library.clips[-1].name, 'extra')
+        self.assertIs(library.clips[-1].action, self.rig.animation_data.action)
+
+    def test_direct_import_of_already_linked_animrig_clip_reuses_entry(self):
+        library = self.link()
+        count = len(library.clips)
+        clip = self.anim_folder / 'idle.cast'
+        self.assertEqual(bpy.ops.object.apex_import_animation_cast(
+            filepath=str(clip)), {'FINISHED'})
+        self.assertEqual(len(library.clips), count)
+        self.assertEqual(Path(library.clips[library.index].filepath), clip)
+        self.assertIs(library.clips[library.index].action, self.rig.animation_data.action)
+
+    def test_legend_rig_picker_lists_valid_exports_and_links_selection(self):
+        parent = self.folder / 'animrig'
+        parent.mkdir()
+        for name in ('pilot_light_wraith', 'pilot_medium_bangalore',
+                     'pilot_heavy_pathfinder', 'pilot_medium_overdrive',
+                     'pilot_medium_holo', 'nova_trophy_system', 'holo_drone'):
+            folder = parent / name
+            folder.mkdir()
+            model_file(self.cast, folder / (name + '.cast'), mesh=False)
+            sequences = folder / ('anims_' + name)
+            sequences.mkdir()
+            animation_file(self.cast, sequences / 'idle.cast')
+        incomplete = parent / 'pilot_medium_incomplete'
+        incomplete.mkdir()
+        model_file(self.cast, incomplete / (incomplete.name + '.cast'), mesh=False)
+        (parent / 'not_a_legend').mkdir()
+        rigs = model_files.legend_animation_rigs(parent)
+        self.assertEqual([name for name, _ in rigs],
+                         ['holo_drone', 'nova_trophy_system', 'pilot_heavy_pathfinder',
+                          'pilot_light_wraith', 'pilot_medium_bangalore',
+                          'pilot_medium_holo', 'pilot_medium_overdrive'])
+        self.assertEqual(model_files.animation_rig_legend_options(name for name, _ in rigs),
+                         [('axle', 'Axle', 1), ('bangalore', 'Bangalore', 1),
+                          ('horizon', 'Horizon', 1), ('mirage', 'Mirage', 2),
+                          ('pathfinder', 'Pathfinder', 1), ('wraith', 'Wraith', 1)])
+        self.assertEqual(model_files.animation_rig_legend('pilot_medium_stim'), 'octane')
+        self.assertEqual(model_files.animation_rig_legend('pilot_medium_overdrive'), 'axle')
+        self.assertEqual(model_files.animation_rig_legend('pilot_medium_holo'), 'mirage')
+        self.assertEqual(model_files.animation_rig_legend('nova_trophy_system'), 'horizon')
+        self.assertTrue(model_files.animation_rig_matches('pilot_medium_bangalore',
+                                                         'bangalore', 'MEDIUM'))
+        self.assertFalse(model_files.animation_rig_matches('pilot_light_wraith',
+                                                          'bangalore'))
+        ui_state = SimpleNamespace(rig_items=[SimpleNamespace(name=name) for name, _ in rigs],
+                                   rig_legend='bangalore', rig_search='medium')
+        ui = type('ListStub', (), {'bitflag_filter_item': 1})()
+        flags, _ = addon.APEX_UL_animation_rigs.filter_items(
+            ui, bpy.context, ui_state, 'rig_items')
+        self.assertEqual(flags, [0, 0, 0, 0, 1, 0, 0])
+        self.assertTrue(self.rig.apex_animation_library.allow_missing)
+        self.assertEqual(bpy.ops.object.apex_link_animation_rig(
+            ui_stage='CHOOSE', source_mode='LEGENDS', parent_folder=str(parent),
+            rig_items=[{'name': name, 'selected': False} for name, _ in rigs],
+            rig_legend='bangalore', rig_index=4), {'FINISHED'})
+        self.assertEqual(Path(self.rig.apex_animation_library.rig_file).name,
+                         'pilot_medium_bangalore.cast')
+        self.assertEqual(bpy.context.scene.my_prefs.animation_parent_folder, str(parent))
+
+    def test_mdl_bookmark_finds_sibling_animation_rigs(self):
+        exported = self.folder / 'exported_files'
+        mdl = exported / 'mdl'
+        animrig = exported / 'animrig'
+        mdl.mkdir(parents=True)
+        animrig.mkdir()
+        bookmarks = self.folder / 'bookmarks.txt'
+        bookmarks.write_text('[Bookmarks]\n' + str(mdl) + '\n', encoding='utf-8')
+        self.assertEqual(model_files.bookmarked_animrig(bookmarks), str(animrig))
+
+    def test_rig_picker_prefers_legend_library_to_existing_unrelated_link(self):
+        linked_folder = self.folder / 'custom_link'
+        linked_folder.mkdir()
+        legend_library = self.folder / 'animrig'
+        legend = legend_library / 'pilot_light_wraith'
+        legend.mkdir(parents=True)
+        model_file(self.cast, legend / 'pilot_light_wraith.cast', mesh=False)
+        sequences = legend / 'anims_pilot_light_wraith'
+        sequences.mkdir()
+        animation_file(self.cast, sequences / 'idle.cast')
+        self.assertEqual(addon.preferred_animation_rig_folder(
+            [str(linked_folder), str(legend_library)]), str(legend_library))
+        self.assertEqual(addon.preferred_animation_rig_folder(
+            [str(linked_folder)]), str(linked_folder))
+
     def test_missing_sequences_does_not_replace_link(self):
         library = self.link()
         path = self.folder / 'another.cast'
@@ -259,6 +581,46 @@ class WorkflowIntegration(unittest.TestCase):
             animations.link_library(self.rig, str(path))
         self.assertEqual(len(library.clips), 3)
         self.assertEqual(library.rig_file, str(self.rig_path))
+
+    def test_animation_row_single_double_and_filtered_clicks(self):
+        library = self.link()
+        event = SimpleNamespace(type='LEFTMOUSE', mouse_x=100, mouse_y=100)
+        operator = SimpleNamespace(index=2, report=lambda *args: None)
+        addon._animation_row_click = None
+        threshold = bpy.context.preferences.inputs.mouse_double_click_time / 1000.0
+        def click(at, index=2, kind='LEFTMOUSE'):
+            operator.index = index
+            event.type = kind
+            with patch('time.monotonic', return_value=at):
+                return addon.APEX_OT_animation_row.invoke(operator, bpy.context, event)
+        self.assertEqual(click(10), {'FINISHED'})
+        self.assertEqual(library.index, 2)
+        self.assertFalse(self.rig.animation_data and self.rig.animation_data.action)
+        self.assertEqual(click(10 + threshold / 2), {'FINISHED'})
+        action = self.rig.animation_data.action
+        self.assertEqual(action.name, 'run')
+        self.assertIsNone(addon._animation_row_click)
+        # Two different rows never load; slow clicks only select.
+        click(20, 0)
+        click(20 + threshold / 2, 1)
+        self.assertEqual(self.rig.animation_data.action, action)
+        click(30, 0)
+        click(31, 0)
+        self.assertEqual(self.rig.animation_data.action, action)
+        # Keyboard activation selects without accidentally completing a click.
+        click(40, 0)
+        click(40 + threshold / 2, 0, 'RET')
+        self.assertEqual(self.rig.animation_data.action, action)
+        self.assertIsNone(addon._animation_row_click)
+        library.filter_text = 'run'
+        self.assertEqual(click(50, 0), {'CANCELLED'})
+        self.assertEqual(library.index, 2)
+        library.filter_text = ''
+        # A large cursor movement is not a double click.
+        click(60, 0)
+        event.mouse_x = 200
+        click(60 + threshold / 2, 0)
+        self.assertEqual(self.rig.animation_data.action, action)
 
     def test_animation_switch_and_cache_preserve_actions(self):
         library = self.link()

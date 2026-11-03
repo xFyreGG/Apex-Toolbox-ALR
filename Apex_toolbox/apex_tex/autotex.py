@@ -380,7 +380,7 @@ def learn_roots(batch, remembered_roots, remember_callback):
 def run(context, shader_key, append_node_group,
         texture_folder="", search_subfolders=False, operator=None,
         remembered_roots=None, remember_callback=None,
-        report_callback=None, objects=None):
+        report_callback=None, objects=None, plug_alpha=True):
     """Entry point used by the ``BUTTON_CUSTOM`` operator.
 
     :param remembered_roots: export folders previous runs succeeded in.
@@ -463,7 +463,7 @@ def run(context, shader_key, append_node_group,
             continue
 
         try:
-            shaders.build_material(material, definition, images)
+            shaders.build_material(material, definition, images, plug_alpha=plug_alpha)
         except (RuntimeError, KeyError, AttributeError, TypeError, ValueError) as error:
             skipped += 1
             outcomes[material.name] = "Left untouched: %s" % error

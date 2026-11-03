@@ -11,6 +11,8 @@ previous release looks identical after this update.
 """
 
 import bpy
+import os
+import re
 
 from . import roles as R
 
@@ -78,7 +80,7 @@ SHADER_DEFS = {
             R.ALBEDO: "Alpha",
             R.SCATTER: "SSS Alpha",
         },
-        extra_roles=(R.ANISO_SPEC_DIR, R.IRIDESCENCE_RAMP),
+        extra_roles=(R.CAVITY, R.ANISO_SPEC_DIR, R.IRIDESCENCE_RAMP),
     ),
     OP_APEX_SHADER_PLUS: ShaderDef(
         OP_APEX_SHADER_PLUS,
@@ -134,14 +136,96 @@ SHADER_DEFS = {
     ),
 }
 
+CORNEA_DEF = ShaderDef(
+    'CORNEA', 'ALR Cornea',
+    {R.ALBEDO: 'Albedo Map', R.NORMAL: 'Normal Map'}, {},
+)
+
+
+def is_cornea(material, images):
+    names = [material.name]
+    albedo = images.get(R.ALBEDO)
+    if albedo is not None:
+        names.append(albedo.filepath_raw or albedo.filepath or albedo.name)
+    return any(re.search(r'(?:^|_)eyecornea(?:_|$)',
+                         os.path.splitext(name.replace('\\', '/').rsplit('/', 1)[-1])[0].casefold())
+               for name in names)
+
+
+def ensure_cornea_group():
+    """Thin clear eye surface, with Fresnel reflections and packed RG normals.
+
+    Black albedo is a game placeholder, not a black tint. Retain its input for
+    role discovery/recolour but do not use it to darken the eye underneath.
+    """
+    existing = bpy.data.node_groups.get(CORNEA_DEF.group_name)
+    if existing is not None:
+        return existing
+    group = bpy.data.node_groups.new(CORNEA_DEF.group_name, 'ShaderNodeTree')
+    try:
+        for name, kind in [('Albedo Map', 'NodeSocketColor'), ('Normal Map', 'NodeSocketColor')]:
+            socket = group.interface.new_socket(name=name, in_out='INPUT', socket_type=kind)
+            socket.default_value = (0.5, 0.5, 0.0, 1.0) if name == 'Normal Map' else (0, 0, 0, 1)
+        group.interface.new_socket(name='BSDF', in_out='OUTPUT', socket_type='NodeSocketShader')
+        nodes, links = group.nodes, group.links
+        source = nodes.new('NodeGroupInput')
+        output = nodes.new('NodeGroupOutput')
+        separate = nodes.new('ShaderNodeSeparateXYZ')
+        links.new(source.outputs['Normal Map'], separate.inputs[0])
+
+        def math_node(operation, a, b=None):
+            node = nodes.new('ShaderNodeMath')
+            node.operation = operation
+            for i, value in enumerate((a, b)):
+                if value is None:
+                    continue
+                if isinstance(value, (int, float)):
+                    node.inputs[i].default_value = value
+                else:
+                    links.new(value, node.inputs[i])
+            return node.outputs[0]
+
+        x = math_node('SUBTRACT', math_node('MULTIPLY', separate.outputs['X'], 2), 1)
+        y = math_node('SUBTRACT', math_node('MULTIPLY', separate.outputs['Y'], 2), 1)
+        squared = math_node('ADD', math_node('MULTIPLY', x, x), math_node('MULTIPLY', y, y))
+        z = math_node('SQRT', math_node('MAXIMUM', math_node('SUBTRACT', 1, squared), 0))
+        packed_z = math_node('ADD', math_node('MULTIPLY', z, 0.5), 0.5)
+        combine = nodes.new('ShaderNodeCombineXYZ')
+        links.new(separate.outputs['X'], combine.inputs['X'])
+        links.new(separate.outputs['Y'], combine.inputs['Y'])
+        links.new(packed_z, combine.inputs['Z'])
+        normal = nodes.new('ShaderNodeNormalMap')
+        links.new(combine.outputs[0], normal.inputs['Color'])
+        transparent = nodes.new('ShaderNodeBsdfTransparent')
+        reflection = nodes.new('ShaderNodeBsdfGlossy')
+        reflection.inputs['Color'].default_value = (1, 1, 1, 1)
+        reflection.inputs['Roughness'].default_value = 0.05
+        links.new(normal.outputs['Normal'], reflection.inputs['Normal'])
+        fresnel = nodes.new('ShaderNodeFresnel')
+        fresnel.inputs['IOR'].default_value = 1.376
+        links.new(normal.outputs['Normal'], fresnel.inputs['Normal'])
+        mix = nodes.new('ShaderNodeMixShader')
+        links.new(fresnel.outputs[0], mix.inputs[0])
+        links.new(transparent.outputs[0], mix.inputs[1])
+        links.new(reflection.outputs[0], mix.inputs[2])
+        links.new(mix.outputs[0], output.inputs[0])
+        # Keep the generated graph readable when inspected in the node editor.
+        for i, node in enumerate(nodes):
+            node.location = ((i % 5) * 210, -(i // 5) * 180)
+        return group
+    except Exception:
+        bpy.data.node_groups.remove(group)
+        raise
+
+
 #: Node group names Auto_tex recognises as "already an Apex Toolbox material".
-KNOWN_GROUP_NAMES = frozenset(d.group_name for d in SHADER_DEFS.values())
+KNOWN_GROUP_NAMES = frozenset(d.group_name for d in (*SHADER_DEFS.values(), CORNEA_DEF))
 
 
 def socket_role_map():
     """``group name -> {socket name: role}`` for re-reading our own materials."""
     mapping = {}
-    for definition in SHADER_DEFS.values():
+    for definition in (*SHADER_DEFS.values(), CORNEA_DEF):
         mapping[definition.group_name] = {
             name: role for role, name in definition.sockets.items()}
     return mapping
@@ -192,6 +276,189 @@ def apply_colorspace(image, role):
         pass
 
 
+# These masks cover solid harness/cuff/zipper and equipment surfaces, not
+# transparency in our surface shaders. Match the exported texture, not a broad
+# legend/material substring, so unrelated Wattson skins keep their cutouts.
+_SURFACE_OPACITY_EXCEPTIONS = frozenset({
+    'wattson_lgnd_v24_onesie_suit_opacitymultiplytexture',
+    'wattson_lgnd_v24_onesie_gear_opacitymultiplytexture',
+})
+
+
+def skip_surface_opacity(material, image):
+    if image is None or material.get('apex_force_opacity_map', False):
+        return False
+    path = image.filepath_raw or image.filepath or image.name
+    stem = os.path.splitext(path.replace('\\', '/').rsplit('/', 1)[-1])[0]
+    return stem.casefold() in _SURFACE_OPACITY_EXCEPTIONS
+
+
+def known_opaque_albedo(image):
+    """Verified opaque surfaces whose exported alpha is not a cutout mask."""
+    if image is None:
+        return False
+    path = image.filepath_raw or image.filepath or image.name
+    stem = os.path.splitext(path.replace('\\', '/').rsplit('/', 1)[-1])[0].casefold()
+    return stem in {
+        'bloodhound_lgnd_v23_christmas_head_col',
+        'bloodhound_lgnd_v23_christmas_head_albedotexture',
+    }
+
+
+def fragmented_albedo_alpha(image):
+    """Reject only sparse, isolated specks, never infer intent from alpha alone.
+
+    Bound memory and traversal cost. Unknown/large images keep their alpha.
+    No cache: generated images and reloaded files must be checked afresh.
+    """
+    import numpy as np
+    width, height = image.size
+    total = width * height
+    if image.channels != 4 or not 65536 <= total <= 4194304:
+        return False
+    pixels = np.empty(total * 4, dtype=np.float32)
+    image.pixels.foreach_get(pixels)
+    alpha = pixels[3::4]
+    if not np.isfinite(alpha).all():
+        return False
+    indices = np.flatnonzero(alpha < 0.99)
+    if not 32 <= len(indices) <= total * 0.01:
+        return False
+    remaining = set(indices.tolist())
+    components = 0
+    # Large coherent cutouts, including narrow strands, retain transparency.
+    limit = max(16, int(total * 0.00015))
+    while remaining:
+        pending = [remaining.pop()]
+        count = 0
+        components += 1
+        while pending:
+            index = pending.pop()
+            count += 1
+            if count > limit:
+                return False
+            x = index % width
+            neighbours = [index - width, index + width]
+            if x:
+                neighbours.extend((index - 1, index - width - 1, index + width - 1))
+            if x + 1 < width:
+                neighbours.extend((index + 1, index - width + 1, index + width + 1))
+            for neighbour in neighbours:
+                if neighbour in remaining:
+                    remaining.remove(neighbour)
+                    pending.append(neighbour)
+    return components >= 32
+
+
+def arrange_material_nodes(texture_nodes, group_node, output_node):
+    """Lay out only generated nodes, in texture -> adjustment -> shader order."""
+    ordered = sorted(texture_nodes.items(), key=lambda pair: _legacy_index(pair[0]))
+    for row, (role, node) in enumerate(ordered):
+        node.width = 260
+        node.location = (-760, -100 * row)
+        # Compact rows keep large texture sets readable; expand a node to inspect it.
+        node.hide = True
+        for link in node.outputs['Color'].links:
+            target = link.to_node
+            if ((target.get('apex_hair_multiply') and link.to_socket == target.inputs[1])
+                    or target.bl_idname == 'ShaderNodeInvert'):
+                target.width = 210
+                target.hide = True
+                target.location = (-370, node.location.y)
+    group_node.width = 310
+    group_node.location = (0, 80)
+    output_node.width = 190
+    output_node.location = (450, group_node.location.y)
+
+
+def surface_opacity_socket(material, group, definition):
+    """Return the effective surface mask, including the Shader+ adapter."""
+    mix = next((n for n in material.node_tree.nodes
+                if n.type == 'MIX_SHADER' and n.get('apex_surface_opacity')), None)
+    return mix.inputs[0] if mix else group.inputs[definition.sockets[R.OPACITY]]
+
+
+def separate_surface_opacity(tree, group, output, created):
+    """Apply Shader+ opacity once, outside its additive diffuse/specular lobes."""
+    if group.node_tree.name != SHADER_DEFS['OP2'].group_name:
+        return
+    alpha = group.inputs.get('Alpha (Opacity Multiply)')
+    if alpha is None or not alpha.is_linked:
+        return
+    source = alpha.links[0].from_socket
+    tree.links.remove(alpha.links[0])
+    alpha.default_value = 1.0
+    transparent = tree.nodes.new('ShaderNodeBsdfTransparent')
+    created.append(transparent)
+    transparent.inputs[0].default_value = (1, 1, 1, 1)
+    transparent.label = 'Clear surface'
+    transparent.location = (380, -180)
+    transparent.hide = True
+    mix = tree.nodes.new('ShaderNodeMixShader')
+    created.append(mix)
+    mix['apex_surface_opacity'] = True
+    mix.label = 'Surface transparency'
+    mix.location = (650, 80)
+    mix.width = 200
+    tree.links.new(source, mix.inputs[0])
+    tree.links.new(transparent.outputs[0], mix.inputs[1])
+    tree.links.new(group.outputs[0], mix.inputs[2])
+    tree.links.new(mix.outputs[0], output.inputs['Surface'])
+    output.location = (940, 80)
+
+
+def set_hair_fix(material, enabled):
+    """Explicit per-material adjustment; never infer it from the material name."""
+    tree = material.node_tree if material.use_nodes else None
+    if tree is None:
+        raise ValueError('Texture the active material with Apex Toolbox first.')
+    tagged = [n for n in tree.nodes if n.get('apex_hair_multiply')]
+    if not enabled:
+        for node in tagged:
+            source = node.inputs[1].links[0].from_socket if node.inputs[1].links else None
+            destinations = [link.to_socket for link in node.outputs[0].links]
+            if source is not None:
+                for destination in destinations:
+                    tree.links.new(source, destination)
+            tree.nodes.remove(node)
+        material['apex_hair_fix'] = False
+        return
+    group = next((n for n in tree.nodes if n.type == 'GROUP'
+                  and n.node_tree and n.node_tree.name in KNOWN_GROUP_NAMES), None)
+    definition = next((d for d in SHADER_DEFS.values()
+                       if group and d.group_name == group.node_tree.name), None)
+    if definition is None:
+        raise ValueError('Choose an Apex surface shader for this material first.')
+    cavity = next((n for n in tree.nodes if n.type == 'TEX_IMAGE' and n.image
+                   and (n.get('apex_texture_role') == R.CAVITY
+                        or n.name == _legacy_node_name(R.CAVITY))), None)
+    if cavity is None:
+        raise ValueError('This material needs a cavity texture before applying the hair fix.')
+    plans = []
+    for role in (R.ALBEDO, R.SPECULAR):
+        socket = group.inputs.get(definition.sockets[role])
+        if socket is None or not socket.links:
+            raise ValueError('This material needs both albedo and specular textures.')
+        source = socket.links[0].from_socket
+        if source.node.get('apex_hair_multiply'):
+            continue
+        plans.append((role, source, socket))
+    # Validate every input before changing either channel.
+    for role, source, socket in plans:
+        node = tree.nodes.new('ShaderNodeMixRGB')
+        node.blend_type = 'MULTIPLY'
+        node.inputs[0].default_value = 1.0
+        node.label = 'Hair ' + role + ' x cavity'
+        node['apex_hair_multiply'] = True
+        node.width = 210
+        node.hide = True
+        node.location = (source.node.location.x + source.node.width + 130, source.node.location.y)
+        tree.links.new(source, node.inputs[1])
+        tree.links.new(cavity.outputs['Color'], node.inputs[2])
+        tree.links.new(node.outputs[0], socket)
+    material['apex_hair_fix'] = True
+
+
 def build_material(material, definition, images, log=None, plug_alpha=True):
     """Rebuild ``material`` around ``definition`` using ``images``.
 
@@ -204,6 +471,10 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
     built successfully, so a failure part way through leaves the imported
     material usable.
     """
+    cornea = is_cornea(material, images)
+    if cornea:
+        ensure_cornea_group()
+        definition = CORNEA_DEF
     group_tree = bpy.data.node_groups.get(definition.group_name)
     if group_tree is None:
         raise RuntimeError(
@@ -226,6 +497,9 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
 
     created = []
     texture_nodes = {}
+    alpha_note = ("Clear cornea shader: black placeholder albedo retained but not used as a surface tint."
+                  if cornea else "")
+    skip_opacity = skip_surface_opacity(material, images.get(R.OPACITY))
 
     try:
         for role, image in sorted(images.items(),
@@ -237,6 +511,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
             node.image = image
             node.name = _legacy_node_name(role)
             node.label = role
+            node["apex_texture_role"] = role
             node.location = (-50, 50 - 260 * _legacy_index(role))
             texture_nodes[role] = node
 
@@ -269,10 +544,36 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
                 node = texture_nodes.get(role)
                 if node is None or socket_name not in group_node.inputs:
                     continue
+                if (role == R.ALBEDO and (images.get(R.OPACITY) is None or skip_opacity)
+                        and not material.get('apex_force_albedo_alpha', False)
+                        and not any(word in material.name.casefold()
+                                    for word in ('hair', 'lash', 'fur', 'lace'))
+                        and (known_opaque_albedo(node.image) or fragmented_albedo_alpha(node.image))):
+                    group_node.inputs[socket_name].default_value = 1.0
+                    reason = ('known opaque Bloodhound Christmas head surface' if known_opaque_albedo(node.image)
+                              else 'sparse isolated specks')
+                    alpha_note = ('Albedo alpha left disconnected: ' + reason + '. '
+                                  'Set material custom property apex_force_albedo_alpha '
+                                  'to True and retexture to override.')
+                    node.label = role + ' (surface alpha ignored)'
+                    continue
                 tree.links.new(group_node.inputs[socket_name],
                                node.outputs["Alpha"])
 
         for role, node in texture_nodes.items():
+            if role == R.OPACITY and not plug_alpha:
+                continue
+            if role == R.OPACITY and skip_opacity:
+                node.label = role + ' (surface mask, not transparency)'
+                note = ('Opacity map left disconnected: known Wattson onesie surface mask '
+                        'removes solid parts. Set material custom property '
+                        'apex_force_opacity_map to True and retexture to override.')
+                alpha_note = (alpha_note + ' ' + note).strip()
+                # Keep albedo alpha if present, otherwise use an opaque surface.
+                socket = group_node.inputs.get(definition.sockets.get(R.OPACITY, ''))
+                if socket is not None and not socket.is_linked:
+                    socket.default_value = 1.0
+                continue
             socket_name = definition.sockets.get(role)
             needs_invert = False
             # The resolver reports what the image *is*; the adapter knows what
@@ -287,6 +588,18 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
             if not socket_name or socket_name not in group_node.inputs:
                 continue
             source = node.outputs["Color"]
+            if (material.get('apex_hair_fix', False) and role in {R.ALBEDO, R.SPECULAR}
+                    and R.CAVITY in texture_nodes):
+                multiply = tree.nodes.new('ShaderNodeMixRGB')
+                created.append(multiply)
+                multiply.blend_type = 'MULTIPLY'
+                multiply.inputs[0].default_value = 1.0
+                multiply.label = 'Hair ' + role + ' x cavity'
+                multiply['apex_hair_multiply'] = True
+                multiply.location = (node.location.x + 180, node.location.y)
+                tree.links.new(multiply.inputs[1], source)
+                tree.links.new(multiply.inputs[2], texture_nodes[R.CAVITY].outputs['Color'])
+                source = multiply.outputs['Color']
             if needs_invert:
                 # gloss = 1 - roughness, done in the graph so that the source
                 # image on disk is never modified.
@@ -297,6 +610,9 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
                 tree.links.new(invert.inputs["Color"], source)
                 source = invert.outputs["Color"]
             tree.links.new(group_node.inputs[socket_name], source)
+
+        arrange_material_nodes(texture_nodes, group_node, output_node)
+        separate_surface_opacity(tree, group_node, output_node, created)
 
         for role, image in images.items():
             apply_colorspace(image, role)
@@ -329,6 +645,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
         node.name = _legacy_node_name(role)
     output_node.is_active_output = True
     tree.nodes.active = group_node
+    material['apex_alpha_note'] = alpha_note
 
     # ``blend_method`` disappeared in Blender 4.3 (EEVEE Next); setting it is
     # best effort so Auto_tex keeps working on both sides of that change.
@@ -338,4 +655,6 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
         pass
     if log is not None:
         log("rebuilt with %d texture node(s)" % len(texture_nodes))
+        if alpha_note:
+            log(alpha_note)
     return texture_nodes

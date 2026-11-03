@@ -14,6 +14,72 @@ Package reload order and its API version are checked when the add-on is reloaded
 buffers. `workflows.py` adapts the installed CAST importer and isolates imported
 models. `animations.py` indexes RSX sequence folders and builds Actions against
 a disposable rig before assigning them to the selected model.
+`animation_cache.py` stores validated per-file metadata in Blender's user data
+folder.
+`auto_rigs.py` discovers matching legend exports and queues animation libraries
+without changing imported models or applying an Action.
+`import_plan.py` validates chosen model exports before import and arranges the
+successful imports in rows, grids or their original positions. `relink.py`
+checks and replaces paths to a moved RSX export library. `animation_layers.py`
+manages additive channels over a base Action through Blender NLA.
+
+## 3.10.0 numbering transition, 3 November 2026
+
+The unpublished 3.15.0 candidate below is superseded by stable candidate 3.10.0.
+Only the version label and workflow-guide title changed inside the add-on ZIP.
+The 624 earlier checks remain the functional baseline. Clean package smoke,
+57 packaged workflow tests and isolated ZIP installation passed again on both
+Blender 4.2.2 and 5.2.2 under the final 3.10.0 identity.
+Three release-naming tests verify stable labels, numbered betas and invalid suffixes.
+Logs: `artifacts/numbering-3.10.0/`.
+
+Current package: `dist/Apex-Toolbox-ALR-3.10.0.zip`, **4,782,398 bytes**, 48 files.
+SHA-256: `36dc03d4438b406a05d48ab8f8ebd7f24bfdfb47d33d630089de8cd794f32d88`.
+This is not the old experimental 3.10.0 ZIP. See VERSIONING.md.
+The 3.15.0 record below is retained as historical evidence, not a release target.
+
+## 3.15.0 stable readiness, 3 November 2026
+
+Status: local package ready for publication approval. No known release blocker
+was found in this validation. Nothing has been published or installed into the
+maintainer's working Blender profile by this pass.
+
+- 156 pure Python tests passed: texture resolver 125, animation cache 18,
+  automatic legend matching 13.
+- 234 integration tests passed on **each** of Blender 4.2.2 and 5.2.2:
+  materials/UI 50, packaged workflows 57, animation indexing 15, automatic rig
+  linking 19, import/layout 34, relinking 25, animation layers 34.
+- The exact ZIP passed clean isolated installation, packaged material/health
+  smoke checks and enable/disable/reload checks on both versions.
+- Disposable foreground checks passed on both versions: selected-folder import
+  without a review step, native picker drawing, grid placement, relink, layer
+  add/strength/removal and Undo/Redo. Automatic rig-link timer, cancellation,
+  index reuse, save and selection-change checks also passed.
+- Real RSX batch checks passed on both versions: Ash opbundle, Bloodhound
+  Christmas, Wattson onesie, Wraith outurbanb, R-99 and a bench, 43 meshes total.
+  Model bounds did not overlap; centres and bottoms aligned. All four legends
+  linked their exported animation libraries without applying an animation.
+- Three-shader render checks passed in both versions. The final render was
+  visually inspected. The preceding 3.14.7 Bloodhound before/after and live-scene
+  verification remain applicable; no material code changed in 3.15.0.
+- The first package-smoke run exposed a stale expectation for the old Effects
+  panel name, not an add-on failure. The test now checks the current registered
+  parent panel and passed on both versions. The foreground fixture now exercises
+  the actual direct folder-import flow instead of the removed review UI.
+
+Logs: `artifacts/stable-3.15.0/`. Initial `results.json` records the stale-test
+failures; `followup-results.json` records their successful reruns. Foreground
+JSON reports are in `artifacts/release-tools-foreground-*.json` and
+`artifacts/auto-rigs-foreground-*.json`.
+
+Frozen package: `dist/Apex-Toolbox-ALR-3.15.0.zip`, **4,782,349 bytes**, 48 files.
+SHA-256: `8bb5e395fc2a10252fb1ada00409e8b19dc7fb64be7c842e08e01148b3673813`.
+The archive matches the add-on source byte for byte and excludes tests, caches,
+raw game exports and private artifacts. Do not rebuild this ZIP for publication.
+
+Coverage limits: this validates the listed Blender versions and representative
+exports, not every skin or animation. Alpha intent remains partly heuristic and
+corneas are an approximation. See RELEASE_NOTES.md for user-facing limits.
 
 ## Run the checks
 
@@ -21,6 +87,8 @@ Pure Python (no Blender dependency):
 
 ```text
 python Apex_toolbox/apex_tex/tests/run_tests.py
+python tests/animation_cache.py
+python tests/auto_rig_matching.py
 ```
 
 Blender integration, using factory settings and temporary files:
@@ -56,6 +124,188 @@ cleanup, compatibility checks, cached actions, timing, selection, Object/Pose
 Mode, saved links, save/reopen and missing-importer handling. No game files or
 user scenes are used. `tests/workflow_ui.py` provides a disposable UI fixture.
 
+Repeat-index checks, also with synthetic exports:
+
+```text
+blender --background --factory-startup --python-exit-code 1 --python tests/animation_index_scan.py
+```
+
+Append `-- --release` to check the extracted current ZIP. Index checks count
+parser calls, verify per-file invalidation,
+forced Refresh, interrupted scans, saved browser state and source replacement
+with a preserved file size and timestamp. The cache uses temporary test storage.
+
+Run `tests/auto_rig_integration.py` in background Blender, optionally with
+`-- --release` for the ZIP. Run `tests/foreground_auto_rigs.py` without
+`--background` to check timer completion and Undo in a disposable process.
+Add `--require-auto-links` to the real-model folder check below to require
+animation libraries on every recognized legend model.
+
+Import checks, batch layout, moved export paths and additive layers:
+
+```text
+blender --background --factory-startup --python-exit-code 1 --python tests/import_plan.py
+blender --background --factory-startup --python-exit-code 1 --python tests/relink.py
+blender --background --factory-startup --python-exit-code 1 --python tests/animation_layers.py
+```
+
+Append `-- --release` to verify the extracted current ZIP. These suites use
+temporary synthetic CAST files and disposable Blender data. Import checks cover
+LOD0 selection, partial failures, the 50-model cap, texture hints, varied model
+bounds and collection membership. Relink checks cover preserved scene and
+animation state, missing replacements and changes between review and apply.
+Layer checks exercise evaluated motion, strength, timing, save/reopen, action
+preservation and removal, including unsupported rigs and clips.
+
+Run `tests/foreground_release_tools.py` without `--background`, optionally with
+`-- --release`, for relink, layer strength/removal and direct folder grid-import
+Undo/Redo, plus a native model-picker draw check. It closes only its own
+disposable Blender process and writes an explicit result under `artifacts`.
+
+### 3.14.0 local candidate, 2026-11-03
+
+- 43 Blender integration checks passed on 4.2.2 and 5.2.2, including hair multiply inputs and factor, repeated rebuilding, explicit opacity disabled, transparency audit preserving materials, paired rotation/reset and tab visibility.
+- 56 packaged workflow checks passed on 5.2.2. 125 Python checks passed. Enable/disable/reload passed on 4.2.2.
+- A disposable fresh-process Wraith import took 2.31 seconds: CAST import 0.58, texturing 1.26 and animation linking 0.47. A separate model-only run took 0.40 seconds with both optional steps disabled. These are local measurements with OS caches uncontrolled, not a universal performance guarantee.
+- Source game exports and user scenes were not modified. Transparency intent remains a manual judgement; the checker reports connections and pixel ranges. Hair matching currently uses material names containing `hair`.
+
+### 3.13.2 interface refinement, 2026-10-11
+
+- 125 Python checks passed. Packaged workflow checks passed all 56 cases on
+  Blender 4.2.2 and 5.2.2. Layering passed all 34 checks on 5.2.2; 33 passed
+  with the expected Action-slot skip on 4.2.2. Existing stack/removal checks
+  now also verify the base Action remains available for the UI to identify.
+- Enable, disable and changed-on-disk reload passed three cycles on both
+  Blender versions. The internal API revision is 19 for the new base-Action
+  lookup used by the animation panel.
+- Packaged foreground checks passed relinking, Add Layer, Adjust Strength,
+  Remove Layers and reviewed batch import Undo/Redo on both versions, plus
+  the native import review popup.
+- Native 5.2.2 visual checks used disposable scenes at the default narrow
+  sidebar width. Checked the main animation browser, grouped options,
+  import dialog, Rigging, Effects and Troubleshooting. With a packaged active
+  layer, the base animation stayed visible, loading was disabled, and the
+  collapsed section's Remove Animation Layers button restored the base.
+  No user project or preferences were saved.
+- ZIP: 4,774,469 bytes, 48 files. SHA-256:
+  `2554ed20e01b0fab5cf5b7d2015bc886a4e28ccc9e1e63c2100349915a60c449`.
+  Archive integrity passed and every packaged file matches the source.
+  This build is local; public and supporter downloads remain 3.9.1 and 3.11.0.
+
+### 3.13.1 single-frame layer fix, 2026-10-11
+
+- Source and extracted ZIP passed 34 layer checks on Blender 5.2.2; 33 passed
+  and the Action-slot-specific check skipped on 4.2.2. Five new regressions
+  cover true single-key additive poses over a long base, strength, positive
+  offset, preserved root motion, save/reopen and removal. Animated clips still
+  end at their original duration.
+- The packaged build was checked against Sparrow's actual Cool Cats animated
+  gladcard, four single-frame crouch aim poses and two animated fire clips.
+  Held poses affect frames 0, 68 and 100; zero strength restores the base,
+  half strength works, and a frame-25 offset has no effect before frame 25.
+  Removing the layers restores the original Action and pose. Source exports
+  stayed unchanged.
+- Packaged foreground checks passed Add Layer, Adjust Strength and Remove
+  Layers Undo/Redo on 5.2.2, along with relink and reviewed batch import checks.
+- ZIP: 4,774,071 bytes, 48 files. SHA-256:
+  `d21977aea148a74985dc485c8fd4a62aba38c43987ff430ab94ac9a2300f3408`.
+  Archive integrity passed and every packaged file matches the source.
+  This fix is local; public and supporter downloads remain 3.9.1 and 3.11.0.
+
+### 3.13.0 local candidate validation, 2026-10-11
+
+- 125 texture/resolution checks, 18 animation-cache checks and 13 legend-matching
+  checks passed in Python.
+- The extracted ZIP passed 56 workflow, 34 import/preflight/layout, 25 relink,
+  19 automatic rig-link and 15 repeat-index checks on Blender 4.2.2 and 5.2.2.
+  Animation layering ran 29 checks: all passed on 5.2.2; 28 passed and the
+  Action-slot-specific check skipped on 4.2.2.
+- Add-on enable/disable and changed-on-disk reload passed on both versions.
+  Packaged foreground checks passed relink, Add Layer, Adjust Strength,
+  Remove Layers and reviewed batch import Undo/Redo on both versions. The
+  native review popup imported nothing before confirmation.
+- Packaged automatic-link foreground checks passed on 5.2.2, including timer
+  completion, index reuse, Undo/Redo, cancellation, saving, changed selection
+  and removal of the initiating model.
+- Actual native import buttons were checked on 5.2.2. Selecting folders,
+  Check Import and Import Models worked; one Undo removed the whole batch.
+  The final package also passed collection cleanup Undo/Redo and its warnings
+  wrapped within the dialog.
+- A packaged real-export check imported two Wraith skins into a one-column
+  grid, textured all 15 meshes and created exactly two model collections.
+  Existing objects and collections stayed intact; the source exports stayed
+  unchanged. The quick import check took 0.071 seconds in this local run.
+- ZIP: 4,773,783 bytes, 48 files. SHA-256:
+  `f9154a3414e9f06609665e83c3241c57521e8e2d53ae801c969f05d5f829fc96`.
+  Archive integrity passed and every packaged file matches the source.
+  This candidate is local; public and supporter downloads remain 3.9.1 and
+  3.11.0 respectively.
+
+### 3.12.2 local candidate validation, 2026-10-11
+
+Temporary animation Preview, Apply and Revert have been removed. The active
+checks above cover animation loading, repeat indexing and automatic rig linking.
+
+- 125 pure Python checks passed. All 56 existing workflow checks passed in
+  Blender 4.2.2 and 5.2.2, including loading, changing and removing animations,
+  saved browser state and missing-bone handling.
+- The extracted ZIP passed 19 automatic rig-link and 15 repeat-index checks
+  on both Blender versions. Add-on enable/disable/reload passed on 5.2.2.
+- The packaged foreground auto-link check passed on 5.2.2, including batch
+  completion, Undo/Redo, cancellation, saving and changing the selected model.
+- ZIP: 4,753,642 bytes, 45 files. SHA-256:
+  `dcf967b278d5de9d8dfbc484b005f1594027bcb8b27226260d399606aae00e9b`.
+  The archive matches the current source and no longer contains the preview
+  module. This candidate is local; public and supporter downloads are unchanged.
+
+### 3.12.1 local candidate validation, 2026-10-11
+
+- 125 existing pure Python checks and 13 new name/alias checks passed.
+- Blender 4.2.2 and 5.2.2 passed 56 existing workflow checks and all 19 new
+  automatic rig-link checks. The extracted ZIP passed the 19 new checks on
+  both versions. The 19 packaged animation-preview checks passed on 5.2.2.
+- Disposable foreground sessions on both Blender versions passed automatic
+  batch linking, link Undo/Redo, cancellation, cancel-on-save, changed selection
+  and removal of the initiating model while other models continued linking.
+- The packaged real-export check imported two Wraith skins, textured all 15
+  meshes, kept the models side by side and linked all 573 clips to each model.
+  No animation was applied. The source exports and user scenes were not modified.
+- The matching checks cover all 28 supported legends, known RSX aliases,
+  base-rig preference and ambiguous/missing rigs. Integration also checks custom
+  paths, incompatible skeletons, changed exports, existing manual links and
+  reuse of one scan across multiple skins. Add-on reload checks passed on 5.2.2.
+- ZIP: 4,757,797 bytes, 46 files. SHA-256:
+  `a885972c549234d87fa30883683c6ed94faf4444ca0ae1bf652aa059857611c2`.
+  This candidate is local; the available downloads remain unchanged.
+
+### 3.12.0 local candidate validation, 2026-10-11
+
+- 125 existing pure Python checks and 18 cache checks passed.
+- In Blender 4.2.2 and 5.2.2, the source and extracted ZIP passed 56 workflow
+  checks, 19 preview checks (one slot-specific check skips on 4.2) and 15 index
+  checks. Package registration and add-on reload checks passed on both versions.
+- Foreground tests passed preview switching, Revert, Apply, exact Undo/Redo,
+  previous Action retention and recovery after unrelated edits. Native buttons
+  were also checked for Preview, Apply and Undo in Blender 5.2.2.
+- The packaged real Wraith check passed on both versions: 573 clips, all 573
+  sequence parses skipped on repeat, no warnings or missing bones in the three
+  sampled clips. First/repeat scan times observed were 9.63/0.40 seconds on 4.2
+  and 8.31/0.39 seconds on 5.2. These are local measurements, not a speed guarantee.
+- ZIP: 4,752,207 bytes, 45 files. SHA-256:
+  `ab362dbef91ee924c6ee9960e4671e25ccbc747cc794274e2475c84d856bfb11`.
+  This candidate is local; the website still offers 3.11.0 to supporters and
+  3.9.1 as the public stable release.
+
+For a read-only check with exported game files, run `tests/real_single_animation.py`
+with `-- --rig <rig.cast> --clip <anims_rig/sequence.cast>`. Add `--release`
+to check the built experimental ZIP instead of the source tree.
+
+For a real batch import check, run `tests/real_model_folders.py` with
+`-- --mdl <exported_files/mdl> --models <folder1> <folder2> [<folder3> ...]`.
+It confirms that only the chosen model folders import and that their world-space
+bounds do not overlap. Add `--release` to test the ZIP. Neither real-export
+check saves a scene or copies game files into the repository.
+
 Activation and reload:
 
 ```text
@@ -87,12 +337,17 @@ filename and package smoke check derive their version from `bl_info`.
 
 ```text
 python tools/build_release.py
+python tools/verify_release.py
 ```
 
 The archive is written to `dist/`, takes its version from `bl_info`, preserves the
 `Apex_toolbox/` root and bundled assets, and omits test files and Python caches.
 The build verifies the archive contents and CRCs. It does not install, publish
 or change the user's Blender preferences.
+The verification script checks that every ZIP entry matches the current add-on
+tree and prints its byte size and SHA-256. `tests/install_zip_smoke.py` also
+checks Blender's actual Install from Disk path; run it with
+`BLENDER_USER_SCRIPTS` set to a disposable directory.
 
 Verify the built archive in a fresh Blender process:
 
@@ -281,3 +536,181 @@ successful imports, while an all-invalid selection restores the previous
 selection. The full source and extracted-ZIP CAST workflow suites, package
 smoke, pure Python tests, Blender integration tests and add-on reload checks
 passed. Real game exports still need a user workflow check.
+
+The **3.10.9** folder-import path was checked in Blender 5.2.2 against source
+and the installable ZIP. Tests cover choosing a parent folder or selected
+sibling model folders, picking LOD0 over other LODs, skipping animation folders,
+rejecting ambiguous folders and oversized batches, and placing the resulting
+models side by side. The extracted-ZIP workflow suite (42 tests) and package
+smoke passed. The live Blender file browser was checked for CAST file
+multi-selection; folder selection in the new picker and the user's real RSX
+exports still need a final workflow check.
+
+The **3.10.10** picker combines the file and folder paths under the existing
+Import & Texture operator. Blender 5.2.2 integration tests cover single CAST,
+multiple CAST files, one model folder, a parent of model folders, and selected
+siblings. The packaged ZIP is checked separately with the same workflow suite.
+
+The **3.10.11** folder selection dialog was checked in Blender 5.2.2 with
+three sibling model folders. Two checked folders imported while the unchecked
+folder remained out of the scene. Source and extracted-ZIP workflow tests and
+package smoke pass. The modal UI still needs a real Blender click-through.
+
+The **3.10.12** folder-root correction was checked against nested RSX-style
+`mdl/model/model/model_LOD0.cast` fixtures. Passing a highlighted model folder
+normalizes the dialog to `mdl`; selecting another sibling imports only that
+model and remembers the `mdl` directory.
+
+The **3.10.13** change was checked against Blender's trailing-slash `mdl\`
+format and a Blender 5.2 bookmark file, including the user's configured RSX
+bookmark. The folder list now populates from the root without entering a
+model folder; packaged integration and smoke tests pass. The native file
+browser does not handle folder import and is no longer part of this path.
+
+The **3.10.21** pre-stable baseline on 2026-10-10 passed **125 pure Python
+tests**, **54 CAST workflow tests** and **37 Blender integration tests** in both
+Blender 4.2.2 and 5.2.2. The workflow tests and package smoke used the exact
+3.10.21 ZIP available through the experimental channel. Its 43 packaged files
+match the current add-on source byte for byte. The Blender 5.2 integration test
+for pose-bone selection was updated to use the API available in that version;
+the add-on code was unchanged. Real RSX exports, foreground picker interaction
+and a foreground maintainer check remained release gates at the time. The
+3.11.0 plan no longer requires a supporter test.
+
+A follow-up real-export check on 2026-10-10 imported three model folders from
+the user's RSX `mdl` library through the packaged folder-selection path. All
+three models and 19 meshes imported, with side-by-side placement and aligned
+centres and bottoms. A direct Wraith `animrig` sequence import, remove and
+reload also passed against the ZIP. Real Axle, Mirage and Horizon rig exports
+linked 367, 564 and 623 clips respectively in Blender 5.2.2. These checks
+still do not replace a foreground mouse-driven picker test.
+
+The local **3.10.22** hardening ZIP passed 54 extracted-ZIP CAST workflow tests,
+38 Blender integration tests and package smoke in both Blender 4.2.2 and
+5.2.2. The real three-model folder batch passed in both versions (19 meshes,
+about 4.4 seconds), as did direct import/remove/reload of a Wraith animation
+from `animrig`. A controlled single-model folder import in Blender 5.2.2 took
+1.50 seconds with 3.10.14 and 1.48 seconds with 3.10.21. Profiling attributed
+about one second of the import to Blender validating 31 distinct texture
+images, rather than folder selection or CAST loading. This is a one-model
+measurement, not a guarantee for every export or storage device.
+The legacy IK operator completed on a real Wraith rig in both Blender versions,
+but both reported dependency-cycle warnings. Its visual behaviour has not yet
+been verified and remains an open check in the release plan.
+Another packaged 3.10.22 batch combined an Ash legend model, an R-301 weapon
+and a bench prop. All three imported (24 meshes) and passed the same alignment
+and non-overlap checks in Blender 5.2.2.
+
+In a foreground Blender 5.2.2 session on 2026-10-10, the 3.10.22 source
+picker retained selections while switching from Axle under Legends to R-301
+under Weapons and Bench under Misc. One Import click brought in all three
+real folders, adding 25 meshes to a disposable scene that already held one
+synthetic mesh. Framing the result showed separate models. The animation rig
+picker also displayed the real `animrig` library with Axle mapped to
+`pilot_medium_overdrive`. The foreground click to link that rig did not
+produce a confirmed list update in the fixture, so that specific UI action
+needs another check before the release gate is closed.
+
+The local **3.10.23** source fixes a picker default found in that session:
+an unrelated previously linked CAST folder no longer takes precedence over
+a valid RSX `animrig` library. The new regression test and all 55 CAST
+workflow tests pass in Blender 4.2.2 and 5.2.2, both from source and from the
+3.10.23 ZIP. Package smoke also passes in both versions. The live supporter
+download remains 3.10.21.
+
+The packaged 3.10.23 build also passed a real Axle, R-301 and bench batch in
+Blender 5.2.2: three models, 25 meshes, aligned and without overlapping bounds.
+The ZIP is 4,750,435 bytes with SHA-256
+`c02114cf7aaa8d4051b5d23ceec88e42338102e89008b59f8df88d5f3126a43e`;
+all packaged add-on files match the local source.
+
+The local **3.11.0 stable candidate** on 2026-10-10 passed **125 pure Python
+tests**, **38 Blender integration tests** and **56 CAST workflow tests** in both
+Blender 4.2.2 and 5.2.2. The workflow tests ran against the extracted ZIP.
+Package smoke, isolated ZIP installation and enablement, and a three-shader
+Cycles render also passed in both Blender versions. The foreground packaged
+rig-link path completed in both versions. The 6,001-clip scan and animation
+name scan passed their event-loop, cancellation, Undo and cleanup checks in
+Blender 5.2.2.
+
+From the packaged ZIP, a real Axle, R-301 and bench batch imported 24 meshes
+with aligned, non-overlapping bounds in both versions. A real Wraith `animrig`
+clip imported, removed and reloaded in both versions. The Wraith IK helper
+produced eight controls and four IK chains in both versions; moving hand and
+foot controls moved the driven bones, repeated setup was rejected, and Blender
+reported no dependency cycles. A disposable Blender 5.2 viewport check showed
+the character posed without visible distortion.
+
+The current official 28-legend roster was checked against the model picker and
+the local RSX `mdl` library. All 28 have a group in the legend selector; none
+of the character model folders were classified as Misc. The training dummy is
+in Misc. Legend-themed props remain under Misc or Weapons as appropriate.
+
+A read-only audit of 33 local `animrig` folders indexed **16,896 clips** and
+found **1,183** built-in names. Full playback from the packaged ZIP passed in
+29 libraries, covering 113 named clips. Two small variant libraries indexed
+successfully but had no named cosmetic clips to sample. The Lifeline mythic
+export has no clips, and the Rampart export has no standalone rig CAST and one
+truncated sequence; those two variants were recorded as unavailable, not
+passed. Axle, Mirage and Horizon playback samples also passed in Blender 4.2.2.
+
+The 3.11.0 ZIP contains 43 files, is **4,750,445 bytes**, and has SHA-256
+`b56eeb7aa513a265c2fb63255210f17e5d5a559becd3d822f83ec441086e3762`.
+Every entry matches its add-on source file byte for byte. No local RSX exports,
+test fixtures, private paths or other workspace artifacts are included.
+
+### 3.14.1 local alpha fix, 2026-11-03
+
+- Original Gl2imm/Apex-Toolbox alpha wiring reviewed. It connects albedo alpha without inspecting pixels; the historical Shader+ socket mismatch silently skipped that connection. We retain correct socket names.
+- Blender integration: 44 tests passed on both 4.2.2 and 5.2.2. Includes fragmented alpha, coherent cutouts, hair-like masks, opaque/soft alpha, explicit opacity maps and forced alpha across all three shaders.
+- Pure Python suite: 125 tests passed.
+- Actual Ash opbundle head albedo checked in Blender 5.2.2: automatic rejection confirmed and alpha disconnected for all three shaders. Initial image load/read plus detection took approximately 0.26 seconds in this run.
+- Heuristic intentionally retains alpha for unknown/large images and exempt hair/lash/fur/lace materials. Intentional sparse cutouts can use the material custom property `apex_force_albedo_alpha = True`. No claim of universal game-material classification.
+- No source textures or user scenes modified. Existing scene materials need Auto Texture rerun. No rendered visual comparison performed for this candidate.
+- Packaged ZIP workflow suite: 56 tests passed on Blender 5.2.2.
+
+### 3.14.2 local Wattson opacity fix, 2026-11-03
+
+- Inspected actual Wattson v24 onesie LOD0 CAST, imported material bindings, suit/gear opacity images and suit albedo. Opacity images have opaque alpha channels and black RGB masks over solid details.
+- Before/after Cycles renders using Apex Shader+ confirm restoration of zipper, straps, gloves and knee equipment. Generated only isolated diagnostic scenes; source assets and user scenes unchanged.
+- Scoped exception matches exact suit/gear opacity texture filenames; retained nodes allow manual use. Added regression coverage for all three shaders, repeated rebuilds, forced opacity override, renamed materials and an unrelated Wattson texture remaining connected.
+- Blender integration: 45 tests passed on Blender 4.2.2 and 5.2.2, including previous Ash alpha regression. Packaged ZIP workflow suite: 56 tests passed on 5.2.2.
+- Evidence: artifacts/wattson-inspection.log, wattson-render.log, wattson-before.png, wattson-fixed.png and 3.14.2 test logs.
+
+### 3.14.3 local cornea fix, 2026-11-03
+
+- Inspected supplied wraith_base_eyecornea textures: 32x32 albedo has RGB zero and alpha one throughout; 512x512 normal has RG variation, blue zero and alpha one.
+- Added a recognised-eyecornea-only transparent/Fresnel reflection shader with reconstructed packed RG normals. Black albedo retained for role discovery, not applied as tint. This approximates a thin clear surface rather than the complete game shader.
+- Actual Wattson model using this cornea: before/after Cycles close-ups confirm visible irises/whites instead of black shells. Eevee render also verified. Evidence: artifacts/cornea-before.png, cornea-fixed.png, cornea-eevee-fixed.png and corresponding logs.
+- 46 Blender integration tests passed on both 4.2.2 and 5.2.2, including repeated cornea rebuilds through all three shader choices, retained texture roles, missing-normal fallback, and ordinary eye materials excluded.
+- Pure Python suite: 125 passed. Packaged ZIP workflow suite: 56 passed on 5.2.2.
+- No user scenes, source textures, or installed add-on files modified. Candidate remains local.
+
+### 3.14.4 local animation double click, 2026-11-03
+
+- Added animation-name click operator using Blender mouse_double_click_time. Single click selects, matching second click loads via existing loader with explicit undo push.
+- Regression exercises real CAST animation loading: single/double clicks, two different rows, slow clicks, keyboard activation, filtered-out clips and cursor movement.
+- Packaged ZIP workflow suite: 57 tests passed on both Blender 4.2.2 and 5.2.2.
+- Native Blender 5.2.2 isolated UI fixture verified single click leaves action empty, double click loads run, and Ctrl+Z restores no action and original timeline. No user scene or preferences changed; owned test process closed.
+- Existing Load Animation button, favourite star and layer restrictions retained. Click state resets on filters, favourites and add-on disable.
+
+### 3.14.5 local shader layout and manual hair correction, 2026-11-03
+
+- 48 integration tests passed on Blender 4.2.2 and 5.2.2. Covers default hair correction off, explicit apply/repeat/remove on all three shaders, persistence through retexturing, missing-map validation without changes and compact non-overlapping generated node columns.
+- Native Blender 5.2.2 Shader Editor inspected using an isolated seven-texture material with both hair multiply nodes. Texture, adjustment, shader and output columns are readable and separated.
+- No user scene or installed add-on modified. The temporary fixture process was closed after inspection.
+- Packaged ZIP workflow suite: 57 tests passed on Blender 5.2.2.
+
+## 3.14.6 transparency correction
+
+- 49 Blender integration tests pass on Blender 4.2.2 and 5.2.2, including repeated GUID-mask discovery, opaque internal Shader+ alpha and a single outer transparency mix.
+- 57 packaged workflow checks pass on Blender 5.2.2; 125 pure texture tests pass.
+- Reproduced the Wraith outurbanb eyelash-card glow using a separate copy of the affected live scene. Hiding the lash mesh removed the patch; reloading its texture or disabling specular did not. Applying alpha once after combining Shader+ lobes removes the patch while preserving the lashes.
+- Rendered before/after in Cycles using the scene lighting and view. Original shared shader groups and source images were unchanged. Build remains local.
+
+## 3.14.7 Bloodhound head alpha
+
+- Actual 1024 x 1024 Christmas head albedo has 4.632% non-opaque pixels and 1,442 components, outside the sparse-speck heuristic. A scoped texture exception avoids changing global thresholds.
+- Cycles before/after renders of the actual CAST export confirm the fuzzy mask holes disappear.
+- 50 integration checks pass on Blender 4.2.2 and 5.2.2, including both texture naming conventions, repeat builds, force-alpha override, unrelated maps and explicit opacity precedence.
+- 57 packaged workflow checks pass on Blender 5.2.2.

@@ -1,194 +1,91 @@
-# Apex Toolbox 3.10.8 — daily workflows
+# Apex Toolbox 3.10.0 workflow guide
 
-**Experimental release:** animation tools and automatic names are still being
-validated across exports. Successful sample playback does not guarantee every
-clip, skin or rig variant. Unknown/conflicting names retain their export labels.
+Animation names depend on the available RSX export data. Unknown or conflicting
+names retain their export labels. Test unfamiliar rig and clip variants before
+using them in a finished scene.
 
 All tools live in **3D View → Sidebar → Apex Tools**. The existing shaders,
 effects, rig helpers, Recolour and Legion+/RSX workflows remain available.
 
+## Getting around
+
+Use the top **Model**, **Animate**, **Scene** and **Tools** tabs. The optional assets folder is linked at the top of the sidebar.
+
+After selecting models, click **Import Models**. The review screen is no longer part of importing. Disable **Texture Models** and **Auto-Link Animation Rig** for a model-only import, then texture or link later.
+
+Under **Materials > Auto Texture**, **Use Transparency** controls opacity connections when texturing. **Check Transparency** creates a read-only report of connected inputs and pixel ranges. A texture containing non-opaque values does not prove that they are intended for opacity.
+
+Hair correction is manual. Select the hair mesh and its material, then choose **Materials > Auto Texture > Apply Hair Fix**. This multiplies albedo and specular by cavity, with both factors set to 1. **Remove** restores direct connections. The choice is saved per material and survives retexturing; new imports leave it off.
+
+Generated shader graphs use compact texture and adjustment columns, with the shader and output to the right. Expand individual nodes to inspect textures or settings. Rerun Auto Texture to apply this layout to an older material.
+
+Under **Animate > Rigging > Pair Items**, select two rigs or their bound meshes and choose **Use Selected Rigs**. If both rigs have hand sockets, make the legend active. Pair to a socket, then use **Rotate Item X + Z 90°** if needed. **Reset Pair Rotation** restores the orientation from the last pairing while keeping position and scale adjustments.
+
 ## Sidebar layout
 
-The sections follow the model workflow: **Model → Materials → Rigging & Animation
-→ Lighting & Scene → Effects**. **Troubleshooting** and **About & Help** are
-collapsed until needed. Add shader groups under **Materials → Shader Library**;
-find staging, lights and wireframe tools under **Lighting & Scene → Scene Tools**.
-Bone display and IK helpers are under **Rigging & Animation → Rig Tools**.
-Imported prop rigs can be attached under **Rigging & Animation → Pair Items**.
+The main sections are **Model**, **Materials** and **Animations**. Optional tools
+are grouped under **Rigging**, **Lighting & Scene**, **Effects**,
+**Troubleshooting** and **About & Help**.
+
+- **Model:** import models, or adjust the size and rotation of an existing model.
+- **Materials:** texture, recolour and add shader groups.
+- **Animations:** link a rig, browse clips or import one animation CAST.
+- **Rigging:** display bones, add IK helpers and pair items with a legend.
+- **Lighting & Scene:** lights, staging, cameras and wireframe tools.
+- **Effects:** Shadow Squad and legend or weapon effects.
+- **Troubleshooting:** scene checks, missing textures and moved RSX libraries.
+
+Animation Layers is folded below the main animation controls. Playback settings,
+name options and export details stay under **Options & Details**.
 
 ## Import & Texture
 
 Enable the [CAST Blender importer](https://github.com/dtzxporter/cast) first.
 Export the model from RSX as CAST with material textures enabled. Click
-**Model → Import & Texture**, choose one or several model CAST files from the
-same folder, and select a shader.
-**Prepare Model** applies the standard Apex size/orientation and converts
-eligible unanimated transforms to XYZ Euler. Turn it off to keep export transforms.
-The optional **Texture Folder** overrides the default search beside the CAST file.
+**Model → Import & Texture** and choose **Model folders** or **CAST files**.
+For model folders, the dialog uses your last folder or a bookmarked RSX `mdl`
+directory. Choose **Legends**, **Weapons**, or **Misc**, then a legend, weapon or other
+group to see its folders. Tick the folders you want, then click **Import Models**.
+Search narrows the chosen group and can combine words in any order (for example,
+`alter outnoir`). Checked folders stay selected when you switch views. The
+dialog remembers a changed directory.
+If the chosen folder itself contains one model,
+you can import it without ticking a subfolder. For CAST files, click **Import Models** to open the file browser and select one or several files from the same folder. Import starts after confirmation in that browser.
+Import settings are grouped by task:
+
+- **Model Setup:** prepare the size and orientation and optionally link the
+  matching legend animation rig. Turn off **Prepare Model** to keep export transforms.
+- **Textures:** choose the shader. Leave **Folder (optional)** empty to find textures
+  beside the export or in remembered folders; set it only to override that search.
+- **Layout:** choose row, grid or original positions, and whether each model
+  gets its own collection.
+
+The tool picks the LOD0 CAST from each selected folder, skips animation subfolders and accepts at most 50 models per batch. Ambiguous folders require selecting the intended CAST directly. Invalid selections are reported without guessing.
 The separate size and rotation tools are in **Model → Manual Adjustments**,
 collapsed below Import & Texture for models that need manual preparation.
 
-Each file is imported, prepared and textured separately. With multiple files,
-models are placed side by side along the X axis in filename order. The first
-model stays where CAST imported it; later models are spaced by their mesh bounds,
-centred along Y and aligned at the bottom. Existing scene objects are not moved.
+Each file is imported, prepared and textured separately. **Placement** offers:
+
+- **Row:** side by side along X, in filename order.
+- **Grid:** rows with a chosen **Columns** count. Each column and row makes
+  room for the largest model it contains.
+- **Original positions:** the positions from each export.
+
+For rows and grids, the first model stays where CAST imported it. Other models
+use their mesh bounds, align at the bottom and leave at least **Minimum Gap**
+between them. Row models share a Y centre; grid models share their row's centre.
+Existing scene objects are not moved. **One Collection per Model** puts each
+successful model and its armature in a separate collection. Placement and
+collection choices are remembered in the scene.
 Files that fail to import are skipped without discarding successful models. The
 combined texture report names each file and any import or texture problems.
-Missing textures leave that model available. One Undo step removes the batch.
+Missing textures leave that model available. Importing creates one Undo step
+for the batch. If automatic animation linking finishes afterward, Undo removes
+the links first, then the imported batch.
 Select model CAST exports only; rig and animation CAST exports are reported as
 failed imports. Other formats keep their usual import workflow.
 
-## Link a legend's animation rig
-
-1. In RSX, choose **CAST** for animation rig and animation sequence exports,
-   enable **Export Rig Sequences**, and export the legend's rig.
-2. Keep `<rig name>.cast` beside its `anims_<rig name>` folder. The rig CAST
-   contains the skeleton; the companion folder contains the animation clips.
-3. Select the legend's armature or one of its bound meshes in Blender.
-4. Open **Rigging & Animation → Animations → Link Animation Rig** and select the rig CAST.
-5. Wait for indexing to finish, choose an optional **Category**, search the list,
-   select a clip, then click **Load Animation**.
-
-The link belongs to that model and is saved in the `.blend`. The list includes
-individual clips within multi-animation CAST files. **Refresh Animations** reads
-new or replaced exports. Relink if the export folder moves. CAST must be installed
-and enabled to load a clip; linking and browsing do not require it.
-
-Indexing shows progress and works in short batches so Blender can keep responding.
-It searches the complete companion folder, including nested folders, without a
-ten-second deadline or a file-count/depth cutoff. **Cancel Indexing**
-keeps the previous list and cached actions. Invalid/unreadable files and linked
-folders are reported as warnings. Refresh an older incomplete list to rescan it.
-
-**Category** filters use words in the exported animation names: Gladcard / Banner,
-Emote, Lobby, Finishers (including execution/execute), and Movement. Text search
-narrows the chosen category further; the count shows how many clips match. A clip
-can match more than one category. **All Animations** includes names that do not
-follow those conventions. Refresh keeps the category, search and selected clip
-where possible.
-
-Click the **star** beside a clip to add it to this model's **Favourites**. **Recent**
-shows the last 20 successfully loaded clips, newest first; loading a cached clip
-moves it to the top. Category and search also work in these views. **Clear Recent
-List** clears only that model's history. Stars and clearing history support Undo;
-actions and favourites are kept when history is cleared. Favourites and recents
-are saved in the blend file. Refresh keeps them for uniquely named clips in the
-same file and linked rig export, even when CAST offsets change. Relinking a
-different rig export starts fresh; duplicate clip names are not guessed.
-
-### Included in-game animation names
-
-English menu names are included. **Link Animation Rig** and **Refresh Animations**
-apply them automatically; no settings or language export is needed. For an older
-saved library, click Refresh once after updating. The lookup runs locally and
-does not need a game installation or internet connection.
-
-**Show In-Game Names**, under the collapsed **Options & Details** section, changes the
-list labels. Search always accepts both the menu and original export name. The
-selected clip's original name is displayed there too. Still/Animated banner
-poses, Loop clips and finisher Preview clips are labelled separately.
-
-The included catalogue is a snapshot of known animation identifiers. It covers
-ground emotes, skydive emotes, banner poses and attacker finishers across legends.
-It contains short menu labels, identifiers and variant roles. It does not contain
-raw settings, language packs, rigs or animation files.
-
-Unknown clips, ordinary lobby/movement animations, lighting/effect tracks, victim
-tracks and conflicting item references keep their export names. New game content
-may require a later Toolbox catalogue update. Renamed CAST files still match when
-their sequence identifiers are intact; non-RSX files without those identifiers
-may remain unnamed. Favourites, recents and loaded actions are independent of names.
-
-### Optional language or newer-name imports
-
-To use another language or newer item data, expand **Options & Details** and use
-**Import Names / Language**. These advanced steps are optional:
-
-1. In RSX, load the game's `common.rpak` and the language pack, for example
-   `localization_english.rpak`. Keep their patch files beside them. Allow settings,
-   settings layouts and localization assets to load.
-2. Export the **Settings (stgs)** assets under `settings/itemflav/character_emote`,
-   `character_execution`, `gcard_stance` and `skydive_emote` for the desired legend(s).
-   These export as JSON. Export the **Localization (locl)** language asset too.
-   Loading settings layouts is necessary for RSX to decode settings.
-3. Keep RSX's `settings/itemflav` and `localization` folders together in the same
-   export directory. These are separate from the `animrig` folder.
-4. In Blender, select the model, expand **Animations → Options & Details**, choose
-   **Import Names / Language**, and select the exported `.locl` file.
-5. If the folders are separated, set **Settings Folder** in the file picker to
-   the export root, its `settings` folder, or its `itemflav` folder.
-
-The import shows progress and can be cancelled. It applies names only after the
-complete metadata scan succeeds, and supports Undo. Failed, cancelled and
-zero-match imports retain the previous names. The resulting names are saved in
-the blend file; the source files are only needed when importing names again.
-Export settings and text from the same game version where possible.
-
-Refresh retains imported names for unchanged clip identifiers and applies the
-included English names to new clips. Reimport to translate those new clips too.
-**Reset to Included Names** replaces this model's imported overrides with
-the bundled catalogue and supports Undo. It does not change actions or favourites.
-
-The export structures are documented in [RSX localization](https://github.com/r-ex/rsx/blob/main/docs/assets/rpak/Localization.md)
-and implemented in [RSX's CAST exporter](https://github.com/r-ex/rsx/blob/main/src/core/mdl/modeldata.cpp).
-
-### Playback and removal
-
-Loading creates a Blender Action and retains the previous Action. Switching back
-to an unchanged loaded clip reuses its Action. Previous actions remain available
-in Blender's Action Editor, including after saving. Under **Options & Details**,
-**Match Timeline and FPS** sets the scene range/rate to the selected clip;
-turn it off to keep scene timing.
-Each successful load resets the armature's local object rotation to zero,
-including when reusing a loaded Action. Its position, scale, rotation mode and
-selection are preserved. Parent transforms and delta transforms are unchanged.
-Undo restores the previous action and object rotation. Failed loads leave the
-original rotation intact.
-
-**Remove Animation / T-Pose** detaches the active Action and resets every pose
-bone to its rest transform. The clip stays in the list and its Action is kept for
-reuse. For clips loaded with 3.10.3 or newer, it also restores the armature's
-orientation from before the first load; switching clips keeps that original
-orientation. Position, scale, timeline and selection are preserved. Undo restores
-the action and pose. Older already-loaded actions have no saved pre-load
-orientation, so removal keeps their current object rotation. The rest pose comes
-from the model: an export with an A-pose returns to that pose rather than an
-invented T-pose.
-
-Animations use quaternion channels for playback. The unanimated XYZ Euler tool
-does not convert animation curves. Additive clips are labelled and need a base
-animation blended in Blender's NLA Editor. Animated bones must match by name;
-**Allow Missing Bones** explicitly permits partial clips and reports skipped bones.
-Matching names alone do not guarantee that two different legends have compatible
-rest poses. Link the rig exported for your legend.
-
-This first selector supports bone animation on imported rigs. It declines rigs
-with constraints, drivers or NLA tracks, and clips with blend-shape tracks; use
-the normal CAST importer for those advanced cases. A failed clip import preserves
-the current pose and action. Malformed files and unusually large clips are rejected.
-Individual malformed/oversized CAST files are still checked before import.
-
-The rig/sequence distinction is described in [RSX's Animation Rig documentation](https://github.com/r-ex/rsx/blob/main/docs/assets/rpak/AnimationRig.md).
-Raw game ARIG files are not imported directly.
-
-## Pair an item with a legend
-
-Import the legend and the item as separate armatures with their meshes. Under
-**Rigging & Animation → Pair Items**, choose **Legend Rig** and **Item Rig**.
-If both armatures are selected, **Use Selected Rigs** fills the fields; make the
-legend active when both rigs have attachment bones. Click **Left Hand**,
-**Right Hand** or **Weapon** to snap the item's rig origin to the matching
-attachment bone on the legend. The item follows that bone when you pose or
-animate the legend, while the item's own child meshes and bone animation remain
-together. Adjust the item's local position and rotation afterwards if its grip
-needs an offset.
-
-For other attachment points, choose a bone in **Other Bone** and click
-**Pair to Other Bone**. If the legend lacks a matching preset bone, the tool
-asks you to choose one instead of guessing a nearby wrist or hand bone.
-Pairing changes the item's parent and transform; Blender Undo restores them.
-
-## Prepare and texture a model
+## Prepare and texture an existing model
 
 1. Import your CAST or SEModel using its usual importer.
 2. Select its armature in Object Mode and use **Model → Manual Adjustments → Set Correct Model Size**.
@@ -204,14 +101,14 @@ Pairing changes the item's parent and transform; Blender Undo restores them.
 4. Click **Texture Model**. Textures are found and connected automatically, and
    a report records the result of each conversion.
    Materials with missing referenced textures are kept intact until repaired.
-5. If textures weren't found, set **Auto Texture → Texture Folder**, enable
+5. If textures weren't found, set **Auto Texture → Folder (optional)**, enable
    subfolders if needed and run **Texture Model** again. The report lists searched
    folders, filenames, resolution sources and any search limits. Unresolved
    optional maps are normal.
 
 **Shared materials:** conversion updates the material wherever it is used. If two
 models need different looks, make their materials single-user in Blender first.
-Linked materials must be made local before conversion. The new scope controls
+Linked materials must be made local before conversion. The scope controls
 apply to Auto Texture and Scene Health; Recolour still uses selected meshes.
 
 ## Switch imported quaternion rotations to XYZ Euler
@@ -235,15 +132,238 @@ animation imports may set bones back to Quaternion to use their animation
 channels. Converting an existing animation requires baking its rotation curves,
 which this button does not do.
 
-## Read and keep reports
+## Recolour
 
-The latest texture, scene health and repair reports are stored separately in the
-scene and saved with the `.blend` file. **Copy** copies a full report without
-leaving the viewport. **Open Report** opens Blender's Text Editor, starting at
-the first line with word wrapping enabled. Return to the 3D View with **Shift+F5**
-while the mouse is over that editor. The Text Editor's **Text → Save As** exports
-the report to a text file. Reports are snapshots: run the relevant tool again
-after changing the selection, scene or folders.
+Recolour accepts classic Legion+ names, RSX `_col` / `_nml` / `_gls` names and
+supported non-PNG formats. Select the meshes and choose the skin folder. Existing
+model/part folders, `_images`, `base` fallbacks and the Titanfall skin fallbacks
+remain supported. Each shared material is processed once.
+
+## Animations
+
+### Link a legend's animation rig
+
+**Auto-Link Animation Rig** is enabled in Import & Texture by default. After
+importing one or several legends, Toolbox identifies each legend from its
+export name and indexes the matching rig in the background. No animation is
+applied and the models stay in place. The option is remembered in the scene.
+
+The search starts in the `animrig` folder beside the model's `mdl` directory,
+then checks the animation folder you last used and RSX folders in Blender's
+bookmarks/recent history. Keep the rig CAST beside its `anims_<rig name>` folder.
+Toolbox supports known export aliases such as `holo` for Mirage, `nova` for
+Horizon and `overdrive` for Axle. A unique base pilot rig wins over named variants.
+If multiple rigs remain possible, none is guessed. Weapons and props are skipped.
+
+For a model already in the scene, select it and click **Animations → Auto-Link**.
+If no match is found or the skeleton is incompatible, use **Link Animation Rig**
+to choose an export manually. Existing rig links are kept. Cancel Indexing,
+saving, changing files or Undo stops unfinished linking and keeps the models.
+
+To link a rig manually:
+
+1. In RSX, choose **CAST** for animation rig and animation sequence exports,
+   enable **Export Rig Sequences**, and export the legend's rig.
+2. Keep `<rig name>.cast` beside its `anims_<rig name>` folder. The rig CAST
+   contains the skeleton; the companion folder contains the animation clips.
+3. Select the legend's armature or one of its bound meshes in Blender.
+4. Open **Animations → Link Animation Rig**. Choose the legend, then select one
+   of its rigs from the list. Unrecognized pilot rigs
+   appear under **Other rigs**. Use **Other CAST** for a rig outside the list.
+5. Wait for indexing to finish, choose an optional **Category**, search the list,
+   select a clip, then click **Load Animation**.
+
+The link belongs to that model and is saved in the `.blend`. The list includes
+individual clips within multi-animation CAST files. **Refresh Animations** reads
+new or replaced exports. Use **Relink RSX Library** if the export folder moves.
+CAST must be installed and enabled to load a clip; linking and browsing do not
+require it.
+
+Indexing shows progress and works in short batches so Blender can keep responding.
+It searches the complete companion folder, including nested folders, without a
+ten-second deadline or a file-count/depth cutoff. **Cancel Indexing**
+keeps the previous list and cached actions. Invalid/unreadable files and linked
+folders are reported as warnings. Refresh an older incomplete list to rescan it.
+
+Repeat links reuse a saved index for unchanged animation files. New, replaced
+and removed exports are detected on the next link. The index stays in Blender's
+user data folder, outside the add-on, so reinstalling Toolbox does not clear it.
+**Refresh Animations** always rereads every file. An unavailable or damaged
+index falls back to a normal scan. The index contains clip details, not animation
+keyframes; loading still checks the selected CAST file.
+
+### Import one animation CAST
+
+Select a legend armature or a mesh bound to it, then use
+**Animations → Import Animation CAST**. Choose one CAST file from an RSX `animseq`
+export or an `anims_<rig name>` folder. The animation is applied immediately and
+kept in the list so it can be loaded again. You do not need to link a rig first.
+Files with more than one animation sequence need a full rig link; the single-file
+button accepts exactly one sequence. Imported clips remain in the list when a
+rig is linked or refreshed. Bone compatibility and the **Allow Missing Bones**
+option work the same way as loading from a linked rig.
+
+### Browse and load animations
+
+**Category** filters use words in the exported animation names: Gladcard / Banner,
+Emote, Lobby, Finishers (including execution/execute), and Movement. Text search
+narrows the chosen category further; the count shows how many clips match. A clip
+can match more than one category. **All Animations** includes names that do not
+follow those conventions. Refresh keeps the category, search and selected clip
+where possible.
+
+Click the **star** beside a clip to add it to this model's **Favourites**. **Recent**
+shows the last 20 successfully loaded clips, newest first; loading a cached clip
+moves it to the top. Category and search also work in these views. **Clear Recent
+List** clears only that model's history. Stars and clearing history support Undo;
+actions and favourites are kept when history is cleared. Favourites and recents
+are saved in the blend file. Refresh keeps them for uniquely named clips in the
+same file and linked rig export, even when CAST offsets change. Relinking a
+different rig export starts fresh; duplicate clip names are not guessed.
+
+### Playback and removal
+
+Loading creates a Blender Action and retains the previous Action. Switching back
+to an unchanged loaded clip reuses its Action. Previous actions remain available
+in Blender's Action Editor, including after saving. Under **Options & Details →
+Playback**, **Match Timeline and FPS** sets the scene range/rate to the selected
+clip; turn it off to keep scene timing.
+Each successful load resets the armature's local object rotation to zero,
+including when reusing a loaded Action. Its position, scale, rotation mode and
+selection are preserved. Parent transforms and delta transforms are unchanged.
+Undo restores the previous action and object rotation. Failed loads leave the
+original rotation intact.
+
+**Remove Animation / T-Pose** detaches the active Action and resets every pose
+bone to its rest transform. The clip stays in the list and its Action is kept for
+reuse. For clips loaded with 3.10.3 or newer, it also restores the armature's
+orientation from before the first load; switching clips keeps that original
+orientation. Position, scale, timeline and selection are preserved. Undo restores
+the action and pose. Older already-loaded actions have no saved pre-load
+orientation, so removal keeps their current object rotation. The rest pose comes
+from the model: an export with an A-pose returns to that pose rather than an
+invented T-pose.
+
+Animations use quaternion channels for playback. The unanimated XYZ Euler tool
+does not convert animation curves. Additive clips are labelled. To combine one
+with a base animation, load the base first, select the additive clip, then use
+**Add Animation Layer**. **Load Animation** or **Import Animation CAST** applies a
+clip on its own. Animated bones must match by name;
+**Allow Missing Bones** is on by default. It permits partial clips and reports
+skipped bones; turn it off under **Options & Details → Playback** to require
+every animated bone.
+Matching names alone do not guarantee that two different legends have compatible
+rest poses. Link the rig exported for your legend.
+
+The selector supports bone animation on imported rigs. It declines rigs
+with constraints, drivers or NLA tracks, and clips with blend-shape tracks; use
+the normal CAST importer for those advanced cases. A failed clip import preserves
+the current pose and action. Malformed files and unusually large clips are rejected.
+Individual malformed/oversized CAST files are still checked before import.
+
+The rig/sequence distinction is described in [RSX's Animation Rig documentation](https://github.com/r-ex/rsx/blob/main/docs/assets/rpak/AnimationRig.md).
+Raw game ARIG files are not imported directly.
+
+### Add an additive animation layer
+
+Load a normal base clip with **Load Animation**, then select a compatible
+additive clip in the list. Expand **Animation Layers** below the loading controls,
+set **Strength** and **Frame Offset**, then click **Add Animation Layer**. The layer uses only the
+clip's additive channels. It combines their motion with the base animation
+through Blender's NLA; it does not replace the base Action.
+The current base animation remains shown while layers are active.
+
+Single-frame additive poses stay active from their frame offset onward.
+Animated layers play for the clip's duration. A crouch aim pose may only adjust
+the upper body or aim direction; it does not necessarily make the whole model crouch.
+
+Adjust each added layer's **Strength** in the same section. Frame offset is
+relative to the beginning of the base animation. **Remove Animation Layers**
+removes the Toolbox layers and restores the original base Action. Remove the
+layers before loading a different base clip. Adding and removing support Undo;
+the original clips remain reusable.
+
+This tool is for imported armatures with a loaded base animation. A rig with
+unrelated NLA tracks, constraints or drivers needs Blender's NLA workflow.
+Base Actions with custom curve modifiers or linear extrapolation also need the
+normal NLA workflow. Additive translation needs complete X, Y and Z tracks.
+For clips that mix channel types, only additive channels enter the layer.
+Unsupported clips are reported without changing the rig; ordinary loading
+remains available after removing any layers.
+
+### Included in-game animation names
+
+English menu names are included. **Link Animation Rig** and **Refresh Animations**
+apply them automatically; no settings or language export is needed. For an older
+saved library, click Refresh once after updating. The lookup runs locally and
+does not need a game installation or internet connection.
+
+**Show In-Game Names**, under **Options & Details → Names**, changes the
+list labels. Search always accepts both the menu and original export name. The
+selected clip's original name and linked rig path are under **Options & Details →
+Linked Export**. Still/Animated banner poses, Loop clips and finisher Preview
+clips are labelled separately.
+
+The included catalogue is a snapshot of known animation identifiers. It covers
+ground emotes, skydive emotes, banner poses and attacker finishers across legends.
+It contains short menu labels, identifiers and variant roles. It does not contain
+raw settings, language packs, rigs or animation files.
+
+Unknown clips, ordinary lobby/movement animations, lighting/effect tracks, victim
+tracks and conflicting item references keep their export names. New game content
+may require a later Toolbox catalogue update. Renamed CAST files still match when
+their sequence identifiers are intact; non-RSX files without those identifiers
+may remain unnamed. Favourites, recents and loaded actions are independent of names.
+
+### Optional language or newer-name imports
+
+To use another language or newer item data, expand **Options & Details → Names** and use
+**Import Names / Language**. These advanced steps are optional:
+
+1. In RSX, load the game's `common.rpak` and the language pack, for example
+   `localization_english.rpak`. Keep their patch files beside them. Allow settings,
+   settings layouts and localization assets to load.
+2. Export the **Settings (stgs)** assets under `settings/itemflav/character_emote`,
+   `character_execution`, `gcard_stance` and `skydive_emote` for the desired legend(s).
+   These export as JSON. Export the **Localization (locl)** language asset too.
+   Loading settings layouts is necessary for RSX to decode settings.
+3. Keep RSX's `settings/itemflav` and `localization` folders together in the same
+   export directory. These are separate from the `animrig` folder.
+4. In Blender, select the model, expand **Animations → Options & Details → Names**, choose
+   **Import Names / Language**, and select the exported `.locl` file.
+5. If the folders are separated, set **Settings Folder** in the file picker to
+   the export root, its `settings` folder, or its `itemflav` folder.
+
+The import shows progress and can be cancelled. It applies names only after the
+complete metadata scan succeeds, and supports Undo. Failed, cancelled and
+zero-match imports retain the previous names. The resulting names are saved in
+the blend file; the source files are only needed when importing names again.
+Export settings and text from the same game version where possible.
+
+Refresh retains imported names for unchanged clip identifiers and applies the
+included English names to new clips. Reimport to translate those new clips too.
+**Reset to Included Names** replaces this model's imported overrides with
+the bundled catalogue and supports Undo. It does not change actions or favourites.
+
+The export structures are documented in [RSX localization](https://github.com/r-ex/rsx/blob/main/docs/assets/rpak/Localization.md)
+and implemented in [RSX's CAST exporter](https://github.com/r-ex/rsx/blob/main/src/core/mdl/modeldata.cpp).
+
+## Pair an item with a legend
+
+Import the legend and the item as separate armatures with their meshes. Under
+**Rigging → Pair Items**, choose **Legend Rig** and **Item Rig**.
+If both armatures are selected, **Use Selected Rigs** fills the fields; make the
+legend active when both rigs have attachment bones. Click **Left Hand**,
+**Right Hand** or **Weapon** to snap the item's rig origin to the matching
+attachment bone on the legend. The item follows that bone when you pose or
+animate the legend, while the item's own child meshes and bone animation remain
+together. Adjust the item's local position and rotation afterwards if its grip
+needs an offset.
+
+For other attachment points, choose a bone in **Other Bone** and click
+**Pair to Other Bone**. If the legend lacks a matching preset bone, the tool
+asks you to choose one instead of guessing a nearby wrist or hand bone.
+Pairing changes the item's parent and transform; Blender Undo restores them.
 
 ## Troubleshoot a model
 
@@ -263,6 +383,25 @@ Choose an issue to read its explanation. **Select This Issue Type** and **Select
 All Affected Meshes** select the visible, selectable affected meshes. They don't
 unhide objects, unlock selection or alter the scene. Hidden or removed objects
 may still appear in an older report; run Check again to refresh it.
+
+## Relink a moved RSX export library
+
+Use **Troubleshooting → Relink RSX Library** after moving your exports
+to another drive or folder. Choose **Previous Export Folder** and **New Export
+Folder** at the same level, such as the old and new `exported_files` folders.
+Keep the folder layout below those roots the same.
+
+Click **Check Paths** to review the replacements, then **Relink Verified Files**.
+The check covers saved model sources, linked animation rigs, clip files,
+unpacked file textures and the Toolbox browser folders stored in the blend.
+It checks only referenced files, so it does not crawl the whole library.
+Files outside the previous root, missing replacements and incompatible exports
+keep their existing paths. Packed and generated images do not need relinking.
+
+Relinking preserves the imported scene, Actions, poses, favourites and recent
+clips. It does not reimport models or apply an animation. Blender Undo restores
+the previous references. To locate individual missing texture files after a
+different folder reorganisation, use **Repair Missing Textures** instead.
 
 ## Repair a moved texture library
 
@@ -286,18 +425,23 @@ from RSX with **Export Material Textures** enabled instead. A scene may display
 cached pixels from a missing file, but Scene Health still flags that reference
 because those pixels may disappear on reopening the file.
 
-## Recolour and optional assets
+## Read and keep reports
 
-**Auto Shadow** is now inside **Effects → Apex Effects**. The Toon shader tool
-and its settings have been removed. Existing materials saved in older scenes
-are not modified by the update.
+The latest texture, scene health and repair reports are stored separately in the
+scene and saved with the `.blend` file. **Copy** copies a full report without
+leaving the viewport. **Open Report** opens Blender's Text Editor, starting at
+the first line with word wrapping enabled. Return to the 3D View with **Shift+F5**
+while the mouse is over that editor. The Text Editor's **Text → Save As** exports
+the report to a text file. Reports are snapshots: run the relevant tool again
+after changing the selection, scene or folders.
 
-Recolour accepts classic Legion+ names, RSX `_col` / `_nml` / `_gls` names and
-supported non-PNG formats. Select the meshes and choose the skin folder. Existing
-model/part folders, `_images`, `base` fallbacks and the Titanfall skin fallbacks
-remain supported. Each shared material is processed once.
+## Optional assets
 
 The plugin remains the **Lite** edition. Animated Staging + Camera, Basic Lights
 and the bundled effects work without the optional Extended pack. To enable
 Extended content, choose the folder **containing `Assets.blend`** in add-on
 preferences. Renaming that folder is no longer necessary.
+
+### Shader+ transparency
+
+Shader+ uses a separate Surface transparency mix so transparent cards do not brighten the surfaces behind them. Keep the opacity texture connected to that mix. After updating an existing model from an older build, run Texture Model once to rebuild its materials.

@@ -41,4 +41,5 @@ def attach_item(context, item, legend, bone_name):
     item.matrix_parent_inverse.identity()
     item.matrix_world = target_matrix
     context.view_layer.update()
+    item['_apex_pair_rotation'] = tuple(item.matrix_basis.to_quaternion())
     return bone.name

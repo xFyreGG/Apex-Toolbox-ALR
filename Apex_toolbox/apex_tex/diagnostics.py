@@ -14,7 +14,7 @@ def texture_report(batch, definition, outcomes=None):
         lines.append("%s [%s%s]" % (root.path, root.origin,
                                     "; includes subfolders" if root.recursive else ""))
     if not batch.roots:
-        lines.append("No search folder found. Set Texture Folder in Search Options.")
+        lines.append("No search folder found. Set a folder under Materials > Auto Texture.")
     if batch.index is not None:
         lines.append("%d candidate images indexed." % len(batch.index))
         lines.extend("Search warning: " + warning for warning in batch.index.warnings)
@@ -26,6 +26,10 @@ def texture_report(batch, definition, outcomes=None):
         lines.extend(["", material.name, "  Source: " + info.source_label])
         if material.name in outcomes:
             lines.append("  " + outcomes[material.name])
+            if outcomes[material.name] == "Textured successfully.":
+                note = getattr(material, 'get', lambda *_: '')('apex_alpha_note', '')
+                if note:
+                    lines.append("  " + note)
         if not getattr(material, "is_editable", True):
             lines.append("  Read-only linked material: make it local before applying.")
         for line in resolver.format_report(material.name, info.source_label, results,

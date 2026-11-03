@@ -417,6 +417,129 @@ class BlenderIntegration(unittest.TestCase):
         self.assertEqual(set(bpy.context.selected_objects), {rig, obj})
         self.assertEqual(bpy.context.view_layer.objects.active, rig)
 
+    def test_hair_fix_is_manual_repeatable_and_removable(self):
+        for definition in shaders.SHADER_DEFS.values():
+            addon.append_apex_node_group(definition.group_name)
+            obj = make_mesh('legend_hair')
+            select(obj)
+            mat = obj.active_material
+            images = {role: bpy.data.images.new(role, width=4, height=4) for role in (R.ALBEDO, R.SPECULAR, R.CAVITY)}
+            shaders.build_material(mat, definition, images)
+            tree = mat.node_tree
+            self.assertFalse(any(n.get('apex_hair_multiply') for n in tree.nodes))
+            self.assertEqual(bpy.ops.object.apex_hair_fix(), {'FINISHED'})
+            self.assertEqual(bpy.ops.object.apex_hair_fix(), {'FINISHED'})
+            for repeat in range(2):
+                nodes = [n for n in tree.nodes if n.get('apex_hair_multiply')]
+                self.assertEqual(len(nodes), 2)
+                self.assertEqual({n.inputs[1].links[0].from_node.image for n in nodes}, {images[R.ALBEDO], images[R.SPECULAR]})
+                for node in nodes:
+                    self.assertEqual(node.blend_type, 'MULTIPLY')
+                    self.assertEqual(node.inputs[0].default_value, 1)
+                    self.assertEqual(node.inputs[2].links[0].from_node.image, images[R.CAVITY])
+                shaders.build_material(mat, definition, images)
+            self.assertEqual(bpy.ops.object.apex_hair_fix(remove=True), {'FINISHED'})
+            shaders.build_material(mat, definition, images)
+            self.assertFalse(any(n.get('apex_hair_multiply') for n in tree.nodes))
+            for role in (R.ALBEDO, R.SPECULAR):
+                group = next(n for n in tree.nodes if n.type == 'GROUP')
+                self.assertEqual(group.inputs[definition.sockets[role]].links[0].from_node.image, images[role])
+
+    def test_missing_hair_maps_leave_graph_untouched(self):
+        obj = make_mesh('hair_without_cavity')
+        mat = obj.active_material
+        definition = shaders.SHADER_DEFS['OP2']
+        addon.append_apex_node_group(definition.group_name)
+        image = bpy.data.images.new('albedo', width=4, height=4)
+        shaders.build_material(mat, definition, {R.ALBEDO: image})
+        before = snapshot(mat)
+        with self.assertRaises(ValueError):
+            shaders.set_hair_fix(mat, True)
+        self.assertEqual(snapshot(mat), before)
+        self.assertFalse(mat.get('apex_hair_fix', False))
+
+    def test_generated_nodes_have_compact_spaced_columns(self):
+        definition = shaders.SHADER_DEFS['OP2']
+        addon.append_apex_node_group(definition.group_name)
+        mat = make_mesh().active_material
+        mat['apex_hair_fix'] = True
+        images = {role: bpy.data.images.new(role, width=4, height=4) for role in (R.ALBEDO, R.SPECULAR, R.CAVITY, R.ROUGHNESS)}
+        textures = shaders.build_material(mat, definition, images)
+        self.assertEqual(sorted(n.location.y for n in textures.values()), [-300, -200, -100, 0])
+        self.assertTrue(all(n.hide and n.width == 260 for n in textures.values()))
+        processors = [n for n in mat.node_tree.nodes if n.get('apex_hair_multiply') or n.type == 'INVERT']
+        self.assertEqual(len({tuple(n.location) for n in processors}), len(processors))
+        self.assertTrue(all(n.location.x == -370 and n.hide for n in processors))
+        group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+        output = next(n for n in mat.node_tree.nodes if n.type == 'OUTPUT_MATERIAL')
+        self.assertLess(group.location.x, output.location.x)
+
+    def test_transparency_audit_reports_connected_alpha_without_editing(self):
+        obj = make_mesh()
+        image = bpy.data.images.new('alpha', width=4, height=4)
+        image.generated_color = (1, 1, 1, 0.5)
+        image.pixels = [1, 1, 1, 0.5] * 16
+        definition = shaders.SHADER_DEFS['OP1']
+        addon.append_apex_node_group(definition.group_name)
+        shaders.build_material(obj.active_material, definition, {R.ALBEDO: image})
+        select(obj)
+        before = snapshot(obj.active_material)
+        self.assertEqual(bpy.ops.object.apex_check_transparency(), {'FINISHED'})
+        self.assertEqual(snapshot(obj.active_material), before)
+        self.assertIn('contains non-opaque', self.prefs.texture_report.as_string())
+
+    def test_tab_visibility_selects_relevant_panels(self):
+        for tab, visible in [('MODEL', addon.APEX_PT_model), ('ANIMATION', addon.APEX_PT_animations), ('SCENE', addon.APEX_PT_effects), ('TOOLS', addon.APEX_PT_health)]:
+            self.prefs.workspace_tab = tab
+            self.assertTrue(visible.poll(bpy.context))
+            self.assertTrue(addon.APEX_PT_main.poll(bpy.context))
+        self.assertFalse(addon.APEX_PT_model.poll(bpy.context))
+
+    def test_transparency_off_disconnects_explicit_opacity_for_all_shaders(self):
+        for definition in shaders.SHADER_DEFS.values():
+            addon.append_apex_node_group(definition.group_name)
+            obj = make_mesh()
+            image = bpy.data.images.new('opacity', width=4, height=4)
+            shaders.build_material(obj.active_material, definition, {R.ALBEDO: image, R.OPACITY: image}, plug_alpha=False)
+            group = next(n for n in obj.active_material.node_tree.nodes if n.type == 'GROUP')
+            self.assertFalse(shaders.surface_opacity_socket(obj.active_material, group, definition).is_linked)
+
+    def test_shader_plus_applies_opacity_once_and_preserves_guid_bindings(self):
+        definition = shaders.SHADER_DEFS['OP2']
+        addon.append_apex_node_group(definition.group_name)
+        mat = bpy.data.materials.new('lashes')
+        color = bpy.data.images.new('0x123', width=4, height=4)
+        mask = bpy.data.images.new('0x456', width=4, height=4)
+        images = {R.ALBEDO: color, R.OPACITY: mask}
+        for repeat in range(2):
+            shaders.build_material(mat, definition, images)
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            alpha = group.inputs[definition.sockets[R.OPACITY]]
+            self.assertFalse(alpha.is_linked)
+            self.assertEqual(alpha.default_value, 1.0)
+            mix = next(n for n in mat.node_tree.nodes if n.get('apex_surface_opacity'))
+            self.assertEqual(mix.inputs[1].links[0].from_node.type, 'BSDF_TRANSPARENT')
+            self.assertEqual(mix.inputs[2].links[0].from_node, group)
+            self.assertEqual(mix.inputs[0].links[0].from_node.image, mask)
+            images = {hit.role: hit.image_key for hit in graph.inspect_material(mat).hits}
+            self.assertEqual(images, {R.ALBEDO: color, R.OPACITY: mask})
+        shaders.build_material(mat, definition, {R.ALBEDO: color})
+        self.assertNotIn(R.OPACITY, graph.inspect_material(mat).roles)
+
+    def test_pair_rotation_correction_and_reset_preserve_attachment(self):
+        legend, item = make_rig(), make_rig()
+        legend.data.bones['child'].name = 'ja_l_propHand'
+        bpy.context.scene.apex_attachment_legend = legend
+        bpy.context.scene.apex_attachment_item = item
+        bpy.ops.object.apex_pair_item(socket='LEFT_HAND')
+        before = item.matrix_basis.copy()
+        bpy.ops.object.apex_item_rotation()
+        self.assertGreater(item.matrix_basis.to_quaternion().rotation_difference(before.to_quaternion()).angle, 0.1)
+        self.assertLess((item.matrix_basis.translation - before.translation).length, 1e-6)
+        self.assertEqual(item.parent, legend)
+        bpy.ops.object.apex_item_rotation(reset=True)
+        assert_matrix_close(self, item.matrix_basis, before)
+
     def test_item_rig_snaps_to_hand_and_follows_pose(self):
         legend = make_rig()
         legend.name = 'legend'
@@ -528,7 +651,9 @@ class BlenderIntegration(unittest.TestCase):
         bpy.ops.object.mode_set(mode='POSE')
         try:
             for bone in rig.data.bones:
-                bone.select = bone.name == 'root'
+                # Blender 5.2 moved pose selection from Bone to PoseBone.
+                selectable = rig.pose.bones[bone.name] if hasattr(root, 'select') else bone
+                selectable.select = bone.name == 'root'
             rig.data.bones.active = rig.data.bones['root']
             self.assertEqual(bpy.ops.object.apex_xyz_euler(), {'FINISHED'})
             bpy.context.view_layer.update()
@@ -536,6 +661,21 @@ class BlenderIntegration(unittest.TestCase):
             self.assertEqual(child.rotation_mode, 'QUATERNION')
             assert_matrix_close(self, root.matrix, before)
             self.assertEqual(bpy.context.mode, 'POSE')
+        finally:
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+    def test_pose_bone_selection_works_in_pose_and_object_mode(self):
+        rig = make_rig()
+        bpy.ops.object.mode_set(mode='POSE')
+        bpy.ops.pose.select_all(action='DESELECT')
+        addon.select_pose_bone(rig, 'root')
+        self.assertEqual([bone.name for bone in bpy.context.selected_pose_bones], ['root'])
+        bpy.ops.pose.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        addon.select_pose_bone(rig, 'child')
+        bpy.ops.object.mode_set(mode='POSE')
+        try:
+            self.assertEqual([bone.name for bone in bpy.context.selected_pose_bones], ['child'])
         finally:
             bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -608,6 +748,127 @@ class BlenderIntegration(unittest.TestCase):
         for name in ['wraith_portal', 'Gibby bubble friendly', 'Flames left', 'Laser']:
             self.assertIn(name, bpy.data.objects)
 
+
+    def test_fragmented_alpha_detection_and_shader_wiring(self):
+        import numpy as np
+        image = bpy.data.images.new('speckled_albedo', width=512, height=512, alpha=True)
+        image.alpha_mode = 'CHANNEL_PACKED'
+        pixels = np.ones((512, 512, 4), dtype=np.float32)
+        pixels[16:496:16, 16:496:16, 3] = 0.0
+        image.pixels.foreach_set(pixels.ravel())
+        self.assertTrue(shaders.fragmented_albedo_alpha(image))
+        mat = bpy.data.materials.new('metal_head')
+        for key, definition in shaders.SHADER_DEFS.items():
+            image.pixels.foreach_set(pixels.ravel())
+            addon.append_apex_node_group(definition.group_name)
+            shaders.build_material(mat, definition, {R.ALBEDO: image})
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            socket = shaders.surface_opacity_socket(mat, group, definition)
+            self.assertFalse(socket.is_linked)
+            self.assertEqual(socket.default_value, 1.0)
+            self.assertIn('specks', mat['apex_alpha_note'])
+            mat['apex_force_albedo_alpha'] = True
+            shaders.build_material(mat, definition, {R.ALBEDO: image})
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            self.assertTrue(shaders.surface_opacity_socket(mat, group, definition).is_linked)
+            self.assertEqual(mat['apex_alpha_note'], '')
+            del mat['apex_force_albedo_alpha']
+            shaders.build_material(mat, definition, {R.ALBEDO: image, R.OPACITY: image})
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            self.assertEqual(shaders.surface_opacity_socket(mat, group, definition).links[0].from_socket.name, 'Color')
+        mat.name = 'eyelash'
+        shaders.build_material(mat, definition, {R.ALBEDO: image})
+        self.assertEqual(mat['apex_alpha_note'], '')
+        # Coherent hole with the same coverage, hair-like mask, opaque and soft alpha.
+        for mask in ('hole', 'hair', 'opaque', 'soft'):
+            pixels[:] = 1.0
+            if mask == 'hole':
+                pixels[10:40, 10:40, 3] = 0.0
+            elif mask == 'hair':
+                pixels[:, ::2, 3] = 0.0
+            elif mask == 'soft':
+                pixels[:, :, 3] = 0.5
+            image.pixels.foreach_set(pixels.ravel())
+            self.assertFalse(shaders.fragmented_albedo_alpha(image), mask)
+
+    def test_bloodhound_head_alpha_exception_keeps_other_masks(self):
+        image = bpy.data.images.new('head', width=8, height=8, alpha=True)
+        mask = bpy.data.images.new('mask', width=8, height=8, alpha=True)
+        mat = bpy.data.materials.new('renamed_head')
+        for definition in shaders.SHADER_DEFS.values():
+            addon.append_apex_node_group(definition.group_name)
+            for suffix in ('col', 'albedoTexture'):
+                image.filepath_raw = '//bloodhound_lgnd_v23_christmas_head_' + suffix + '.png'
+                for repeat in range(2):
+                    shaders.build_material(mat, definition, {R.ALBEDO: image})
+                    group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                    self.assertFalse(shaders.surface_opacity_socket(mat, group, definition).is_linked)
+                    self.assertIn('known opaque Bloodhound', mat['apex_alpha_note'])
+                mat['apex_force_albedo_alpha'] = True
+                shaders.build_material(mat, definition, {R.ALBEDO: image})
+                group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                self.assertTrue(shaders.surface_opacity_socket(mat, group, definition).is_linked)
+                del mat['apex_force_albedo_alpha']
+                shaders.build_material(mat, definition, {R.ALBEDO: image, R.OPACITY: mask})
+                group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                self.assertEqual(shaders.surface_opacity_socket(mat, group, definition).links[0].from_node.image, mask)
+            image.filepath_raw = '//bloodhound_lgnd_v23_christmas_gear_col.png'
+            self.assertFalse(shaders.known_opaque_albedo(image))
+
+    def test_wattson_surface_opacity_exception_is_scoped_and_repeatable(self):
+        image = bpy.data.images.new('surface_mask', width=8, height=8, alpha=True)
+        mat = bpy.data.materials.new('renamed_material')
+        for definition in shaders.SHADER_DEFS.values():
+            addon.append_apex_node_group(definition.group_name)
+            for part in ('suit', 'gear'):
+                image.filepath_raw = '//wattson_lgnd_v24_onesie_' + part + '_opacityMultiplyTexture.png'
+                for repeat in range(2):
+                    shaders.build_material(mat, definition, {R.OPACITY: image})
+                    group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                    socket = shaders.surface_opacity_socket(mat, group, definition)
+                    self.assertFalse(socket.is_linked)
+                    self.assertEqual(socket.default_value, 1.0)
+                    self.assertIn('known Wattson', mat['apex_alpha_note'])
+                mat['apex_force_opacity_map'] = True
+                shaders.build_material(mat, definition, {R.OPACITY: image})
+                group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                self.assertTrue(shaders.surface_opacity_socket(mat, group, definition).is_linked)
+                del mat['apex_force_opacity_map']
+            image.filepath_raw = '//wattson_other_skin_opacityMultiplyTexture.png'
+            shaders.build_material(mat, definition, {R.OPACITY: image})
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            self.assertTrue(shaders.surface_opacity_socket(mat, group, definition).is_linked)
+            self.assertEqual(mat['apex_alpha_note'], '')
+
+    def test_cornea_is_clear_and_retains_roles_across_rebuilds(self):
+        albedo = bpy.data.images.new('eye_placeholder', width=32, height=32, alpha=True)
+        albedo.filepath_raw = '//wraith_base_eyecornea_albedoTexture.png'
+        normal = bpy.data.images.new('eye_normal', width=32, height=32)
+        mat = bpy.data.materials.new('renamed_eye_surface')
+        images = {R.ALBEDO: albedo, R.NORMAL: normal}
+        for definition in shaders.SHADER_DEFS.values():
+            for repeat in range(2):
+                shaders.build_material(mat, definition, images)
+                group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+                self.assertEqual(group.node_tree.name, 'ALR Cornea')
+                self.assertEqual(len([n for n in mat.node_tree.nodes if n.type == 'GROUP']), 1)
+                info = graph.inspect_material(mat)
+                self.assertEqual(info.roles, {R.ALBEDO, R.NORMAL})
+                self.assertTrue(group.inputs['Normal Map'].is_linked)
+                self.assertTrue(any(n.type == 'BSDF_TRANSPARENT' for n in group.node_tree.nodes))
+                self.assertTrue(any(n.type == 'FRESNEL' for n in group.node_tree.nodes))
+                self.assertTrue(any(getattr(n, 'operation', '') == 'SQRT' for n in group.node_tree.nodes))
+                source = next(n for n in group.node_tree.nodes if n.type == 'GROUP_INPUT')
+                self.assertFalse(source.outputs['Albedo Map'].is_linked)
+                self.assertIn('Clear cornea', mat['apex_alpha_note'])
+        albedo.filepath_raw = '//wraith_base_eye_albedoTexture.png'
+        self.assertFalse(shaders.is_cornea(mat, images))
+        mat.name = 'wraith_base_eyecornea.001'
+        self.assertTrue(shaders.is_cornea(mat, images))
+        # A cornea without a normal texture uses a neutral tangent normal.
+        shaders.build_material(mat, definition, {R.ALBEDO: albedo})
+        group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+        self.assertEqual(tuple(group.inputs['Normal Map'].default_value), (0.5, 0.5, 0, 1))
 
     def test_wireframe_repeat_and_removal(self):
         obj = make_mesh()

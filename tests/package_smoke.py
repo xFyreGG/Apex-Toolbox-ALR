@@ -8,10 +8,10 @@ import bpy
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
-from build_release import release_version
+from build_release import release_version, release_label
 
 expected_version = release_version()
-version_label = '.'.join(map(str, expected_version))
+version_label = release_label()
 archive_path = ROOT / 'dist' / ('Apex-Toolbox-ALR-%s.zip' % version_label)
 
 with tempfile.TemporaryDirectory() as directory:
@@ -24,10 +24,11 @@ with tempfile.TemporaryDirectory() as directory:
     assert Path(addon.__file__).resolve().is_relative_to(extracted)
     assert tuple(addon.bl_info['version']) == expected_version
     assert addon.ver == 'v' + version_label
-    assert 'Experimental' in addon.bl_info['warning']
+    assert 'RSX export data' in addon.bl_info['warning']
     addon.register()
     assert not hasattr(addon, 'BUTTON_TOON')
-    assert addon.APEX_PT_shadow.bl_parent_id == 'APEX_PT_apex_effects'
+    assert addon.APEX_PT_shadow.bl_parent_id == 'APEX_PT_effects'
+    assert getattr(addon, addon.APEX_PT_shadow.bl_parent_id).is_registered
     assert hasattr(bpy.types.Object, 'apex_animation_library')
     assert bpy.ops.object.apex_import_texture.get_rna_type()
     assert bpy.ops.object.apex_load_animation.get_rna_type()
