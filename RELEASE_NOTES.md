@@ -1,3 +1,44 @@
+# Apex Toolbox 3.15.0: Stable release candidate
+
+Validated and prepared for stable release on 3 November 2026. Not yet published.
+
+This release brings the model and animation workflows developed since 3.9.1
+into one stable package, with the material fixes from 3.14.7.
+
+- Import one or several CAST model folders, arranged in a row or grid with
+  optional separate collections. Filter by legend, weapon or Misc and search.
+- Reuse saved animation indexes, automatically link matching legend rigs,
+  browse named clips, double-click to load, or import an individual animation
+  CAST. Remove animations to return to rest pose. Allow Missing Bones defaults on.
+- Add optional animation layers with strength controls, including single-frame
+  additive poses. Remove layers without losing the base animation.
+- Pair props to hands and weapon sockets, with rotation correction and reset.
+- Use Model, Animate, Scene and Tools tabs, plus the restored assets-folder control.
+  Import directly from selection, with optional texturing and automatic rig linking.
+- Repair moved RSX library paths and inspect scene or texture problems.
+- Build tidier material graphs. Apply hair cavity multiplication manually.
+  Correct Shader+ eyelash transparency, clear corneas, sparse alpha holes and
+  the verified Wattson onesie and Bloodhound Christmas material exceptions.
+
+## Installing and updating
+
+Install the ZIP through Blender Preferences, then restart Blender after replacing
+an older version. Install the CAST importer separately and export your own RSX
+models, textures and animations. Game exports are not included.
+
+For existing models, run Texture Model to apply the material corrections. Save a
+copy first if you have edited their shader nodes, because retexturing rebuilds them.
+Hair Fix remains optional and is applied to the selected material.
+
+## Limits
+
+Validation targets Blender 4.2.2 and 5.2.2. Animation names and rig compatibility
+depend on the export data. Corneas are a thin-surface approximation. Alpha checks
+are conservative and cannot identify every game's intended transparency; use the
+transparency controls and report unrecognised material problems.
+
+---
+
 # Apex Toolbox 3.14.7: Experimental candidate (local)
 
 - Ignore the non-cutout albedo alpha in Bloodhound Christmas head textures, supporting both RSX `_col` and `_albedoTexture` names. This removes the fuzzy holes around the mask markings.

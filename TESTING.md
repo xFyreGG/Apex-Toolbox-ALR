@@ -23,6 +23,49 @@ successful imports in rows, grids or their original positions. `relink.py`
 checks and replaces paths to a moved RSX export library. `animation_layers.py`
 manages additive channels over a base Action through Blender NLA.
 
+## 3.15.0 stable readiness, 3 November 2026
+
+Status: local package ready for publication approval. No known release blocker
+was found in this validation. Nothing has been published or installed into the
+maintainer's working Blender profile by this pass.
+
+- 156 pure Python tests passed: texture resolver 125, animation cache 18,
+  automatic legend matching 13.
+- 234 integration tests passed on **each** of Blender 4.2.2 and 5.2.2:
+  materials/UI 50, packaged workflows 57, animation indexing 15, automatic rig
+  linking 19, import/layout 34, relinking 25, animation layers 34.
+- The exact ZIP passed clean isolated installation, packaged material/health
+  smoke checks and enable/disable/reload checks on both versions.
+- Disposable foreground checks passed on both versions: selected-folder import
+  without a review step, native picker drawing, grid placement, relink, layer
+  add/strength/removal and Undo/Redo. Automatic rig-link timer, cancellation,
+  index reuse, save and selection-change checks also passed.
+- Real RSX batch checks passed on both versions: Ash opbundle, Bloodhound
+  Christmas, Wattson onesie, Wraith outurbanb, R-99 and a bench, 43 meshes total.
+  Model bounds did not overlap; centres and bottoms aligned. All four legends
+  linked their exported animation libraries without applying an animation.
+- Three-shader render checks passed in both versions. The final render was
+  visually inspected. The preceding 3.14.7 Bloodhound before/after and live-scene
+  verification remain applicable; no material code changed in 3.15.0.
+- The first package-smoke run exposed a stale expectation for the old Effects
+  panel name, not an add-on failure. The test now checks the current registered
+  parent panel and passed on both versions. The foreground fixture now exercises
+  the actual direct folder-import flow instead of the removed review UI.
+
+Logs: `artifacts/stable-3.15.0/`. Initial `results.json` records the stale-test
+failures; `followup-results.json` records their successful reruns. Foreground
+JSON reports are in `artifacts/release-tools-foreground-*.json` and
+`artifacts/auto-rigs-foreground-*.json`.
+
+Frozen package: `dist/Apex-Toolbox-ALR-3.15.0.zip`, **4,782,349 bytes**, 48 files.
+SHA-256: `8bb5e395fc2a10252fb1ada00409e8b19dc7fb64be7c842e08e01148b3673813`.
+The archive matches the add-on source byte for byte and excludes tests, caches,
+raw game exports and private artifacts. Do not rebuild this ZIP for publication.
+
+Coverage limits: this validates the listed Blender versions and representative
+exports, not every skin or animation. Alpha intent remains partly heuristic and
+corneas are an approximation. See RELEASE_NOTES.md for user-facing limits.
+
 ## Run the checks
 
 Pure Python (no Blender dependency):
@@ -100,8 +143,8 @@ Layer checks exercise evaluated motion, strength, timing, save/reopen, action
 preservation and removal, including unsupported rigs and clips.
 
 Run `tests/foreground_release_tools.py` without `--background`, optionally with
-`-- --release`, for relink, layer strength/removal and reviewed grid-import
-Undo/Redo, plus a native review-popup draw check. It closes only its own
+`-- --release`, for relink, layer strength/removal and direct folder grid-import
+Undo/Redo, plus a native model-picker draw check. It closes only its own
 disposable Blender process and writes an explicit result under `artifacts`.
 
 ### 3.14.0 local candidate, 2026-11-03

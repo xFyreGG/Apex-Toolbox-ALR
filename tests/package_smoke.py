@@ -27,7 +27,8 @@ with tempfile.TemporaryDirectory() as directory:
     assert 'RSX export data' in addon.bl_info['warning']
     addon.register()
     assert not hasattr(addon, 'BUTTON_TOON')
-    assert addon.APEX_PT_shadow.bl_parent_id == 'APEX_PT_apex_effects'
+    assert addon.APEX_PT_shadow.bl_parent_id == 'APEX_PT_effects'
+    assert getattr(addon, addon.APEX_PT_shadow.bl_parent_id).is_registered
     assert hasattr(bpy.types.Object, 'apex_animation_library')
     assert bpy.ops.object.apex_import_texture.get_rna_type()
     assert bpy.ops.object.apex_load_animation.get_rna_type()

@@ -1,4 +1,4 @@
-"""Relink, animation layers and model review in disposable foreground Blender.
+"""Relink, animation layers and model selection in disposable foreground Blender.
 
 Run without --background. The fixture uses real event-loop ticks and Undo/Redo,
 writes an explicit JSON result, then closes only its own Blender process.
@@ -173,12 +173,13 @@ def tick():
             elif phase == 12:
                 assert_base()
                 checks.append('Remove layers / Undo / Redo')
-                assert bpy.ops.object.apex_review_model_import(
-                    files=[{'name': path} for path in review_files], auto_link=False,
+                assert bpy.ops.object.apex_import_texture(
+                    ui_stage='CHOOSE', source_mode='FOLDERS',
+                    parent_folder=str(case.new / 'mdl'),
+                    folder_items=[{'name': Path(path).parent.name, 'selected': True} for path in review_files], auto_link=False,
                     placement='GRID', columns=2, gap=0.5, separate_collections=True,
-                    texture_folder=str(texture_folder),
-                    summary='Two model exports checked.') == {'FINISHED'}
-                push('Imported reviewed model batch')
+                    texture_folder=str(texture_folder)) == {'FINISHED'}
+                push('Imported selected model folders')
             elif phase == 13:
                 assert len(bpy.data.objects) == len(initial_objects) + 4
                 assert 'Imported 2 models in a grid' in bpy.context.scene.my_prefs.import_summary
@@ -188,17 +189,15 @@ def tick():
                 assert bpy.ops.ed.redo() == {'FINISHED'}
             elif phase == 15:
                 assert len(bpy.data.objects) == len(initial_objects) + 4
-                checks.append('Reviewed batch import / Undo / Redo')
-                result = bpy.ops.object.apex_review_model_import('INVOKE_DEFAULT',
-                    files=[{'name': path} for path in review_files], auto_link=False,
-                    summary='Two model exports checked. Nothing imports until confirmation.')
+                checks.append('Selected model folders imported directly / Undo / Redo')
+                result = bpy.ops.object.apex_import_texture('INVOKE_DEFAULT')
                 assert result == {'RUNNING_MODAL'}, result
             elif phase == 16:
-                assert len(bpy.data.objects) == len(initial_objects) + 4, 'The review popup imported before confirmation'
+                assert len(bpy.data.objects) == len(initial_objects) + 4, 'The model picker imported before confirmation'
                 popup_ticks += 1
                 if popup_ticks < 5:
                     return 0.1
-                checks.append('Native model review popup invoked and drawn without importing')
+                checks.append('Native model picker invoked and drawn without importing')
                 quit_fixture(True)
                 return None
         phase += 1

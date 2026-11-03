@@ -1,4 +1,4 @@
-# Apex Toolbox 3.14.0: experimental workflows
+# Apex Toolbox 3.15.0 workflow guide
 
 Animation names depend on the available RSX export data. Unknown or conflicting
 names retain their export labels. Test unfamiliar rig and clip variants before
@@ -7,7 +7,7 @@ using them in a finished scene.
 All tools live in **3D View → Sidebar → Apex Tools**. The existing shaders,
 effects, rig helpers, Recolour and Legion+/RSX workflows remain available.
 
-## New in 3.14.0
+## Getting around
 
 Use the top **Model**, **Animate**, **Scene** and **Tools** tabs. The optional assets folder is linked at the top of the sidebar.
 
