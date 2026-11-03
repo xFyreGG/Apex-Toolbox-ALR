@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 14, 4),
+    "version": (3, 14, 5),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -87,7 +87,7 @@ from .apex_tex.versions import newer_version
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 20
+APEX_TEX_API_VERSION = 21
 
 
 def modules_are_stale():
@@ -5003,6 +5003,16 @@ class APEX_PT_autotex(ApexPanel, bpy.types.Panel):
             draw_wrapped(layout, 'Select meshes or the model armature to begin.', context)
         elif context.mode != 'OBJECT':
             layout.label(text='Switch to Object Mode', icon='INFO')
+        box = layout.box()
+        box.label(text='Hair shading (active material)')
+        obj = context.object
+        if obj and obj.type == 'MESH' and obj.active_material:
+            box.label(text=obj.active_material.name, icon='MATERIAL')
+        else:
+            box.label(text='Select a hair mesh and material.', icon='INFO')
+        row = box.row(align=True)
+        row.operator('object.apex_hair_fix', text='Apply Hair Fix')
+        row.operator('object.apex_hair_fix', text='Remove').remove = True
         if prefs.texture_report:
             box = layout.box()
             draw_wrapped(box, prefs.texture_summary, context)
@@ -5227,6 +5237,32 @@ class APEX_OT_pair_item(bpy.types.Operator):
             return {'CANCELLED'}
         self.report({'INFO'}, "%s paired to %s. Adjust its position or rotation if needed." %
                     (item.name, bone_name))
+        return {'FINISHED'}
+
+
+class APEX_OT_hair_fix(bpy.types.Operator):
+    """Apply or remove cavity multiplication on the active material only"""
+    bl_idname = 'object.apex_hair_fix'
+    bl_label = 'Apply Hair Fix'
+    bl_options = {'REGISTER', 'UNDO'}
+    remove: BoolProperty(default=False, options={'SKIP_SAVE'})
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.object
+        return bool(obj and obj.type == 'MESH' and obj.active_material
+                    and obj.active_material.is_editable)
+
+    def execute(self, context):
+        if not require_fresh_modules(self):
+            return {'CANCELLED'}
+        material = context.object.active_material
+        try:
+            apex_shaders.set_hair_fix(material, not self.remove)
+        except ValueError as error:
+            self.report({'WARNING'}, str(error))
+            return {'CANCELLED'}
+        self.report({'INFO'}, ('Removed hair fix from ' if self.remove else 'Applied hair fix to ') + material.name)
         return {'FINISHED'}
 
 
@@ -6215,6 +6251,7 @@ classes = (
         APEX_OT_pair_item,
         APEX_OT_item_rotation,
         APEX_OT_check_transparency,
+        APEX_OT_hair_fix,
         APEX_OT_favourite_animation,
         APEX_OT_clear_recent_animations,
         APEX_OT_animation_row,

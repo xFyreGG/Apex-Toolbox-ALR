@@ -635,3 +635,10 @@ test fixtures, private paths or other workspace artifacts are included.
 - Packaged ZIP workflow suite: 57 tests passed on both Blender 4.2.2 and 5.2.2.
 - Native Blender 5.2.2 isolated UI fixture verified single click leaves action empty, double click loads run, and Ctrl+Z restores no action and original timeline. No user scene or preferences changed; owned test process closed.
 - Existing Load Animation button, favourite star and layer restrictions retained. Click state resets on filters, favourites and add-on disable.
+
+### 3.14.5 local shader layout and manual hair correction, 2026-11-03
+
+- 48 integration tests passed on Blender 4.2.2 and 5.2.2. Covers default hair correction off, explicit apply/repeat/remove on all three shaders, persistence through retexturing, missing-map validation without changes and compact non-overlapping generated node columns.
+- Native Blender 5.2.2 Shader Editor inspected using an isolated seven-texture material with both hair multiply nodes. Texture, adjustment, shader and output columns are readable and separated.
+- No user scene or installed add-on modified. The temporary fixture process was closed after inspection.
+- Packaged ZIP workflow suite: 57 tests passed on Blender 5.2.2.

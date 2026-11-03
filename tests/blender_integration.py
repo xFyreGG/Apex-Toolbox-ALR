@@ -417,14 +417,19 @@ class BlenderIntegration(unittest.TestCase):
         self.assertEqual(set(bpy.context.selected_objects), {rig, obj})
         self.assertEqual(bpy.context.view_layer.objects.active, rig)
 
-    def test_hair_multiply_nodes_use_cavity_and_survive_retexturing(self):
+    def test_hair_fix_is_manual_repeatable_and_removable(self):
         for definition in shaders.SHADER_DEFS.values():
             addon.append_apex_node_group(definition.group_name)
             obj = make_mesh('legend_hair')
+            select(obj)
+            mat = obj.active_material
             images = {role: bpy.data.images.new(role, width=4, height=4) for role in (R.ALBEDO, R.SPECULAR, R.CAVITY)}
+            shaders.build_material(mat, definition, images)
+            tree = mat.node_tree
+            self.assertFalse(any(n.get('apex_hair_multiply') for n in tree.nodes))
+            self.assertEqual(bpy.ops.object.apex_hair_fix(), {'FINISHED'})
+            self.assertEqual(bpy.ops.object.apex_hair_fix(), {'FINISHED'})
             for repeat in range(2):
-                shaders.build_material(obj.active_material, definition, images)
-                tree = obj.active_material.node_tree
                 nodes = [n for n in tree.nodes if n.get('apex_hair_multiply')]
                 self.assertEqual(len(nodes), 2)
                 self.assertEqual({n.inputs[1].links[0].from_node.image for n in nodes}, {images[R.ALBEDO], images[R.SPECULAR]})
@@ -432,6 +437,42 @@ class BlenderIntegration(unittest.TestCase):
                     self.assertEqual(node.blend_type, 'MULTIPLY')
                     self.assertEqual(node.inputs[0].default_value, 1)
                     self.assertEqual(node.inputs[2].links[0].from_node.image, images[R.CAVITY])
+                shaders.build_material(mat, definition, images)
+            self.assertEqual(bpy.ops.object.apex_hair_fix(remove=True), {'FINISHED'})
+            shaders.build_material(mat, definition, images)
+            self.assertFalse(any(n.get('apex_hair_multiply') for n in tree.nodes))
+            for role in (R.ALBEDO, R.SPECULAR):
+                group = next(n for n in tree.nodes if n.type == 'GROUP')
+                self.assertEqual(group.inputs[definition.sockets[role]].links[0].from_node.image, images[role])
+
+    def test_missing_hair_maps_leave_graph_untouched(self):
+        obj = make_mesh('hair_without_cavity')
+        mat = obj.active_material
+        definition = shaders.SHADER_DEFS['OP2']
+        addon.append_apex_node_group(definition.group_name)
+        image = bpy.data.images.new('albedo', width=4, height=4)
+        shaders.build_material(mat, definition, {R.ALBEDO: image})
+        before = snapshot(mat)
+        with self.assertRaises(ValueError):
+            shaders.set_hair_fix(mat, True)
+        self.assertEqual(snapshot(mat), before)
+        self.assertFalse(mat.get('apex_hair_fix', False))
+
+    def test_generated_nodes_have_compact_spaced_columns(self):
+        definition = shaders.SHADER_DEFS['OP2']
+        addon.append_apex_node_group(definition.group_name)
+        mat = make_mesh().active_material
+        mat['apex_hair_fix'] = True
+        images = {role: bpy.data.images.new(role, width=4, height=4) for role in (R.ALBEDO, R.SPECULAR, R.CAVITY, R.ROUGHNESS)}
+        textures = shaders.build_material(mat, definition, images)
+        self.assertEqual(sorted(n.location.y for n in textures.values()), [-300, -200, -100, 0])
+        self.assertTrue(all(n.hide and n.width == 260 for n in textures.values()))
+        processors = [n for n in mat.node_tree.nodes if n.get('apex_hair_multiply') or n.type == 'INVERT']
+        self.assertEqual(len({tuple(n.location) for n in processors}), len(processors))
+        self.assertTrue(all(n.location.x == -370 and n.hide for n in processors))
+        group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+        output = next(n for n in mat.node_tree.nodes if n.type == 'OUTPUT_MATERIAL')
+        self.assertLess(group.location.x, output.location.x)
 
     def test_transparency_audit_reports_connected_alpha_without_editing(self):
         obj = make_mesh()

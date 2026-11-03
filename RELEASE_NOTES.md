@@ -1,3 +1,9 @@
+# Apex Toolbox 3.14.5: Experimental candidate (local)
+
+- Generated shader graphs now use evenly spaced, compact texture and adjustment columns, with the shader and output on the right. Reference maps stay available; expand nodes to inspect their settings.
+- Hair cavity multiplication is no longer automatic. Select the mesh and material, then use Apply Hair Fix or Remove under Materials > Auto Texture. Only that material is changed, including any objects sharing it.
+- Manual choices survive retexturing. Applying repeatedly does not duplicate nodes, and missing maps leave the material unchanged. Older automatically added hair nodes can be removed with Remove or by retexturing without opting in.
+
 # Apex Toolbox 3.14.4: Experimental candidate (local)
 
 - Double-click an animation name to load it. A single click selects it; the Load Animation button remains available.

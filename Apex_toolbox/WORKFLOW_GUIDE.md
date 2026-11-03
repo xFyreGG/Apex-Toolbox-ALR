@@ -15,7 +15,9 @@ After selecting models, click **Import Models**. The review screen is no longer 
 
 Under **Materials > Auto Texture**, **Use Transparency** controls opacity connections when texturing. **Check Transparency** creates a read-only report of connected inputs and pixel ranges. A texture containing non-opaque values does not prove that they are intended for opacity.
 
-Hair materials whose names contain `hair` automatically multiply albedo and specular by cavity when all needed maps are present. Both Multiply factors are 1.
+Hair correction is manual. Select the hair mesh and its material, then choose **Materials > Auto Texture > Apply Hair Fix**. This multiplies albedo and specular by cavity, with both factors set to 1. **Remove** restores direct connections. The choice is saved per material and survives retexturing; new imports leave it off.
+
+Generated shader graphs use compact texture and adjustment columns, with the shader and output to the right. Expand individual nodes to inspect textures or settings. Rerun Auto Texture to apply this layout to an older material.
 
 Under **Animate > Rigging > Pair Items**, select two rigs or their bound meshes and choose **Use Selected Rigs**. If both rigs have hand sockets, make the legend active. Pair to a socket, then use **Rotate Item X + Z 90°** if needed. **Reset Pair Rotation** restores the orientation from the last pairing while keeping position and scale adjustments.
 

@@ -338,6 +338,79 @@ def fragmented_albedo_alpha(image):
     return components >= 32
 
 
+def arrange_material_nodes(texture_nodes, group_node, output_node):
+    """Lay out only generated nodes, in texture -> adjustment -> shader order."""
+    ordered = sorted(texture_nodes.items(), key=lambda pair: _legacy_index(pair[0]))
+    for row, (role, node) in enumerate(ordered):
+        node.width = 260
+        node.location = (-760, -100 * row)
+        # Compact rows keep large texture sets readable; expand a node to inspect it.
+        node.hide = True
+        for link in node.outputs['Color'].links:
+            target = link.to_node
+            if ((target.get('apex_hair_multiply') and link.to_socket == target.inputs[1])
+                    or target.bl_idname == 'ShaderNodeInvert'):
+                target.width = 210
+                target.hide = True
+                target.location = (-370, node.location.y)
+    group_node.width = 310
+    group_node.location = (0, 80)
+    output_node.width = 190
+    output_node.location = (450, group_node.location.y)
+
+
+def set_hair_fix(material, enabled):
+    """Explicit per-material adjustment; never infer it from the material name."""
+    tree = material.node_tree if material.use_nodes else None
+    if tree is None:
+        raise ValueError('Texture the active material with Apex Toolbox first.')
+    tagged = [n for n in tree.nodes if n.get('apex_hair_multiply')]
+    if not enabled:
+        for node in tagged:
+            source = node.inputs[1].links[0].from_socket if node.inputs[1].links else None
+            destinations = [link.to_socket for link in node.outputs[0].links]
+            if source is not None:
+                for destination in destinations:
+                    tree.links.new(source, destination)
+            tree.nodes.remove(node)
+        material['apex_hair_fix'] = False
+        return
+    group = next((n for n in tree.nodes if n.type == 'GROUP'
+                  and n.node_tree and n.node_tree.name in KNOWN_GROUP_NAMES), None)
+    definition = next((d for d in SHADER_DEFS.values()
+                       if group and d.group_name == group.node_tree.name), None)
+    if definition is None:
+        raise ValueError('Choose an Apex surface shader for this material first.')
+    cavity = next((n for n in tree.nodes if n.type == 'TEX_IMAGE' and n.image
+                   and (n.get('apex_texture_role') == R.CAVITY
+                        or n.name == _legacy_node_name(R.CAVITY))), None)
+    if cavity is None:
+        raise ValueError('This material needs a cavity texture before applying the hair fix.')
+    plans = []
+    for role in (R.ALBEDO, R.SPECULAR):
+        socket = group.inputs.get(definition.sockets[role])
+        if socket is None or not socket.links:
+            raise ValueError('This material needs both albedo and specular textures.')
+        source = socket.links[0].from_socket
+        if source.node.get('apex_hair_multiply'):
+            continue
+        plans.append((role, source, socket))
+    # Validate every input before changing either channel.
+    for role, source, socket in plans:
+        node = tree.nodes.new('ShaderNodeMixRGB')
+        node.blend_type = 'MULTIPLY'
+        node.inputs[0].default_value = 1.0
+        node.label = 'Hair ' + role + ' x cavity'
+        node['apex_hair_multiply'] = True
+        node.width = 210
+        node.hide = True
+        node.location = (source.node.location.x + source.node.width + 130, source.node.location.y)
+        tree.links.new(source, node.inputs[1])
+        tree.links.new(cavity.outputs['Color'], node.inputs[2])
+        tree.links.new(node.outputs[0], socket)
+    material['apex_hair_fix'] = True
+
+
 def build_material(material, definition, images, log=None, plug_alpha=True):
     """Rebuild ``material`` around ``definition`` using ``images``.
 
@@ -390,6 +463,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
             node.image = image
             node.name = _legacy_node_name(role)
             node.label = role
+            node["apex_texture_role"] = role
             node.location = (-50, 50 - 260 * _legacy_index(role))
             texture_nodes[role] = node
 
@@ -464,7 +538,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
             if not socket_name or socket_name not in group_node.inputs:
                 continue
             source = node.outputs["Color"]
-            if ('hair' in material.name.casefold() and role in {R.ALBEDO, R.SPECULAR}
+            if (material.get('apex_hair_fix', False) and role in {R.ALBEDO, R.SPECULAR}
                     and R.CAVITY in texture_nodes):
                 multiply = tree.nodes.new('ShaderNodeMixRGB')
                 created.append(multiply)
@@ -486,6 +560,8 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
                 tree.links.new(invert.inputs["Color"], source)
                 source = invert.outputs["Color"]
             tree.links.new(group_node.inputs[socket_name], source)
+
+        arrange_material_nodes(texture_nodes, group_node, output_node)
 
         for role, image in images.items():
             apply_colorspace(image, role)
