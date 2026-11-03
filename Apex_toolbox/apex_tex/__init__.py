@@ -24,7 +24,7 @@ Modules
 #: leaves submodules already in ``sys.modules`` alone, so installing a new
 #: version over a running old one used to leave a new caller talking to an old
 #: ``autotex.run``.  Bump this whenever the signatures the add-on calls change.
-API_VERSION = 19
+API_VERSION = 20
 
 #: Reload order: dependencies before the modules that import them.
 RELOAD_ORDER = (

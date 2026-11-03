@@ -8,18 +8,11 @@ Apex Toolbox is a Blender add-on for working with Apex Legends models exported t
 
 To try 3.11.0, link an active Patreon membership to your ALR account, then choose **Experimental** on Creator Tools. Install the ZIP through Blender's **Install from Disk**; it replaces an older Apex Toolbox installation. The add-on contains no Apex models, textures or animations. Export your own files with RSX. The add-on source is included in the ZIP; the [3.9.1 tag](https://github.com/xFyreGG/Apex-Toolbox-ALR/tree/v3.9.1) remains the source for the public release.
 
-Local development is on **3.13.2 experimental**. Import & Texture now checks the
-selected exports before import and offers a row, grid or original positions,
-with optional separate collections. **Relink RSX Library** updates saved paths
-after an export library moves. **Animation Layers** adds compatible additive
-clips over a loaded base animation, with strength and frame offset controls.
-Single-frame additive poses stay active over the base animation.
-Automatic legend rig linking and faster repeat browsing remain included.
-The sidebar now gives animation browsing its own section, groups import settings
-by task and keeps advanced tools folded away. Library relinking is under
-Troubleshooting. Animation Layers stays optional below the main animation controls.
-This candidate is local and has not been uploaded. The available supporter build
-is still 3.11.0.
+Local development is on **3.14.0 experimental**. Model, Animate, Scene and Tools tabs organize the sidebar, with the asset-folder control at the top. Import proceeds directly from model selection. Texturing and automatic rig linking can be disabled for a quick model-only import.
+
+This candidate adds transparency connection checks, an opacity toggle, automatic hair cavity multiplication and paired-item rotation correction. Hair detection uses material names containing `hair`, and requires the relevant texture maps. Transparency checks report connections and pixel values; they do not infer whether the game intended a texture as opacity.
+
+This candidate is local and has not been uploaded. The available supporter build is still 3.11.0.
 
 ## Install the public release
 

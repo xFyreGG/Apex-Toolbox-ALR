@@ -1,4 +1,4 @@
-# Apex Toolbox 3.13.2: experimental workflows
+# Apex Toolbox 3.14.0: experimental workflows
 
 Animation names depend on the available RSX export data. Unknown or conflicting
 names retain their export labels. Test unfamiliar rig and clip variants before
@@ -6,6 +6,18 @@ using them in a finished scene.
 
 All tools live in **3D View → Sidebar → Apex Tools**. The existing shaders,
 effects, rig helpers, Recolour and Legion+/RSX workflows remain available.
+
+## New in 3.14.0
+
+Use the top **Model**, **Animate**, **Scene** and **Tools** tabs. The optional assets folder is linked at the top of the sidebar.
+
+After selecting models, click **Import Models**. The review screen is no longer part of importing. Disable **Texture Models** and **Auto-Link Animation Rig** for a model-only import, then texture or link later.
+
+Under **Materials > Auto Texture**, **Use Transparency** controls opacity connections when texturing. **Check Transparency** creates a read-only report of connected inputs and pixel ranges. A texture containing non-opaque values does not prove that they are intended for opacity.
+
+Hair materials whose names contain `hair` automatically multiply albedo and specular by cavity when all needed maps are present. Both Multiply factors are 1.
+
+Under **Animate > Rigging > Pair Items**, select two rigs or their bound meshes and choose **Use Selected Rigs**. If both rigs have hand sockets, make the legend active. Pair to a socket, then use **Rotate Item X + Z 90°** if needed. **Reset Pair Rotation** restores the orientation from the last pairing while keeping position and scale adjustments.
 
 ## Sidebar layout
 
@@ -31,17 +43,12 @@ Export the model from RSX as CAST with material textures enabled. Click
 **Model → Import & Texture** and choose **Model folders** or **CAST files**.
 For model folders, the dialog uses your last folder or a bookmarked RSX `mdl`
 directory. Choose **Legends**, **Weapons**, or **Misc**, then a legend, weapon or other
-group to see its folders. Tick the folders you want, then click **Check Import**.
+group to see its folders. Tick the folders you want, then click **Import Models**.
 Search narrows the chosen group and can combine words in any order (for example,
 `alter outnoir`). Checked folders stay selected when you switch views. The
 dialog remembers a changed directory.
 If the chosen folder itself contains one model,
-you can import it without ticking a subfolder. For CAST files, click **Check
-Import** to open the file browser and select one or several files from the same
-folder. The review shows which models can be imported, which files were skipped
-and any nearby texture hints. Check that list, then click **Import Models**.
-Checking files does not change the scene. Missing textures are warnings; the
-full texture search still runs during import.
+you can import it without ticking a subfolder. For CAST files, click **Import Models** to open the file browser and select one or several files from the same folder. Import starts after confirmation in that browser.
 Import settings are grouped by task:
 
 - **Model Setup:** prepare the size and orientation and optionally link the
@@ -51,13 +58,7 @@ Import settings are grouped by task:
 - **Layout:** choose row, grid or original positions, and whether each model
   gets its own collection.
 
-The tool picks the LOD0 CAST from each selected folder, skips `anims_` folders,
-and imports at most 50 models per batch. Folders with several CAST files but no
-clear LOD0 appear in the skipped list.
-Select the intended CAST directly if you need one of those files. Invalid,
-missing, rig-only and animation-only exports are also listed before import.
-Other usable selections remain available. A selection over 50 models must be
-reduced before importing; the batch is not silently truncated.
+The tool picks the LOD0 CAST from each selected folder, skips animation subfolders and accepts at most 50 models per batch. Ambiguous folders require selecting the intended CAST directly. Invalid selections are reported without guessing.
 The separate size and rotation tools are in **Model → Manual Adjustments**,
 collapsed below Import & Texture for models that need manual preparation.
 

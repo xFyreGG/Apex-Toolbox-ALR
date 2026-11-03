@@ -78,7 +78,7 @@ SHADER_DEFS = {
             R.ALBEDO: "Alpha",
             R.SCATTER: "SSS Alpha",
         },
-        extra_roles=(R.ANISO_SPEC_DIR, R.IRIDESCENCE_RAMP),
+        extra_roles=(R.CAVITY, R.ANISO_SPEC_DIR, R.IRIDESCENCE_RAMP),
     ),
     OP_APEX_SHADER_PLUS: ShaderDef(
         OP_APEX_SHADER_PLUS,
@@ -273,6 +273,8 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
                                node.outputs["Alpha"])
 
         for role, node in texture_nodes.items():
+            if role == R.OPACITY and not plug_alpha:
+                continue
             socket_name = definition.sockets.get(role)
             needs_invert = False
             # The resolver reports what the image *is*; the adapter knows what
@@ -287,6 +289,18 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
             if not socket_name or socket_name not in group_node.inputs:
                 continue
             source = node.outputs["Color"]
+            if ('hair' in material.name.casefold() and role in {R.ALBEDO, R.SPECULAR}
+                    and R.CAVITY in texture_nodes):
+                multiply = tree.nodes.new('ShaderNodeMixRGB')
+                created.append(multiply)
+                multiply.blend_type = 'MULTIPLY'
+                multiply.inputs[0].default_value = 1.0
+                multiply.label = 'Hair ' + role + ' x cavity'
+                multiply['apex_hair_multiply'] = True
+                multiply.location = (node.location.x + 180, node.location.y)
+                tree.links.new(multiply.inputs[1], source)
+                tree.links.new(multiply.inputs[2], texture_nodes[R.CAVITY].outputs['Color'])
+                source = multiply.outputs['Color']
             if needs_invert:
                 # gloss = 1 - roughness, done in the graph so that the source
                 # image on disk is never modified.

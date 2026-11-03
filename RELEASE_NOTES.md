@@ -1,3 +1,17 @@
+# Apex Toolbox 3.14.0: Experimental candidate (local)
+
+Update date: **2026-11-03**
+
+- Model, Animate, Scene and Tools tabs group the sidebar by task. Assets Folder is back at the top.
+- Import Models proceeds directly from selection, without the review screen.
+- Texture Models can be switched off during import. Auto-Link Animation Rig can also be disabled for a model-only import.
+- Use Transparency now controls both albedo alpha and explicit opacity maps. Check Transparency reports connected sources and their pixel ranges without changing materials. It cannot determine artistic intent from pixels alone.
+- Hair materials with a cavity map receive two Multiply nodes: albedo in A and cavity in B, then specular in A and cavity in B, both at factor 1. Hair is identified by the material name containing `hair`.
+- Pairing accepts selected meshes bound to rigs as well as armatures. Paired items have X + Z 90-degree correction and Reset Pair Rotation controls.
+- Local candidate only; public and supporter releases have not been changed.
+
+---
+
 # Apex Toolbox 3.13.2: Experimental candidate (local)
 
 Update date: **2026-10-11**

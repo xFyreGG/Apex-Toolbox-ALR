@@ -417,6 +417,66 @@ class BlenderIntegration(unittest.TestCase):
         self.assertEqual(set(bpy.context.selected_objects), {rig, obj})
         self.assertEqual(bpy.context.view_layer.objects.active, rig)
 
+    def test_hair_multiply_nodes_use_cavity_and_survive_retexturing(self):
+        for definition in shaders.SHADER_DEFS.values():
+            addon.append_apex_node_group(definition.group_name)
+            obj = make_mesh('legend_hair')
+            images = {role: bpy.data.images.new(role, width=4, height=4) for role in (R.ALBEDO, R.SPECULAR, R.CAVITY)}
+            for repeat in range(2):
+                shaders.build_material(obj.active_material, definition, images)
+                tree = obj.active_material.node_tree
+                nodes = [n for n in tree.nodes if n.get('apex_hair_multiply')]
+                self.assertEqual(len(nodes), 2)
+                self.assertEqual({n.inputs[1].links[0].from_node.image for n in nodes}, {images[R.ALBEDO], images[R.SPECULAR]})
+                for node in nodes:
+                    self.assertEqual(node.blend_type, 'MULTIPLY')
+                    self.assertEqual(node.inputs[0].default_value, 1)
+                    self.assertEqual(node.inputs[2].links[0].from_node.image, images[R.CAVITY])
+
+    def test_transparency_audit_reports_connected_alpha_without_editing(self):
+        obj = make_mesh()
+        image = bpy.data.images.new('alpha', width=4, height=4)
+        image.generated_color = (1, 1, 1, 0.5)
+        image.pixels = [1, 1, 1, 0.5] * 16
+        definition = shaders.SHADER_DEFS['OP1']
+        addon.append_apex_node_group(definition.group_name)
+        shaders.build_material(obj.active_material, definition, {R.ALBEDO: image})
+        select(obj)
+        before = snapshot(obj.active_material)
+        self.assertEqual(bpy.ops.object.apex_check_transparency(), {'FINISHED'})
+        self.assertEqual(snapshot(obj.active_material), before)
+        self.assertIn('contains non-opaque', self.prefs.texture_report.as_string())
+
+    def test_tab_visibility_selects_relevant_panels(self):
+        for tab, visible in [('MODEL', addon.APEX_PT_model), ('ANIMATION', addon.APEX_PT_animations), ('SCENE', addon.APEX_PT_effects), ('TOOLS', addon.APEX_PT_health)]:
+            self.prefs.workspace_tab = tab
+            self.assertTrue(visible.poll(bpy.context))
+            self.assertTrue(addon.APEX_PT_main.poll(bpy.context))
+        self.assertFalse(addon.APEX_PT_model.poll(bpy.context))
+
+    def test_transparency_off_disconnects_explicit_opacity_for_all_shaders(self):
+        for definition in shaders.SHADER_DEFS.values():
+            addon.append_apex_node_group(definition.group_name)
+            obj = make_mesh()
+            image = bpy.data.images.new('opacity', width=4, height=4)
+            shaders.build_material(obj.active_material, definition, {R.ALBEDO: image, R.OPACITY: image}, plug_alpha=False)
+            group = next(n for n in obj.active_material.node_tree.nodes if n.type == 'GROUP')
+            self.assertFalse(group.inputs[definition.sockets[R.OPACITY]].is_linked)
+
+    def test_pair_rotation_correction_and_reset_preserve_attachment(self):
+        legend, item = make_rig(), make_rig()
+        legend.data.bones['child'].name = 'ja_l_propHand'
+        bpy.context.scene.apex_attachment_legend = legend
+        bpy.context.scene.apex_attachment_item = item
+        bpy.ops.object.apex_pair_item(socket='LEFT_HAND')
+        before = item.matrix_basis.copy()
+        bpy.ops.object.apex_item_rotation()
+        self.assertGreater(item.matrix_basis.to_quaternion().rotation_difference(before.to_quaternion()).angle, 0.1)
+        self.assertLess((item.matrix_basis.translation - before.translation).length, 1e-6)
+        self.assertEqual(item.parent, legend)
+        bpy.ops.object.apex_item_rotation(reset=True)
+        assert_matrix_close(self, item.matrix_basis, before)
+
     def test_item_rig_snaps_to_hand_and_follows_pose(self):
         legend = make_rig()
         legend.name = 'legend'

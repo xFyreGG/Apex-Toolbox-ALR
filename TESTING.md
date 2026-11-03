@@ -104,6 +104,13 @@ Run `tests/foreground_release_tools.py` without `--background`, optionally with
 Undo/Redo, plus a native review-popup draw check. It closes only its own
 disposable Blender process and writes an explicit result under `artifacts`.
 
+### 3.14.0 local candidate, 2026-11-03
+
+- 43 Blender integration checks passed on 4.2.2 and 5.2.2, including hair multiply inputs and factor, repeated rebuilding, explicit opacity disabled, transparency audit preserving materials, paired rotation/reset and tab visibility.
+- 56 packaged workflow checks passed on 5.2.2. 125 Python checks passed. Enable/disable/reload passed on 4.2.2.
+- A disposable fresh-process Wraith import took 2.31 seconds: CAST import 0.58, texturing 1.26 and animation linking 0.47. A separate model-only run took 0.40 seconds with both optional steps disabled. These are local measurements with OS caches uncontrolled, not a universal performance guarantee.
+- Source game exports and user scenes were not modified. Transparency intent remains a manual judgement; the checker reports connections and pixel ranges. Hair matching currently uses material names containing `hair`.
+
 ### 3.13.2 interface refinement, 2026-10-11
 
 - 125 Python checks passed. Packaged workflow checks passed all 56 cases on

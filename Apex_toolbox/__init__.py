@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 13, 2),
+    "version": (3, 14, 0),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -87,7 +87,7 @@ from .apex_tex.versions import newer_version
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 19
+APEX_TEX_API_VERSION = 20
 
 
 def modules_are_stale():
@@ -651,9 +651,12 @@ def draw_import_layout(layout, settings):
 
 
 class PROPERTIES_CUSTOM(bpy.types.PropertyGroup):
+    workspace_tab: bpy.props.EnumProperty(name='Tools', default='MODEL', items=[('MODEL', 'Model', 'Import and materials', 'OUTLINER_OB_MESH', 0), ('ANIMATION', 'Animate', 'Animations and item pairing', 'ACTION', 1), ('SCENE', 'Scene', 'Lighting and effects', 'SCENE_DATA', 2), ('TOOLS', 'Tools', 'Repair and help', 'TOOL_SETTINGS', 3)])
+    use_alpha: BoolProperty(name='Use Transparency', default=True, description='Connect albedo alpha and opacity maps. Disable for opaque models with unwanted cutouts')
     import_summary: bpy.props.StringProperty()
     model_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
     animation_parent_folder: bpy.props.StringProperty(subtype='DIR_PATH')
+    texture_on_import: BoolProperty(name='Texture Models', default=True)
     auto_link_rigs: BoolProperty(default=True)
     import_placement: bpy.props.EnumProperty(items=BATCH_LAYOUT_ITEMS, default='ROW')
     import_columns: bpy.props.IntProperty(default=5, min=1, max=50)
@@ -1110,6 +1113,7 @@ class BUTTON_CUSTOM(bpy.types.Operator):
         return apex_autotex.run(
             context,
             shader_key=prefs.cust_enum2,
+            plug_alpha=prefs.use_alpha,
             append_node_group=append_apex_node_group,
             texture_folder=prefs.autotex_folder,
             search_subfolders=prefs.aut_subf,
@@ -1221,6 +1225,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
                                             ('CHOOSE', 'Choose', ''),
                                             ('FILES', 'Files', '')],
                                      default='DIRECT', options={'HIDDEN', 'SKIP_SAVE'})
+    texture: BoolProperty(name='Texture Models', default=True, description='Apply Apex shaders and find textures during import. Turn off for a faster model-only import')
     prepare: BoolProperty(name='Prepare Model', default=True,
                           description='Apply Apex model size/orientation and XYZ Euler to unanimated transforms')
     auto_link: BoolProperty(name='Auto-Link Animation Rig', default=True,
@@ -1240,12 +1245,13 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         return (context.mode == 'OBJECT' and _active_animation_scan is None)
 
     def invoke(self, context, event):
+        self.texture = context.scene.my_prefs.texture_on_import
         self.shader = context.scene.my_prefs.cust_enum2
         self.auto_link = context.scene.my_prefs.auto_link_rigs
         prefs = context.scene.my_prefs
         self.placement, self.columns = prefs.import_placement, prefs.import_columns
         self.gap, self.separate_collections = prefs.import_gap, prefs.import_collections
-        self.review_before_import = True
+        self.review_before_import = False
         self.ui_stage = 'CHOOSE'
         folder = context.scene.my_prefs.model_parent_folder
         if not folder or not os.path.isdir(bpy.path.abspath(folder)):
@@ -1255,7 +1261,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             self.parent_folder = folder
         self.folder_group = 'NONE'
         return context.window_manager.invoke_props_dialog(
-            self, width=540, confirm_text='Check Import')
+            self, width=540, confirm_text='Import Models')
 
     def draw(self, context):
         if self.ui_stage == 'CHOOSE':
@@ -1295,8 +1301,10 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         box.prop(self, 'auto_link')
         box = self.layout.box()
         box.label(text='Textures')
+        box.prop(self, 'texture')
         box.prop(self, 'shader')
         box.prop(self, 'texture_folder', text='Folder (optional)')
+        box.prop(context.scene.my_prefs, 'use_alpha')
         draw_import_layout(self.layout, self)
         if self.ui_stage == 'FILES':
             self.layout.label(text='Select one or more CAST files.', icon='INFO')
@@ -1304,6 +1312,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
     def execute(self, context):
         if not require_fresh_modules(self):
             return {'CANCELLED'}
+        context.scene.my_prefs.texture_on_import = self.texture
         context.scene.my_prefs.auto_link_rigs = self.auto_link
         prefs = context.scene.my_prefs
         prefs.import_placement, prefs.import_columns = self.placement, self.columns
@@ -1398,11 +1407,18 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
         prefs.cust_enum2 = self.shader
         meshes = [obj for obj in created if obj.type == 'MESH']
         prefs.import_summary = 'Imported %d mesh%s. ' % (len(meshes), '' if len(meshes) == 1 else 'es')
+        if not self.texture:
+            apex_import_plan.arrange(context, [created], layout=self.placement, columns=self.columns, gap=self.gap, separate_collections=self.separate_collections, import_collections=set(bpy.data.collections) - original_collections)
+            prefs.import_summary += 'Textures skipped. Use Materials > Auto Texture when ready.'
+            if self.auto_link:
+                start_auto_rig_links(context, created, self)
+            return {'FINISHED'}
         prefs.texture_summary = ''
         prefs.texture_report = None
         try:
             result = apex_autotex.run(
                 context, shader_key=self.shader, append_node_group=append_apex_node_group,
+                plug_alpha=prefs.use_alpha,
                 texture_folder=self.texture_folder or os.path.dirname(bpy.path.abspath(filepath)),
                 search_subfolders=True, objects=meshes,
                 remembered_roots=remembered_texture_roots(), remember_callback=store_texture_roots,
@@ -1443,6 +1459,9 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             groups.append(created)
             meshes = [obj for obj in created if obj.type == 'MESH']
             mesh_count += len(meshes)
+            if not self.texture:
+                report_lines.extend(('Model imported; texturing skipped.', ''))
+                continue
             file_report = []
 
             def capture(batch, definition, outcomes):
@@ -1452,6 +1471,7 @@ class APEX_OT_import_texture(bpy.types.Operator, ImportHelper):
             try:
                 result = apex_autotex.run(
                     context, shader_key=self.shader, append_node_group=append_apex_node_group,
+                plug_alpha=prefs.use_alpha,
                     texture_folder=self.texture_folder or os.path.dirname(bpy.path.abspath(filepath)),
                     search_subfolders=True, objects=meshes,
                     remembered_roots=remembered_texture_roots(),
@@ -1506,7 +1526,7 @@ class APEX_OT_review_model_import(bpy.types.Operator):
     """Review checked CAST exports before importing any models"""
     bl_idname = 'object.apex_review_model_import'
     bl_label = 'Check Model Import'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'INTERNAL', 'UNDO'}
     files: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement,
                                         options={'HIDDEN', 'SKIP_SAVE'})
     issues: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement,
@@ -4704,6 +4724,19 @@ class ApexPanel:
     bl_region_type = 'UI'
     bl_category = APEX_CATEGORY
 
+    @classmethod
+    def poll(cls, context):
+        if cls.__name__ == 'APEX_PT_main':
+            return True
+        root = cls
+        while getattr(root, 'bl_parent_id', ''):
+            root = globals()[root.bl_parent_id]
+        groups = {'APEX_PT_model': 'MODEL', 'APEX_PT_materials': 'MODEL',
+                  'APEX_PT_animations': 'ANIMATION', 'APEX_PT_rigging': 'ANIMATION',
+                  'APEX_PT_environment': 'SCENE', 'APEX_PT_effects': 'SCENE',
+                  'APEX_PT_health': 'TOOLS', 'APEX_PT_about': 'TOOLS'}
+        return context.scene.my_prefs.workspace_tab == groups.get(root.__name__, 'TOOLS')
+
 
 class APEX_PT_main(ApexPanel, bpy.types.Panel):
     """Apex Toolbox"""
@@ -4725,7 +4758,12 @@ class APEX_PT_main(ApexPanel, bpy.types.Panel):
             layout.operator('object.lgndtranslate_url',
                             text="Update Available: " + lts_ver,
                             icon='IMPORT').link = "update"
-        layout.label(text='Experimental build', icon='INFO')
+        prefs = addon_prefs()
+        if prefs is not None:
+            layout.prop(prefs, 'asset_folder', text='Assets Folder')
+            if prefs.asset_folder and not assets_installed():
+                layout.label(text='Choose the folder containing Assets.blend', icon='ERROR')
+        layout.row(align=True).prop(context.scene.my_prefs, 'workspace_tab', expand=True)
 
 
 class APEX_PT_model(ApexPanel, bpy.types.Panel):
@@ -4889,6 +4927,8 @@ class APEX_PT_autotex(ApexPanel, bpy.types.Panel):
         row.prop(prefs, 'include_model_meshes')
         layout.prop(prefs, "cust_enum2", text="Shader")
         layout.prop(prefs, "autotex_folder", text="Folder (optional)")
+        layout.prop(prefs, "use_alpha")
+        layout.operator("object.apex_check_transparency", icon="VIEWZOOM")
 
         column = layout.column()
         column.use_property_split = False
@@ -5042,6 +5082,15 @@ class APEX_PT_rigging(ApexPanel, bpy.types.Panel):
                         icon='CON_KINEMATIC')
 
 
+def selected_attachment_rigs(context):
+    rigs = []
+    for obj in context.selected_objects:
+        rig = obj if obj.type == 'ARMATURE' else (obj.find_armature() if obj.type == 'MESH' else None)
+        if rig is not None and rig not in rigs:
+            rigs.append(rig)
+    return rigs
+
+
 class APEX_OT_use_selected_attachment_rigs(bpy.types.Operator):
     """Use the two selected armatures as the legend and item rigs"""
     bl_idname = 'object.apex_use_selected_attachment_rigs'
@@ -5050,17 +5099,18 @@ class APEX_OT_use_selected_attachment_rigs(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == 'OBJECT' and len([obj for obj in context.selected_objects
-                                                 if obj.type == 'ARMATURE']) == 2
+        return context.mode == 'OBJECT' and len(selected_attachment_rigs(context)) == 2
 
     def execute(self, context):
-        rigs = [obj for obj in context.selected_objects if obj.type == 'ARMATURE']
+        rigs = selected_attachment_rigs(context)
+        active = context.active_object
+        active = active if active and active.type == 'ARMATURE' else (active.find_armature() if active and active.type == 'MESH' else None)
         legends = [rig for rig in rigs if any(apex_attachments.socket_bone(rig, socket)
                                                for socket in apex_attachments.SOCKET_BONES)]
         if len(legends) == 1:
             legend = legends[0]
-        elif context.active_object in rigs:
-            legend = context.active_object
+        elif active in rigs:
+            legend = active
         else:
             self.report({'ERROR'}, 'Make the legend rig active, then try again.')
             return {'CANCELLED'}
@@ -5116,6 +5166,87 @@ class APEX_OT_pair_item(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class APEX_OT_check_transparency(bpy.types.Operator):
+    """Report connected opacity sources and their pixel range without changing materials"""
+    bl_idname = 'object.apex_check_transparency'
+    bl_label = 'Check Transparency'
+
+    def execute(self, context):
+        from array import array
+        lines = ['Transparency check', '', 'Connections and pixel values show what Blender uses, not whether the game intended it as opacity.', '']
+        materials = apex_autotex.material_slots(texture_targets(context))
+        for material in materials:
+            lines.append(material.name)
+            found = False
+            if not material.use_nodes:
+                lines.append('  No node-based transparency.')
+                continue
+            for node in material.node_tree.nodes:
+                names = ['Alpha'] if node.type == 'BSDF_PRINCIPLED' else []
+                if node.type == 'GROUP' and node.node_tree:
+                    definition = next((d for d in apex_shaders.SHADER_DEFS.values() if d.group_name == node.node_tree.name), None)
+                    if definition:
+                        names = [definition.sockets[apex_roles.OPACITY]]
+                for name in names:
+                    socket = node.inputs.get(name)
+                    if socket is None or not socket.is_linked:
+                        continue
+                    found = True
+                    link = socket.links[0]
+                    source = link.from_node
+                    lines.append('  Connected: %s / %s' % (source.name, link.from_socket.name))
+                    image = getattr(source, 'image', None)
+                    if image is None:
+                        lines.append('  Pixel range unavailable; inspect the node chain or load the image.')
+                        continue
+                    count = len(image.pixels)
+                    if count > 64 * 1024 * 1024:
+                        lines.append('  Large image: pixel scan skipped. Inspect in Image Editor.')
+                        continue
+                    pixels = array('f', [0.0]) * count
+                    image.pixels.foreach_get(pixels)
+                    values = pixels[3::4] if link.from_socket.name == 'Alpha' else pixels[0::4]
+                    if not values:
+                        lines.append('  Pixel data unavailable.')
+                    if values:
+                        low, high = min(values), max(values)
+                        lines.append('  %s: %.4f to %.4f%s' % ('Alpha' if link.from_socket.name == 'Alpha' else 'Red channel', low, high, ' (fully opaque)' if low >= 0.9999 else ' (contains non-opaque values)'))
+            if not found:
+                lines.append('  No supported alpha/opacity input is connected.')
+        save_tool_report(context.scene.my_prefs, 'texture', 'Transparency checked for %d materials. Open Report for details.' % len(materials), '\n'.join(lines))
+        self.report({'INFO'}, context.scene.my_prefs.texture_summary)
+        return {'FINISHED'}
+
+
+class APEX_OT_item_rotation(bpy.types.Operator):
+    """Adjust the paired item's local rotation without moving its attachment"""
+    bl_idname = 'object.apex_item_rotation'
+    bl_label = 'Rotate Item X + Z 90°'
+    bl_options = {'REGISTER', 'UNDO'}
+    reset: BoolProperty(default=False)
+
+    @classmethod
+    def poll(cls, context):
+        item = context.scene.apex_attachment_item
+        return bool(item and item.is_editable and item.parent_type == 'BONE' and item.parent)
+
+    def execute(self, context):
+        from mathutils import Matrix, Quaternion
+        from math import pi
+        item = context.scene.apex_attachment_item
+        location, rotation, scale = item.matrix_basis.decompose()
+        if self.reset:
+            stored = item.get('_apex_pair_rotation')
+            if stored is None:
+                self.report({'WARNING'}, 'Pair the item again before resetting its rotation.')
+                return {'CANCELLED'}
+            rotation = Quaternion(stored)
+        else:
+            rotation = rotation @ Quaternion((1, 0, 0), pi / 2) @ Quaternion((0, 0, 1), pi / 2)
+        item.matrix_basis = Matrix.LocRotScale(location, rotation, scale)
+        return {'FINISHED'}
+
+
 class APEX_PT_attachments(ApexPanel, bpy.types.Panel):
     """Pair imported item rigs to the legend's hand or weapon bones"""
     bl_label = 'Pair Items'
@@ -5127,6 +5258,7 @@ class APEX_PT_attachments(ApexPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
+        draw_wrapped(layout, 'Select both rigs, then use Use Selected Rigs. Make the legend active if both have hand sockets.', context)
         layout.prop(scene, 'apex_attachment_legend', text='Legend Rig')
         layout.prop(scene, 'apex_attachment_item', text='Item Rig')
         layout.operator('object.apex_use_selected_attachment_rigs',
@@ -5137,6 +5269,12 @@ class APEX_PT_attachments(ApexPanel, bpy.types.Panel):
         row.operator('object.apex_pair_item', text='Left Hand').socket = 'LEFT_HAND'
         row.operator('object.apex_pair_item', text='Right Hand').socket = 'RIGHT_HAND'
         column.operator('object.apex_pair_item', text='Weapon').socket = 'WEAPON'
+        item = scene.apex_attachment_item
+        if item and item.parent_type == 'BONE' and item.parent:
+            layout.separator()
+            draw_wrapped(layout, 'Paired to: ' + item.parent_bone, context)
+            layout.operator('object.apex_item_rotation', icon='DRIVER_ROTATIONAL_DIFFERENCE')
+            layout.operator('object.apex_item_rotation', text='Reset Pair Rotation', icon='LOOP_BACK').reset = True
         if scene.apex_attachment_legend:
             column.prop_search(scene, 'apex_attachment_bone',
                                scene.apex_attachment_legend.data, 'bones', text='Other Bone')
@@ -6011,6 +6149,8 @@ classes = (
         APEX_OT_remove_animation,
         APEX_OT_use_selected_attachment_rigs,
         APEX_OT_pair_item,
+        APEX_OT_item_rotation,
+        APEX_OT_check_transparency,
         APEX_OT_favourite_animation,
         APEX_OT_clear_recent_animations,
         APEX_UL_animations,

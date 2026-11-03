@@ -193,6 +193,8 @@ def _trace(socket, depth=0, inverted=False):
     node = link.from_node
     if node.bl_idname == TEX_IMAGE:
         return node, inverted, link.from_socket.name
+    if node.bl_idname == 'ShaderNodeMixRGB' and node.get('apex_hair_multiply'):
+        return _trace(node.inputs[1], depth + 1, inverted)
     if node.bl_idname == INVERT:
         target = node.inputs.get("Color")
         if target is not None:
