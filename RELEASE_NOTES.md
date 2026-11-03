@@ -1,3 +1,10 @@
+# Apex Toolbox 3.14.6: Experimental candidate (local)
+
+- Fix bright eyelash-card outlines in Apex Shader+ by applying transparency once after the diffuse and specular shaders are combined. The same correction applies to Shader+ albedo alpha and eyeshadow masks.
+- Keep source masks, soft edges and manual hair settings. Existing shared shader groups are not modified.
+- Preserve texture bindings on repeated Auto Texture and shader changes, including GUID-named opacity maps. Check Transparency reports the new mask connection.
+- Existing models need Texture Model rerun after installing this build.
+
 # Apex Toolbox 3.14.5: Experimental candidate (local)
 
 - Generated shader graphs now use evenly spaced, compact texture and adjustment columns, with the shader and output on the right. Reference maps stay available; expand nodes to inspect their settings.

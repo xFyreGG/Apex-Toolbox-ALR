@@ -14,7 +14,7 @@
 bl_info = {
     "name": "Apex Toolbox",
     "author": "Random Blender Dude, maintained by ALR",
-    "version": (3, 14, 5),
+    "version": (3, 14, 6),
     "blender": (4, 0, 0),
     "location": "3D View > Sidebar > Apex Tools",
     "description": "Blender tools for Apex Legends models, materials, shaders and RSX/CAST workflows",
@@ -87,7 +87,7 @@ from .apex_tex.versions import newer_version
 #: The apex_tex API revision this file is written against.  If the two ever
 #: disagree at register() time, a stale module survived the reload above and
 #: the add-on says so instead of failing later with a TypeError.
-APEX_TEX_API_VERSION = 21
+APEX_TEX_API_VERSION = 22
 
 
 def modules_are_stale():
@@ -5283,6 +5283,8 @@ class APEX_OT_check_transparency(bpy.types.Operator):
                 continue
             for node in material.node_tree.nodes:
                 names = ['Alpha'] if node.type == 'BSDF_PRINCIPLED' else []
+                if node.type == 'MIX_SHADER' and node.get('apex_surface_opacity'):
+                    names = [node.inputs[0].name]
                 if node.type == 'GROUP' and node.node_tree:
                     definition = next((d for d in apex_shaders.SHADER_DEFS.values() if d.group_name == node.node_tree.name), None)
                     if definition:

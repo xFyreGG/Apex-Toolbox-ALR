@@ -642,3 +642,10 @@ test fixtures, private paths or other workspace artifacts are included.
 - Native Blender 5.2.2 Shader Editor inspected using an isolated seven-texture material with both hair multiply nodes. Texture, adjustment, shader and output columns are readable and separated.
 - No user scene or installed add-on modified. The temporary fixture process was closed after inspection.
 - Packaged ZIP workflow suite: 57 tests passed on Blender 5.2.2.
+
+## 3.14.6 transparency correction
+
+- 49 Blender integration tests pass on Blender 4.2.2 and 5.2.2, including repeated GUID-mask discovery, opaque internal Shader+ alpha and a single outer transparency mix.
+- 57 packaged workflow checks pass on Blender 5.2.2; 125 pure texture tests pass.
+- Reproduced the Wraith outurbanb eyelash-card glow using a separate copy of the affected live scene. Hiding the lash mesh removed the patch; reloading its texture or disabling specular did not. Applying alpha once after combining Shader+ lobes removes the patch while preserving the lashes.
+- Rendered before/after in Cycles using the scene lighting and view. Original shared shader groups and source images were unchanged. Build remains local.

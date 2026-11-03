@@ -441,3 +441,7 @@ The plugin remains the **Lite** edition. Animated Staging + Camera, Basic Lights
 and the bundled effects work without the optional Extended pack. To enable
 Extended content, choose the folder **containing `Assets.blend`** in add-on
 preferences. Renaming that folder is no longer necessary.
+
+### Shader+ transparency
+
+Shader+ uses a separate Surface transparency mix so transparent cards do not brighten the surfaces behind them. Keep the opacity texture connected to that mix. After updating an existing model from an older build, run Texture Model once to rebuild its materials.

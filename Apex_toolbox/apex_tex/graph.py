@@ -280,9 +280,13 @@ def inspect_material(material):
             info.directories.append(directory)
 
     shader = _output_shader(tree)
-    info.shader_node = shader
-
     raw = {}
+    if shader is not None and shader.type == 'MIX_SHADER' and shader.get('apex_surface_opacity'):
+        node, inverted = _trace_image(shader.inputs[0])
+        if node is not None:
+            raw[R.OPACITY] = (node, inverted)
+        shader = shader.inputs[2].links[0].from_node if shader.inputs[2].links else None
+    info.shader_node = shader
 
     if shader is not None and shader.bl_idname == GROUP:
         group_name = getattr(shader.node_tree, "name", "")

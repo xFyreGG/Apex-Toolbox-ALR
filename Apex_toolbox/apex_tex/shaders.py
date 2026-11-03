@@ -359,6 +359,42 @@ def arrange_material_nodes(texture_nodes, group_node, output_node):
     output_node.location = (450, group_node.location.y)
 
 
+def surface_opacity_socket(material, group, definition):
+    """Return the effective surface mask, including the Shader+ adapter."""
+    mix = next((n for n in material.node_tree.nodes
+                if n.type == 'MIX_SHADER' and n.get('apex_surface_opacity')), None)
+    return mix.inputs[0] if mix else group.inputs[definition.sockets[R.OPACITY]]
+
+
+def separate_surface_opacity(tree, group, output, created):
+    """Apply Shader+ opacity once, outside its additive diffuse/specular lobes."""
+    if group.node_tree.name != SHADER_DEFS['OP2'].group_name:
+        return
+    alpha = group.inputs.get('Alpha (Opacity Multiply)')
+    if alpha is None or not alpha.is_linked:
+        return
+    source = alpha.links[0].from_socket
+    tree.links.remove(alpha.links[0])
+    alpha.default_value = 1.0
+    transparent = tree.nodes.new('ShaderNodeBsdfTransparent')
+    created.append(transparent)
+    transparent.inputs[0].default_value = (1, 1, 1, 1)
+    transparent.label = 'Clear surface'
+    transparent.location = (380, -180)
+    transparent.hide = True
+    mix = tree.nodes.new('ShaderNodeMixShader')
+    created.append(mix)
+    mix['apex_surface_opacity'] = True
+    mix.label = 'Surface transparency'
+    mix.location = (650, 80)
+    mix.width = 200
+    tree.links.new(source, mix.inputs[0])
+    tree.links.new(transparent.outputs[0], mix.inputs[1])
+    tree.links.new(group.outputs[0], mix.inputs[2])
+    tree.links.new(mix.outputs[0], output.inputs['Surface'])
+    output.location = (940, 80)
+
+
 def set_hair_fix(material, enabled):
     """Explicit per-material adjustment; never infer it from the material name."""
     tree = material.node_tree if material.use_nodes else None
@@ -562,6 +598,7 @@ def build_material(material, definition, images, log=None, plug_alpha=True):
             tree.links.new(group_node.inputs[socket_name], source)
 
         arrange_material_nodes(texture_nodes, group_node, output_node)
+        separate_surface_opacity(tree, group_node, output_node, created)
 
         for role, image in images.items():
             apply_colorspace(image, role)

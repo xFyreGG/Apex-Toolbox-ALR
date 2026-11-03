@@ -502,7 +502,29 @@ class BlenderIntegration(unittest.TestCase):
             image = bpy.data.images.new('opacity', width=4, height=4)
             shaders.build_material(obj.active_material, definition, {R.ALBEDO: image, R.OPACITY: image}, plug_alpha=False)
             group = next(n for n in obj.active_material.node_tree.nodes if n.type == 'GROUP')
-            self.assertFalse(group.inputs[definition.sockets[R.OPACITY]].is_linked)
+            self.assertFalse(shaders.surface_opacity_socket(obj.active_material, group, definition).is_linked)
+
+    def test_shader_plus_applies_opacity_once_and_preserves_guid_bindings(self):
+        definition = shaders.SHADER_DEFS['OP2']
+        addon.append_apex_node_group(definition.group_name)
+        mat = bpy.data.materials.new('lashes')
+        color = bpy.data.images.new('0x123', width=4, height=4)
+        mask = bpy.data.images.new('0x456', width=4, height=4)
+        images = {R.ALBEDO: color, R.OPACITY: mask}
+        for repeat in range(2):
+            shaders.build_material(mat, definition, images)
+            group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
+            alpha = group.inputs[definition.sockets[R.OPACITY]]
+            self.assertFalse(alpha.is_linked)
+            self.assertEqual(alpha.default_value, 1.0)
+            mix = next(n for n in mat.node_tree.nodes if n.get('apex_surface_opacity'))
+            self.assertEqual(mix.inputs[1].links[0].from_node.type, 'BSDF_TRANSPARENT')
+            self.assertEqual(mix.inputs[2].links[0].from_node, group)
+            self.assertEqual(mix.inputs[0].links[0].from_node.image, mask)
+            images = {hit.role: hit.image_key for hit in graph.inspect_material(mat).hits}
+            self.assertEqual(images, {R.ALBEDO: color, R.OPACITY: mask})
+        shaders.build_material(mat, definition, {R.ALBEDO: color})
+        self.assertNotIn(R.OPACITY, graph.inspect_material(mat).roles)
 
     def test_pair_rotation_correction_and_reset_preserve_attachment(self):
         legend, item = make_rig(), make_rig()
@@ -741,19 +763,19 @@ class BlenderIntegration(unittest.TestCase):
             addon.append_apex_node_group(definition.group_name)
             shaders.build_material(mat, definition, {R.ALBEDO: image})
             group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
-            socket = group.inputs[definition.alpha_sockets[R.ALBEDO]]
+            socket = shaders.surface_opacity_socket(mat, group, definition)
             self.assertFalse(socket.is_linked)
             self.assertEqual(socket.default_value, 1.0)
             self.assertIn('specks', mat['apex_alpha_note'])
             mat['apex_force_albedo_alpha'] = True
             shaders.build_material(mat, definition, {R.ALBEDO: image})
             group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
-            self.assertTrue(group.inputs[definition.alpha_sockets[R.ALBEDO]].is_linked)
+            self.assertTrue(shaders.surface_opacity_socket(mat, group, definition).is_linked)
             self.assertEqual(mat['apex_alpha_note'], '')
             del mat['apex_force_albedo_alpha']
             shaders.build_material(mat, definition, {R.ALBEDO: image, R.OPACITY: image})
             group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
-            self.assertEqual(group.inputs[definition.sockets[R.OPACITY]].links[0].from_socket.name, 'Color')
+            self.assertEqual(shaders.surface_opacity_socket(mat, group, definition).links[0].from_socket.name, 'Color')
         mat.name = 'eyelash'
         shaders.build_material(mat, definition, {R.ALBEDO: image})
         self.assertEqual(mat['apex_alpha_note'], '')
@@ -779,19 +801,19 @@ class BlenderIntegration(unittest.TestCase):
                 for repeat in range(2):
                     shaders.build_material(mat, definition, {R.OPACITY: image})
                     group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
-                    socket = group.inputs[definition.sockets[R.OPACITY]]
+                    socket = shaders.surface_opacity_socket(mat, group, definition)
                     self.assertFalse(socket.is_linked)
                     self.assertEqual(socket.default_value, 1.0)
                     self.assertIn('known Wattson', mat['apex_alpha_note'])
                 mat['apex_force_opacity_map'] = True
                 shaders.build_material(mat, definition, {R.OPACITY: image})
                 group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
-                self.assertTrue(group.inputs[definition.sockets[R.OPACITY]].is_linked)
+                self.assertTrue(shaders.surface_opacity_socket(mat, group, definition).is_linked)
                 del mat['apex_force_opacity_map']
             image.filepath_raw = '//wattson_other_skin_opacityMultiplyTexture.png'
             shaders.build_material(mat, definition, {R.OPACITY: image})
             group = next(n for n in mat.node_tree.nodes if n.type == 'GROUP')
-            self.assertTrue(group.inputs[definition.sockets[R.OPACITY]].is_linked)
+            self.assertTrue(shaders.surface_opacity_socket(mat, group, definition).is_linked)
             self.assertEqual(mat['apex_alpha_note'], '')
 
     def test_cornea_is_clear_and_retains_roles_across_rebuilds(self):
